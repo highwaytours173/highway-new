@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TourCard } from '@/components/tour-card';
-import { ArrowRight, Plane, Mountain, Utensils, FerrisWheel, Sailboat, Building2, Quote, Star } from 'lucide-react';
+import { ArrowRight, Plane, Mountain, Utensils, FerrisWheel, Sailboat, Building2, Quote, Star, PlayCircle, Calendar, MapPin as MapPinIcon } from 'lucide-react';
 import { ExclusiveTripIcon, ProfessionalGuideIcon, SafetyFirstIcon } from '@/components/icons';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -78,6 +78,30 @@ const testimonials = [
       text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
     }
 ];
+
+const articles = [
+  {
+    title: 'Including Animation In Your Design System',
+    date: 'December 02, 2024',
+    location: 'New york City',
+    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    aiHint: 'mountain landscape'
+  },
+  {
+    title: 'How to design a user-centric landing page',
+    date: 'December 01, 2024',
+    location: 'London',
+    image: 'https://images.unsplash.com/photo-1483728642387-6c351b40b7de?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    aiHint: 'norway landscape'
+  },
+  {
+    title: '10 best practices for modern web design',
+    date: 'November 30, 2024',
+    location: 'Paris',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760c0337?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+    aiHint: 'norway landscape'
+  },
+]
 
 export default function Home() {
   const tours = getTours();
@@ -321,6 +345,57 @@ export default function Home() {
               <CarouselNext className="static translate-y-0" />
           </div>
         </Carousel>
+      </section>
+
+      {/* Video Section */}
+      <section className="relative py-20 md:py-32 text-white">
+        <div className="absolute inset-0 bg-black/60 z-10" />
+        <Image
+          src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+          alt="Woman in a boat on a lake with dramatic cliffs"
+          layout="fill"
+          objectFit="cover"
+          className="object-cover"
+          data-ai-hint="woman cliff lake"
+        />
+        <div className="container mx-auto px-4 relative z-20 text-center">
+          <p className="text-primary font-semibold">Watch Our Story</p>
+          <h2 className="font-headline text-3xl md:text-5xl font-bold mt-2">We Provide The Best Tour Facilities</h2>
+          <div className="mt-8 flex justify-center items-center gap-6">
+            <Button size="lg">Find Out More <ArrowRight className="ml-2" /></Button>
+            <Button variant="link" className="text-white text-lg font-semibold hover:text-primary">
+              <PlayCircle className="mr-2 h-8 w-8 text-primary" />
+              Watch Video
+            </Button>
+          </div>
+        </div>
+      </section>
+      
+      {/* News & Articles Section */}
+      <section className="container mx-auto px-4">
+        <div className="text-center mb-12">
+            <p className="text-primary font-medium">News & Updates</p>
+            <h2 className="font-headline text-3xl md:text-4xl font-bold text-foreground">Our Latest News & Articles</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {articles.map((article, index) => (
+            <Card key={index} className="overflow-hidden group">
+              <div className="relative h-52">
+                <Image src={article.image} alt={article.title} layout="fill" objectFit="cover" className="transition-transform duration-500 group-hover:scale-110" data-ai-hint={article.aiHint} />
+              </div>
+              <CardContent className="p-6 space-y-3">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {article.date}</div>
+                  <div className="flex items-center gap-1.5"><MapPinIcon className="h-4 w-4" /> {article.location}</div>
+                </div>
+                <h3 className="text-xl font-headline font-semibold text-foreground h-16">{article.title}</h3>
+                <Button variant="link" asChild className="p-0 h-auto text-primary">
+                  <Link href="#">Read More <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </section>
 
     </div>
