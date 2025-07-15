@@ -75,7 +75,7 @@ export function Header() {
             <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">About Us</Link>
             <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">Destination</Link>
             <Link href="/#tours" className="font-medium text-foreground transition-colors hover:text-primary">Tour</Link>
-            <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">Pages</Link>
+            <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">Services</Link>
             <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">Blog</Link>
             <Link href="#" className="font-medium text-foreground transition-colors hover:text-primary">Contact</Link>
           </nav>
