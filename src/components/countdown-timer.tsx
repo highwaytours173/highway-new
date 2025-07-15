@@ -4,8 +4,14 @@
 import React, { useState, useEffect } from 'react';
 
 export function CountdownTimer() {
+  const [targetDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7); // Set target for 7 days in the future
+    return date;
+  });
+
   const calculateTimeLeft = () => {
-    const difference = +new Date("2025-01-01") - +new Date();
+    const difference = +targetDate - +new Date();
     let timeLeft = {};
 
     if (difference > 0) {
@@ -20,20 +26,23 @@ export function CountdownTimer() {
     return timeLeft;
   };
 
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [timeLeft, setTimeLeft] = useState({});
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Set initial time left on mount to avoid hydration mismatch
+    setTimeLeft(calculateTimeLeft());
+
+    const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
 
-    return () => clearTimeout(timer);
-  });
+    return () => clearInterval(timer);
+  }, [targetDate]);
 
   const timerComponents: JSX.Element[] = [];
 
   Object.keys(timeLeft).forEach((interval) => {
-    if (!timeLeft[interval as keyof typeof timeLeft]) {
+    if (!timeLeft[interval as keyof typeof timeLeft] && timeLeft[interval as keyof typeof timeLeft] !== 0) {
       return;
     }
 
@@ -47,7 +56,7 @@ export function CountdownTimer() {
 
   return (
     <div className="grid grid-cols-4 gap-4 mt-6">
-      {timerComponents.length ? timerComponents : <span>Time's up!</span>}
+      {timerComponents.length ? timerComponents : <span>Loading...</span>}
     </div>
   );
 }
