@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart.tsx';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
@@ -32,13 +32,6 @@ export function Header() {
           <Logo />
           <span className={`font-headline text-2xl font-bold ${isScrolled ? 'text-primary' : 'text-white'}`}>Wanderlust Hub</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className={`${isScrolled ? 'text-foreground' : 'text-white'} transition-colors hover:text-primary`}>Home</Link>
-            <Link href="#" className={`${isScrolled ? 'text-foreground' : 'text-white'} transition-colors hover:text-primary`}>Tours</Link>
-            <Link href="#" className={`${isScrolled ? 'text-foreground' : 'text-white'} transition-colors hover:text-primary`}>Destinations</Link>
-            <Link href="#" className={`${isScrolled ? 'text-foreground' : 'text-white'} transition-colors hover:text-primary`}>About</Link>
-            <Link href="#" className={`${isScrolled ? 'text-foreground' : 'text-white'} transition-colors hover:text-primary`}>Contact</Link>
-        </nav>
         <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" asChild className="relative">
                 <Link href="/cart">
@@ -50,11 +43,6 @@ export function Header() {
                 )}
                 <span className="sr-only">Shopping Cart</span>
                 </Link>
-            </Button>
-            <Button className="hidden sm:inline-flex" variant={isScrolled ? 'default' : 'secondary'}>Sign In</Button>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <User className={`h-6 w-6 ${isScrolled ? 'text-primary' : 'text-white'}`} />
-              <span className="sr-only">Menu</span>
             </Button>
         </div>
       </div>
