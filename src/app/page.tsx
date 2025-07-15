@@ -10,10 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TourCard } from '@/components/tour-card';
-import { ArrowRight, Plane, Mountain, Utensils, FerrisWheel, Sailboat, Building2 } from 'lucide-react';
+import { ArrowRight, Plane, Mountain, Utensils, FerrisWheel, Sailboat, Building2, Quote, Star } from 'lucide-react';
 import { ExclusiveTripIcon, ProfessionalGuideIcon, SafetyFirstIcon } from '@/components/icons';
 import { CountdownTimer } from '@/components/countdown-timer';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const categoryIcons = {
   "Adventure": <Mountain className="h-8 w-8 text-primary" />,
@@ -44,6 +47,37 @@ function LastMinuteOfferCard({ tour }: { tour: Tour }) {
     </Link>
   )
 }
+
+const testimonials = [
+    {
+      name: 'Brooklyn Simmons',
+      role: 'Brooklyn Simmons',
+      avatar: 'https://placehold.co/100x100.png',
+      rating: 5,
+      text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
+    },
+    {
+      name: 'Kristin Watson',
+      role: 'Web Designer',
+      avatar: 'https://placehold.co/100x100.png',
+      rating: 5,
+      text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
+    },
+    {
+      name: 'Wade Warren',
+      role: 'President Of Sales',
+      avatar: 'https://placehold.co/100x100.png',
+      rating: 5,
+      text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
+    },
+    {
+      name: 'Jane Doe',
+      role: 'Adventurer',
+      avatar: 'https://placehold.co/100x100.png',
+      rating: 5,
+      text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
+    }
+];
 
 export default function Home() {
   const tours = getTours();
@@ -240,6 +274,53 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="container mx-auto px-4">
+        <div className="text-center mb-12">
+            <p className="text-primary font-medium">Testimonial</p>
+            <h2 className="font-headline text-3xl md:text-4xl font-bold text-foreground">Our Clients Feedback</h2>
+        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {testimonials.map((testimonial, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                <div className="p-1">
+                   <Card className="p-6 relative">
+                      <CardContent className="p-0">
+                        <div className="flex mb-4">
+                          {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-5 w-5 text-amber-400 fill-amber-400" />)}
+                        </div>
+                        <p className="text-muted-foreground mb-6">{testimonial.text}</p>
+                        <div className="flex items-center gap-4">
+                          <Avatar>
+                            <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint="person portrait" />
+                            <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold text-foreground">{testimonial.name}</p>
+                            <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                          </div>
+                        </div>
+                        <Quote className="absolute bottom-6 right-6 h-12 w-12 text-primary/10" />
+                      </CardContent>
+                   </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex justify-center gap-4 mt-8">
+              <CarouselPrevious className="static translate-y-0" />
+              <CarouselNext className="static translate-y-0" />
+          </div>
+        </Carousel>
       </section>
 
     </div>
