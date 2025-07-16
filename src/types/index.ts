@@ -27,6 +27,7 @@ export type Tour = {
   pickupAndDropoff?: string;
   includes?: string[];
   excludes?: string[];
+  cancellationPolicy?: string;
 };
 
 export type CartItem = {

@@ -155,6 +155,17 @@ export default function TourDetailsPage({ params }: TourDetailsPageProps) {
             </div>
           </CardContent>
         </Card>
+
+        {tour.cancellationPolicy && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-3xl">Cancellation Policy</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">{tour.cancellationPolicy}</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Right Column: Pricing & Booking */}

@@ -154,6 +154,7 @@ const tours: Tour[] = [
       "Personal items",
       "Tipping",
     ],
+    cancellationPolicy: "For a full refund, you must cancel at least 24 hours before the experience’s start time. If you cancel less than 24 hours before the experience’s start time, the amount you paid will not be refunded. Any changes made less than 24 hours before the experience’s start time will not be accepted. Cut-off times are based on the experience’s local time."
   }
 ];
 
