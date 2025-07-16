@@ -7,7 +7,11 @@ const tours: Tour[] = [
     destination: 'Cairo',
     type: 'Cultural',
     duration: 3,
-    price: 1500,
+    priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 150, pricePerChild: 80 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 90, pricePerChild: 50 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 75, pricePerChild: 40 },
+    ],
     description: 'Explore the iconic Pyramids of Giza and the majestic Sphinx. A journey back in time to the land of Pharaohs.',
     itinerary: [
       { day: 1, activity: 'Arrival in Cairo, visit Khan el-Khalili bazaar' },
@@ -24,7 +28,11 @@ const tours: Tour[] = [
     destination: 'Luxor',
     type: 'Cultural',
     duration: 4,
-    price: 1800,
+    priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 200, pricePerChild: 100 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 120, pricePerChild: 70 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 100, pricePerChild: 60 },
+    ],
     description: 'Discover the treasures of ancient Thebes. Visit the Valley of the Kings, Karnak Temple, and Luxor Temple.',
     itinerary: [
       { day: 1, activity: 'Arrival in Luxor, visit Luxor Temple at night' },
@@ -42,7 +50,11 @@ const tours: Tour[] = [
     destination: 'Aswan',
     type: 'Relaxation',
     duration: 5,
-    price: 2500,
+    priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 300, pricePerChild: 150 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 250, pricePerChild: 125 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 220, pricePerChild: 110 },
+    ],
     description: 'Sail the majestic Nile River from Aswan to Luxor. Enjoy stunning scenery, visit ancient temples, and relax on a luxury cruise.',
     itinerary: [
       { day: 1, activity: 'Embark in Aswan, visit the High Dam and Philae Temple' },
@@ -61,7 +73,11 @@ const tours: Tour[] = [
     destination: 'Sharm El Sheikh',
     type: 'Adventure',
     duration: 7,
-    price: 2800,
+     priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 350, pricePerChild: 180 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 280, pricePerChild: 150 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 250, pricePerChild: 130 },
+    ],
     description: 'Dive into the vibrant coral reefs of the Red Sea. A world-class diving experience for beginners and experts alike.',
     itinerary: [
         { day: 1, activity: 'Arrival in Sharm El Sheikh, check into resort' },
@@ -82,7 +98,11 @@ const tours: Tour[] = [
     destination: 'Hurghada',
     type: 'Relaxation',
     duration: 6,
-    price: 2100,
+    priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 250, pricePerChild: 120 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 180, pricePerChild: 90 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 160, pricePerChild: 80 },
+    ],
     description: "Relax on the sunny beaches of Hurghada. Enjoy watersports, fresh seafood, and the vibrant resort atmosphere.",
     itinerary: [
       { day: 1, activity: 'Arrival in Hurghada' },
@@ -102,7 +122,11 @@ const tours: Tour[] = [
     destination: 'Alexandria',
     type: 'Cultural',
     duration: 3,
-    price: 1300,
+    priceTiers: [
+        { minPeople: 1, maxPeople: 1, pricePerAdult: 180, pricePerChild: 90 },
+        { minPeople: 2, maxPeople: 5, pricePerAdult: 110, pricePerChild: 60 },
+        { minPeople: 6, maxPeople: null, pricePerAdult: 95, pricePerChild: 50 },
+    ],
     description: 'Explore the historic city of Alexandria. Visit the modern library, Roman amphitheater, and enjoy the Mediterranean sea breeze.',
     itinerary: [
         { day: 1, activity: 'Arrival in Alexandria, check-in and walk along the Corniche' },
@@ -110,13 +134,12 @@ const tours: Tour[] = [
         { day: 3, activity: 'Explore Montaza Palace Gardens and departure' },
     ],
     availability: false,
-    image: 'https://images.unsplash.com/photo-1623674620242-613d6a74391e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBcHJpbCUyMDIwMjQlMjBBbGV4YW5kcmlhJTIwRWd5cHR8ZW58MHx8fHwxNzUyODgxMzcyfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://images.unsplash.com/photo-1623674620242-613d6a7e6c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBcHJpbCUyMDIwMjQlMjBBbGV4YW5kcmlhJTIwRWd5cHR8ZW58MHx8fHwxNzUyODgxMzcyfDA&ixlib=rb-4.1.0&q=80&w=1080',
     rating: 4.6,
   }
 ];
 
-export const getTours = (): Tour[] => tours;
+// @ts-ignore
+export const getTours = (): Tour[] => tours.filter(tour => tour.priceTiers);
 
-export const getTourById = (id: string): Tour | undefined => tours.find(tour => tour.id === id);
-
-    
+export const getTourById = (id: string): Tour | undefined => getTours().find(tour => tour.id === id);

@@ -11,7 +11,8 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour }: TourCardProps) {
-  const pricePerDay = tour.price / tour.duration;
+  // Display the starting price from the first tier (for a single person)
+  const startingPrice = tour.priceTiers[0]?.pricePerAdult;
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border rounded-lg">
@@ -57,8 +58,9 @@ export function TourCard({ tour }: TourCardProps) {
         
         <div className="border-t pt-3 mt-auto flex justify-between items-center">
             <p className="text-sm">
-                <span className="font-bold text-lg text-primary">${pricePerDay.toFixed(2)}</span>
-                <span className="text-muted-foreground">/Per Day</span>
+                <span className="text-muted-foreground">From </span>
+                <span className="font-bold text-lg text-primary">${startingPrice.toFixed(2)}</span>
+                <span className="text-muted-foreground">/person</span>
             </p>
             <Button variant="ghost" asChild className="text-primary hover:text-primary">
                 <Link href={`/tours/${tour.id}`}>

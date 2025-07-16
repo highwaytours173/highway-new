@@ -1,39 +1,18 @@
 
 'use client';
 
+import { useState, useMemo } from 'react';
 import { getTourById } from '@/lib/tours';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { format } from "date-fns";
 
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, MapPin, Star, Calendar as CalendarIcon, Users, Briefcase, Tag } from 'lucide-react';
-
-const bookingFormSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters."),
-  nationality: z.string().min(2, "Nationality is required."),
-  phone: z.string().min(10, "A valid phone number is required."),
-  email: z.string().email("Invalid email address."),
-  persons: z.coerce.number().min(1, "At least one person is required."),
-  date: z.date({
-    required_error: "A date for the tour is required.",
-  }),
-  packageType: z.enum(["car_only", "car_guide", "car_guide_tickets"]),
-});
+import { Clock, MapPin, Star, Tag, Users, Minus, Plus, ShoppingCart } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 type TourDetailsPageProps = {
   params: {
@@ -42,45 +21,43 @@ type TourDetailsPageProps = {
 };
 
 export default function TourDetailsPage({ params }: TourDetailsPageProps) {
-  const router = useRouter();
   const { toast } = useToast();
   const tour = getTourById(params.id);
 
-  const form = useForm<z.infer<typeof bookingFormSchema>>({
-    resolver: zodResolver(bookingFormSchema),
-    defaultValues: {
-      firstName: "",
-      nationality: "",
-      phone: "",
-      email: "",
-      persons: 1,
-      packageType: "car_guide_tickets",
-    },
-  });
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+
+  const totalPeople = useMemo(() => adults + children, [adults, children]);
+
+  const currentPriceTier = useMemo(() => {
+    if (!tour) return null;
+    return tour.priceTiers.find(tier => 
+      totalPeople >= tier.minPeople && (tier.maxPeople === null || totalPeople <= tier.maxPeople)
+    ) || tour.priceTiers[tour.priceTiers.length - 1];
+  }, [tour, totalPeople]);
+
+  const totalPrice = useMemo(() => {
+    if (!currentPriceTier) return 0;
+    const adultPrice = adults * currentPriceTier.pricePerAdult;
+    const childPrice = children * currentPriceTier.pricePerChild;
+    return adultPrice + childPrice;
+  }, [adults, children, currentPriceTier]);
 
   if (!tour) {
     notFound();
   }
 
-  function onSubmit(values: z.infer<typeof bookingFormSchema>) {
-    console.log("Booking Inquiry:", {
-      tour: tour?.name,
-      tourId: tour?.id,
-      ...values,
-    });
-    
+  const handleBooking = () => {
+    // In a real app, this would add the detailed booking to the cart
+    // or proceed to a checkout page.
     toast({
-      title: "Inquiry Sent!",
-      description: "Thank you for your interest. We will contact you shortly to confirm your booking.",
+      title: "Booking Added to Cart (Concept)",
+      description: `${tour.name} for ${adults} adults and ${children} children. Total: $${totalPrice.toLocaleString()}`,
     });
-
-    // Optionally redirect or clear form
-    // form.reset();
-    // router.push('/');
   }
 
   return (
-    <div className="grid lg:grid-cols-5 gap-8">
+    <div className="grid lg:grid-cols-5 gap-12">
       {/* Left Column: Tour Info */}
       <div className="lg:col-span-3 space-y-8">
         <Card className="overflow-hidden">
@@ -133,124 +110,84 @@ export default function TourDetailsPage({ params }: TourDetailsPageProps) {
         </Card>
       </div>
 
-      {/* Right Column: Booking Form */}
+      {/* Right Column: Pricing & Booking */}
       <div className="lg:col-span-2">
-        <Card className="sticky top-24">
-          <CardHeader>
-            <CardTitle className="font-headline text-3xl">Book This Tour</CardTitle>
-          </CardHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="persons" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Persons</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="packageType" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Package</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a package" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="car_only">Car Only</SelectItem>
-                          <SelectItem value="car_guide">Car & Guide</SelectItem>
-                          <SelectItem value="car_guide_tickets">Car, Guide & Tickets</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+        <div className="sticky top-24 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-3xl">Pricing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 font-semibold">Group Size</th>
+                    <th className="text-center py-2 font-semibold">Adult</th>
+                    <th className="text-center py-2 font-semibold">Child</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tour.priceTiers.map((tier, index) => (
+                    <tr key={index} className={`border-b ${tier.minPeople === currentPriceTier?.minPeople ? 'bg-primary/10' : ''}`}>
+                      <td className="py-2 font-medium">{tier.minPeople}{tier.maxPeople ? ` - ${tier.maxPeople}` : '+'} persons</td>
+                      <td className="py-2 text-center">${tier.pricePerAdult}</td>
+                      <td className="py-2 text-center">${tier.pricePerChild}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground mt-2">*Infants travel for free.</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-3xl">Book Your Spot</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="adults" className="font-semibold">Adults</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Button variant="outline" size="icon" onClick={() => setAdults(v => Math.max(1, v - 1))}><Minus className="h-4 w-4" /></Button>
+                    <Input id="adults" type="text" readOnly value={adults} className="w-12 text-center" />
+                    <Button variant="outline" size="icon" onClick={() => setAdults(v => v + 1)}><Plus className="h-4 w-4" /></Button>
+                  </div>
                 </div>
-                
-                <FormField control={form.control} name="date" render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Tour Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className="pl-3 text-left font-normal"
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField control={form.control} name="firstName" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <FormField control={form.control} name="nationality" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nationality</FormLabel>
-                    <FormControl><Input placeholder="e.g. American" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                 <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl><Input placeholder="+1 234 567 890" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl><Input placeholder="you@example.com" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-              </CardContent>
-              <CardFooter>
-                 <Button type="submit" className="w-full" size="lg">Send Inquiry</Button>
-              </CardFooter>
-            </form>
-          </Form>
-        </Card>
+                <div>
+                  <Label htmlFor="children" className="font-semibold">Children</Label>
+                   <div className="flex items-center gap-2 mt-1">
+                    <Button variant="outline" size="icon" onClick={() => setChildren(v => Math.max(0, v - 1))}><Minus className="h-4 w-4" /></Button>
+                    <Input id="children" type="text" readOnly value={children} className="w-12 text-center" />
+                    <Button variant="outline" size="icon" onClick={() => setChildren(v => v + 1)}><Plus className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Adults Price</span>
+                  <span>{adults} x ${currentPriceTier?.pricePerAdult.toLocaleString()}</span>
+                </div>
+                 <div className="flex justify-between">
+                  <span className="text-muted-foreground">Children Price</span>
+                  <span>{children} x ${currentPriceTier?.pricePerChild.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between font-bold text-xl text-primary pt-2">
+                  <span>Total Price</span>
+                  <span>${totalPrice.toLocaleString()}</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+                 <Button onClick={handleBooking} className="w-full" size="lg">
+                    <ShoppingCart className="mr-2 h-5 w-5"/>
+                    Add to Cart
+                </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
-
-    
