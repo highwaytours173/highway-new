@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { useForm, useFieldArray } from "react-hook-form";
@@ -14,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { ImageUploader } from "@/components/admin/image-uploader";
 
 const priceTierSchema = z.object({
   minPeople: z.coerce.number().min(1, "Min people is required"),
@@ -33,7 +35,7 @@ const formSchema = z.object({
   type: z.enum(['Adventure', 'Relaxation', 'Cultural', 'Culinary', 'Family', 'Honeymoon']),
   duration: z.coerce.number().min(1, "Duration must be at least 1 day."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  images: z.array(z.object({ value: z.string().url("Please enter a valid image URL.") })).min(1, "At least one image is required."),
+  images: z.array(z.instanceof(File)).min(1, "At least one image is required."),
   availability: z.boolean().default(true),
   rating: z.coerce.number().min(1).max(5),
   priceTiers: z.array(priceTierSchema).min(1, "At least one price tier is required."),
@@ -58,7 +60,7 @@ export default function NewTourPage() {
       destination: "",
       duration: 1,
       description: "",
-      images: [{ value: "" }],
+      images: [],
       availability: true,
       rating: 4.5,
       priceTiers: [{ minPeople: 1, maxPeople: 5, pricePerAdult: 100, pricePerChild: 50 }],
@@ -84,11 +86,6 @@ export default function NewTourPage() {
     name: "itinerary",
   });
   
-  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
-    control: form.control,
-    name: "images",
-  });
-
   const { fields: highlightFields, append: appendHighlight, remove: removeHighlight } = useFieldArray({
     control: form.control,
     name: "highlights",
@@ -107,7 +104,7 @@ export default function NewTourPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // In a real app, you would send this data to your backend/database.
     console.log("New Tour Data:", values);
-    alert("New tour created! Check the console for the data.");
+    alert("New tour created! Check the console for the data. Note: image upload is frontend only for now.");
   }
 
   const renderFieldArray = (
@@ -204,44 +201,24 @@ export default function NewTourPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Tour Images</CardTitle>
-                            <CardDescription>Add URLs for the tour images. The first image will be the main thumbnail.</CardDescription>
+                            <CardDescription>Upload images for the tour. Drag and drop or click to browse. The first image will be the main thumbnail.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            {imageFields.map((field, index) => (
-                                <FormField
-                                    key={field.id}
-                                    control={form.control}
-                                    name={`images.${index}.value`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Image URL {index + 1}</FormLabel>
-                                            <div className="flex items-center gap-2">
-                                                <Input {...field} placeholder="https://images.unsplash.com/..."/>
-                                                {imageFields.length > 1 && (
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="icon"
-                                                        onClick={() => removeImage(index)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            ))}
-                             <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => appendImage({ value: "" })}
-                            >
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Image
-                            </Button>
+                        <CardContent>
+                            <FormField
+                                control={form.control}
+                                name="images"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <ImageUploader 
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </CardContent>
                     </Card>
 
