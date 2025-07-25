@@ -22,6 +22,11 @@ const priceTierSchema = z.object({
   pricePerChild: z.coerce.number().min(0, "Price must be positive"),
 });
 
+const itineraryItemSchema = z.object({
+  day: z.coerce.number().min(1),
+  activity: z.string().min(1, "Activity is required"),
+});
+
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   destination: z.string().min(2, "Destination is required."),
@@ -32,6 +37,17 @@ const formSchema = z.object({
   availability: z.boolean().default(true),
   rating: z.coerce.number().min(1).max(5),
   priceTiers: z.array(priceTierSchema).min(1, "At least one price tier is required."),
+  
+  // New detailed fields
+  durationText: z.string().optional(),
+  tourType: z.string().optional(),
+  availabilityDescription: z.string().optional(),
+  pickupAndDropoff: z.string().optional(),
+  cancellationPolicy: z.string().optional(),
+  itinerary: z.array(itineraryItemSchema).optional(),
+  highlights: z.array(z.object({ value: z.string() })).optional(),
+  includes: z.array(z.object({ value: z.string() })).optional(),
+  excludes: z.array(z.object({ value: z.string() })).optional(),
 });
 
 export default function NewTourPage() {
@@ -46,12 +62,41 @@ export default function NewTourPage() {
       availability: true,
       rating: 4.5,
       priceTiers: [{ minPeople: 1, maxPeople: 5, pricePerAdult: 100, pricePerChild: 50 }],
+      itinerary: [{ day: 1, activity: "" }],
+      highlights: [{ value: "" }],
+      includes: [{ value: "" }],
+      excludes: [{ value: "" }],
+      durationText: "",
+      tourType: "",
+      availabilityDescription: "",
+      pickupAndDropoff: "",
+      cancellationPolicy: "",
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: priceTierFields, append: appendPriceTier, remove: removePriceTier } = useFieldArray({
     control: form.control,
     name: "priceTiers",
+  });
+
+  const { fields: itineraryFields, append: appendItinerary, remove: removeItinerary } = useFieldArray({
+    control: form.control,
+    name: "itinerary",
+  });
+
+  const { fields: highlightFields, append: appendHighlight, remove: removeHighlight } = useFieldArray({
+    control: form.control,
+    name: "highlights",
+  });
+
+   const { fields: includesFields, append: appendIncludes, remove: removeIncludes } = useFieldArray({
+    control: form.control,
+    name: "includes",
+  });
+
+  const { fields: excludesFields, append: appendExcludes, remove: removeExcludes } = useFieldArray({
+    control: form.control,
+    name: "excludes",
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -59,6 +104,56 @@ export default function NewTourPage() {
     console.log("New Tour Data:", values);
     alert("New tour created! Check the console for the data.");
   }
+
+  const renderFieldArray = (
+    title: string,
+    fields: Record<"id", string>[],
+    remove: (index: number) => void,
+    append: (value: {value: string}) => void,
+    fieldName: "highlights" | "includes" | "excludes"
+  ) => (
+    <Card>
+        <CardHeader>
+            <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            {fields.map((field, index) => (
+                 <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`${fieldName}.${index}.value`}
+                    render={({ field }) => (
+                        <FormItem>
+                            <div className="flex items-center gap-2">
+                                <Input {...field} placeholder={`Enter a ${fieldName.slice(0,-1)}...`}/>
+                                {fields.length > 1 && (
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => remove(index)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            ))}
+             <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ value: "" })}
+            >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add {fieldName.slice(0,-1)}
+            </Button>
+        </CardContent>
+    </Card>
+  )
 
   return (
     <div className="space-y-6">
@@ -103,11 +198,60 @@ export default function NewTourPage() {
 
                     <Card>
                         <CardHeader>
+                            <CardTitle>Itinerary</CardTitle>
+                            <CardDescription>Outline the day-by-day plan for the tour.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {itineraryFields.map((field, index) => (
+                                <div key={field.id} className="p-4 border rounded-md relative space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <FormLabel className="font-bold">Day {index + 1}</FormLabel>
+                                      {itineraryFields.length > 1 && (
+                                          <Button
+                                              type="button"
+                                              variant="destructive"
+                                              size="icon"
+                                              className="h-7 w-7"
+                                              onClick={() => removeItinerary(index)}
+                                          >
+                                              <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                      )}
+                                    </div>
+                                    <FormField control={form.control} name={`itinerary.${index}.activity`} render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl><Textarea placeholder="Describe the activities for this day..." {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            ))}
+                             <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => appendItinerary({ day: itineraryFields.length + 1, activity: '' })}
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Add Itinerary Day
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    {renderFieldArray("Highlights", highlightFields, removeHighlight, appendHighlight, "highlights")}
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {renderFieldArray("What's Included", includesFields, removeIncludes, appendIncludes, "includes")}
+                        {renderFieldArray("What's Excluded", excludesFields, removeExcludes, appendExcludes, "excludes")}
+                    </div>
+
+                    <Card>
+                        <CardHeader>
                             <CardTitle>Pricing Tiers</CardTitle>
                             <CardDescription>Define different prices based on group size.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {fields.map((field, index) => (
+                            {priceTierFields.map((field, index) => (
                                 <div key={field.id} className="grid grid-cols-4 gap-4 items-end p-4 border rounded-md relative">
                                     <FormField control={form.control} name={`priceTiers.${index}.minPeople`} render={({ field }) => (
                                         <FormItem>
@@ -119,7 +263,7 @@ export default function NewTourPage() {
                                     <FormField control={form.control} name={`priceTiers.${index}.maxPeople`} render={({ field }) => (
                                          <FormItem>
                                             <FormLabel>Max People</FormLabel>
-                                            <FormControl><Input type="number" placeholder="Leave empty for..." {...field} value={field.value ?? ""} /></FormControl>
+                                            <FormControl><Input type="number" placeholder="e.g., 10" {...field} value={field.value ?? ""} /></FormControl>
                                              <FormDescription className="text-xs">Leave empty for no max.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -138,13 +282,13 @@ export default function NewTourPage() {
                                             <FormMessage />
                                         </FormItem>
                                     )} />
-                                    {fields.length > 1 && (
+                                    {priceTierFields.length > 1 && (
                                         <Button
                                             type="button"
                                             variant="destructive"
                                             size="icon"
                                             className="absolute -top-3 -right-3 h-7 w-7"
-                                            onClick={() => remove(index)}
+                                            onClick={() => removePriceTier(index)}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -155,7 +299,7 @@ export default function NewTourPage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => append({ minPeople: 6, maxPeople: null, pricePerAdult: 80, pricePerChild: 40 })}
+                                onClick={() => appendPriceTier({ minPeople: 6, maxPeople: null, pricePerAdult: 80, pricePerChild: 40 })}
                             >
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Price Tier
@@ -179,11 +323,11 @@ export default function NewTourPage() {
                             )} />
                             <FormField control={form.control} name="type" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Tour Type</FormLabel>
+                                    <FormLabel>Tour Category</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                        <SelectValue placeholder="Select a tour type" />
+                                        <SelectValue placeholder="Select a tour category" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -198,6 +342,14 @@ export default function NewTourPage() {
                                     <FormMessage />
                                 </FormItem>
                             )} />
+                             <FormField control={form.control} name="tourType" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tour Type</FormLabel>
+                                    <FormControl><Input placeholder="e.g., Private Guided Tour" {...field} /></FormControl>
+                                    <FormDescription className="text-xs">A more specific type, e.g., 'Luxury Nile Cruise'.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
                             <FormField control={form.control} name="duration" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Duration (in days)</FormLabel>
@@ -205,10 +357,25 @@ export default function NewTourPage() {
                                     <FormMessage />
                                 </FormItem>
                             )} />
+                             <FormField control={form.control} name="durationText" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Duration Text</FormLabel>
+                                    <FormControl><Input placeholder="e.g., 3 Days / 2 Nights" {...field} /></FormControl>
+                                    <FormDescription className="text-xs">Overrides the number above if provided.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
                             <FormField control={form.control} name="rating" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Rating (1-5)</FormLabel>
                                     <FormControl><Input type="number" step="0.1" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField control={form.control} name="pickupAndDropoff" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Pickup & Drop-off</FormLabel>
+                                    <FormControl><Input placeholder="e.g., Included from any hotel in Cairo" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -228,6 +395,20 @@ export default function NewTourPage() {
                                 <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 </FormItem>
                             )} />
+                            <FormField control={form.control} name="availabilityDescription" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Availability Description</FormLabel>
+                                    <FormControl><Input placeholder="e.g., Available daily. Book in advance." {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField control={form.control} name="cancellationPolicy" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Cancellation Policy</FormLabel>
+                                    <FormControl><Textarea placeholder="Describe the cancellation terms..." {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
                         </CardContent>
                     </Card>
                     <Card>
@@ -245,3 +426,6 @@ export default function NewTourPage() {
     </div>
   );
 }
+
+
+    
