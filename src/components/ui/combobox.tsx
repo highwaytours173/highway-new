@@ -43,14 +43,14 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
-  const handleSelect = (currentValue: string) => {
-    const newSelected = selected.includes(currentValue)
-      ? selected.filter((item) => item !== currentValue)
-      : [...selected, currentValue]
+  const handleSelect = (value: string) => {
+    const newSelected = selected.includes(value)
+      ? selected.filter((item) => item !== value)
+      : [...selected, value]
     onChange(newSelected)
   }
 
-  const handleRemove = (e: React.MouseEvent<HTMLButtonElement>, valueToRemove: string) => {
+  const handleRemove = (e: React.MouseEvent, valueToRemove: string) => {
     e.preventDefault();
     e.stopPropagation();
     onChange(selected.filter(item => item !== valueToRemove));
@@ -84,7 +84,7 @@ export function Combobox({
                     </Badge>
                 ))
               ) : (
-                <span className="text-muted-foreground">{placeholder}</span>
+                <span className="text-muted-foreground font-normal">{placeholder}</span>
               )}
             </div>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -100,9 +100,7 @@ export function Combobox({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  onSelect={(currentValue) => {
-                    handleSelect(currentValue);
-                  }}
+                  onSelect={handleSelect}
                 >
                   <Check
                     className={cn(
