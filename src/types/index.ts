@@ -38,4 +38,5 @@ export type CartItem = {
   quantity: number; // This might represent adults now, or be refactored
   adults?: number;
   children?: number;
+  date?: Date;
 };

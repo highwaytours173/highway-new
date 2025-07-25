@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -142,6 +143,11 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-semibold">{item.tour.name}</p>
                       <p className="text-sm text-muted-foreground">{item.adults} Adults, {item.children} Children</p>
+                       {item.date && (
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(item.date), "PPP")}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <p className="font-semibold">${itemTotal.toLocaleString()}</p>

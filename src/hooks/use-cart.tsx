@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast"
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (tour: Tour, adults: number, children: number) => void;
+  addToCart: (tour: Tour, adults: number, children: number, date?: Date) => void;
   removeFromCart: (tourId: string) => void;
   clearCart: () => void;
   getCartTotal: () => number;
@@ -37,7 +37,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartItems]);
 
-  const addToCart = useCallback((tour: Tour, adults: number, children: number) => {
+  const addToCart = useCallback((tour: Tour, adults: number, children: number, date?: Date) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.tour.id === tour.id);
       if (existingItem) {
@@ -45,7 +45,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return prevItems;
       }
       toast({ title: "Added to Cart", description: `${tour.name} has been added to your cart.` });
-      return [...prevItems, { tour, quantity: adults + children, adults, children }];
+      return [...prevItems, { tour, quantity: adults + children, adults, children, date }];
     });
   }, [toast]);
 

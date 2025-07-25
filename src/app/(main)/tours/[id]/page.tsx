@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Clock, MapPin, Star, Tag, Users, Minus, Plus, ShoppingCart, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, MapPin, Star, Tag, Users, Minus, Plus, ShoppingCart, CheckCircle, XCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
 
 export default function TourDetailsPage() {
   const params = useParams();
@@ -23,6 +24,7 @@ export default function TourDetailsPage() {
 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const totalPeople = useMemo(() => adults + children, [adults, children]);
 
@@ -45,8 +47,8 @@ export default function TourDetailsPage() {
   }
 
   const handleBooking = () => {
-    if (tour) {
-      addToCart(tour, adults, children);
+    if (tour && date) {
+      addToCart(tour, adults, children, date);
     }
   }
 
@@ -225,6 +227,16 @@ export default function TourDetailsPage() {
               <CardTitle className="font-headline text-3xl">Book Your Spot</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div>
+                <Label className="font-semibold mb-2 block">Select Date</Label>
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="rounded-md border"
+                  disabled={(d) => d < new Date(new Date().setDate(new Date().getDate() - 1))}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="adults" className="font-semibold">Adults</Label>
@@ -260,9 +272,9 @@ export default function TourDetailsPage() {
               </div>
             </CardContent>
             <CardFooter>
-                 <Button onClick={handleBooking} className="w-full" size="lg">
+                 <Button onClick={handleBooking} className="w-full" size="lg" disabled={!date}>
                     <ShoppingCart className="mr-2 h-5 w-5"/>
-                    Add to Cart
+                    {!date ? 'Please select a date' : 'Add to Cart'}
                 </Button>
             </CardFooter>
           </Card>
