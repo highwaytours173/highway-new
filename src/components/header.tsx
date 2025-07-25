@@ -60,7 +60,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const itemCount = isClient ? cartItems.reduce((sum, item) => sum + (item.adults ?? 0) + (item.children ?? 0), 0) : 0;
+  const itemCount = isClient ? cartItems.length : 0;
   const wishlistItemCount = isClient ? wishlistItems.length : 0;
   
   const headerClasses = isScrolled 
