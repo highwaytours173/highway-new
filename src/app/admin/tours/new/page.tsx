@@ -29,10 +29,16 @@ const itineraryItemSchema = z.object({
   activity: z.string().min(1, "Activity is required"),
 });
 
+const destinations = ["Cairo", "Luxor", "Aswan", "Sharm El Sheikh", "Hurghada", "Alexandria"];
+const tourCategories = ['Adventure', 'Relaxation', 'Cultural', 'Culinary', 'Family', 'Honeymoon', 'Package', 'Daily'];
+
+
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  destination: z.string().min(2, "Destination is required."),
-  type: z.enum(['Adventure', 'Relaxation', 'Cultural', 'Culinary', 'Family', 'Honeymoon']),
+  destination: z.enum(destinations as [string, ...string[]], {
+    errorMap: () => ({ message: "Please select a destination." }),
+  }),
+  type: z.enum(tourCategories as [string, ...string[]]),
   duration: z.coerce.number().min(1, "Duration must be at least 1 day."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   images: z.array(z.instanceof(File)).min(1, "At least one image is required."),
@@ -57,7 +63,7 @@ export default function NewTourPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      destination: "",
+      destination: undefined,
       duration: 1,
       description: "",
       images: [],
@@ -343,7 +349,18 @@ export default function NewTourPage() {
                              <FormField control={form.control} name="destination" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Destination</FormLabel>
-                                    <FormControl><Input placeholder="e.g., Cairo" {...field} /></FormControl>
+                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder="Select a destination" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {destinations.map(destination => (
+                                                <SelectItem key={destination} value={destination}>{destination}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -357,12 +374,9 @@ export default function NewTourPage() {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="Adventure">Adventure</SelectItem>
-                                        <SelectItem value="Relaxation">Relaxation</SelectItem>
-                                        <SelectItem value="Cultural">Cultural</SelectItem>
-                                        <SelectItem value="Culinary">Culinary</SelectItem>
-                                        <SelectItem value="Family">Family</SelectItem>
-                                        <SelectItem value="Honeymoon">Honeymoon</SelectItem>
+                                        {tourCategories.map(category => (
+                                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                     </Select>
                                     <FormMessage />
