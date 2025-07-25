@@ -15,7 +15,7 @@ export type Tour = {
   description: string;
   itinerary: { day: number; activity: string }[];
   availability: boolean;
-  image: string;
+  images: string[];
   rating: number;
   priceTiers: PriceTier[];
   price?: never; // Ensure old price field is not used

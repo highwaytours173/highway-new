@@ -33,7 +33,7 @@ const formSchema = z.object({
   type: z.enum(['Adventure', 'Relaxation', 'Cultural', 'Culinary', 'Family', 'Honeymoon']),
   duration: z.coerce.number().min(1, "Duration must be at least 1 day."),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  image: z.string().url("Please enter a valid image URL."),
+  images: z.array(z.object({ value: z.string().url("Please enter a valid image URL.") })).min(1, "At least one image is required."),
   availability: z.boolean().default(true),
   rating: z.coerce.number().min(1).max(5),
   priceTiers: z.array(priceTierSchema).min(1, "At least one price tier is required."),
@@ -58,7 +58,7 @@ export default function NewTourPage() {
       destination: "",
       duration: 1,
       description: "",
-      image: "",
+      images: [{ value: "" }],
       availability: true,
       rating: 4.5,
       priceTiers: [{ minPeople: 1, maxPeople: 5, pricePerAdult: 100, pricePerChild: 50 }],
@@ -82,6 +82,11 @@ export default function NewTourPage() {
   const { fields: itineraryFields, append: appendItinerary, remove: removeItinerary } = useFieldArray({
     control: form.control,
     name: "itinerary",
+  });
+  
+  const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
+    control: form.control,
+    name: "images",
   });
 
   const { fields: highlightFields, append: appendHighlight, remove: removeHighlight } = useFieldArray({
@@ -193,6 +198,50 @@ export default function NewTourPage() {
                                     <FormMessage />
                                 </FormItem>
                             )} />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tour Images</CardTitle>
+                            <CardDescription>Add URLs for the tour images. The first image will be the main thumbnail.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {imageFields.map((field, index) => (
+                                <FormField
+                                    key={field.id}
+                                    control={form.control}
+                                    name={`images.${index}.value`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Image URL {index + 1}</FormLabel>
+                                            <div className="flex items-center gap-2">
+                                                <Input {...field} placeholder="https://images.unsplash.com/..."/>
+                                                {imageFields.length > 1 && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        onClick={() => removeImage(index)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            ))}
+                             <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => appendImage({ value: "" })}
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Add Image
+                            </Button>
                         </CardContent>
                     </Card>
 
@@ -379,13 +428,7 @@ export default function NewTourPage() {
                                     <FormMessage />
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="image" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Image URL</FormLabel>
-                                    <FormControl><Input placeholder="https://images.unsplash.com/..." {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
+                            
                             <FormField control={form.control} name="availability" render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                                 <div className="space-y-0.5">
@@ -426,6 +469,3 @@ export default function NewTourPage() {
     </div>
   );
 }
-
-
-    

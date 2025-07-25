@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Tour } from '@/types';
@@ -33,7 +34,7 @@ export function TourCard({ tour }: TourCardProps) {
       <div className="relative h-56 w-full overflow-hidden">
         <Link href={`/tours/${tour.id}`}>
           <Image
-            src={tour.image}
+            src={tour.images[0]}
             alt={tour.name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"

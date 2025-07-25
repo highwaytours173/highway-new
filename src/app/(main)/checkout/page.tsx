@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -137,7 +138,7 @@ export default function CheckoutPage() {
               return (
                 <div key={item.tour.id} className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <Image src={item.tour.image} alt={item.tour.name} width={64} height={64} className="rounded-md object-cover" />
+                    <Image src={item.tour.images[0]} alt={item.tour.name} width={64} height={64} className="rounded-md object-cover" />
                     <div>
                       <p className="font-semibold">{item.tour.name}</p>
                       <p className="text-sm text-muted-foreground">{item.adults} Adults, {item.children} Children</p>

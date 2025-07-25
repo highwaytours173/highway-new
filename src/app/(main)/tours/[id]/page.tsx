@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Clock, MapPin, Star, Tag, Users, Minus, Plus, ShoppingCart, CheckCircle, XCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -53,16 +54,26 @@ export default function TourDetailsPage() {
       {/* Left Column: Tour Info */}
       <div className="lg:col-span-3 space-y-8">
         <Card className="overflow-hidden">
-           <div className="relative h-96 w-full">
-            <Image
-              src={tour.image}
-              alt={tour.name}
-              fill
-              className="object-cover"
-              data-ai-hint={`${tour.destination} ${tour.type}`}
-              priority
-            />
-          </div>
+           <Carousel className="w-full">
+            <CarouselContent>
+              {tour.images.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div className="relative h-96 w-full">
+                    <Image
+                      src={image}
+                      alt={`${tour.name} - image ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={`${tour.destination} ${tour.type}`}
+                      priority={index === 0}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-4" />
+            <CarouselNext className="absolute right-4" />
+          </Carousel>
           <CardHeader>
             <CardTitle className="font-headline text-4xl text-primary">{tour.name}</CardTitle>
           </CardHeader>

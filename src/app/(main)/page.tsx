@@ -32,7 +32,7 @@ function LastMinuteOfferCard({ tour }: { tour: Tour }) {
   return (
     <Link href={`/tours/${tour.id}`} className="block group relative rounded-lg overflow-hidden shadow-lg text-white">
       <Image 
-        src={tour.image}
+        src={tour.images[0]}
         alt={tour.name}
         width={300}
         height={400}
@@ -43,7 +43,7 @@ function LastMinuteOfferCard({ tour }: { tour: Tour }) {
       <div className="absolute top-2 left-2 bg-primary/80 text-primary-foreground px-2 py-1 text-xs font-bold rounded-md">-50% OFF</div>
       <div className="absolute bottom-0 left-0 p-4">
         <h3 className="font-bold text-lg">{tour.destination}</h3>
-        <p className="text-sm">${tour.price}</p>
+        <p className="text-sm">${tour.priceTiers[0].pricePerAdult}</p>
       </div>
     </Link>
   )
@@ -437,7 +437,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-
-    

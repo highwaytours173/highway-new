@@ -20,7 +20,11 @@ const tours: Tour[] = [
       { day: 3, activity: 'Visit the Egyptian Museum to see the treasures of Tutankhamun, then departure.' },
     ],
     availability: true,
-    image: 'https://images.unsplash.com/photo-1572252433829-d6a3c659d832?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxFeWdpdCUyMHRyYXZlbHxlbnwwfHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+      'https://images.unsplash.com/photo-1572252433829-d6a3c659d832?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxFeWdpdCUyMHRyYXZlbHxlbnwwfHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+      'https://images.unsplash.com/photo-1567157577867-05ccb1388e66?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxFeWdpdCUyMHRyYXZlbHxlbnwwfHx8fDE3NTI4ODEzNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      'https://images.unsplash.com/photo-1552596455-1f6c44244246?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxFeWdpdCUyMHRyYXZlbHxlbnwwfHx8fDE3NTI4ODEzNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080'
+    ],
     rating: 4.9,
     durationText: "3 Days / 2 Nights",
     tourType: "Private Guided Tour",
@@ -67,7 +71,11 @@ const tours: Tour[] = [
       { day: 4, activity: 'Optional hot air balloon ride over the West Bank at sunrise, followed by departure.' },
     ],
     availability: true,
-    image: 'https://images.unsplash.com/photo-1576487248805-cf4d8e504829?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxMdXhvciUyMFryb3NzfGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+        'https://images.unsplash.com/photo-1576487248805-cf4d8e504829?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxMdXhvciUyMFryb3NzfGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://placehold.co/800x600.png',
+        'https://placehold.co/800x600.png',
+    ],
     rating: 4.8,
     durationText: "4 Days / 3 Nights",
     tourType: "Historical & Cultural Tour",
@@ -114,7 +122,11 @@ const tours: Tour[] = [
       { day: 5, activity: 'Disembark after breakfast. Optional tour to the West Bank.' },
     ],
     availability: true,
-    image: 'https://images.unsplash.com/photo-1601639773191-23d537ddc1e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBc3dhbiUyMEVneXB0fGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+        'https://images.unsplash.com/photo-1601639773191-23d537ddc1e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBc3dhbiUyMEVneXB0fGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://placehold.co/800x600.png',
+        'https://placehold.co/800x600.png'
+    ],
     rating: 4.9,
     durationText: "5 Days / 4 Nights",
     tourType: "Luxury Nile Cruise",
@@ -162,7 +174,11 @@ const tours: Tour[] = [
         { day: 7, activity: 'Departure from Sharm El Sheikh.' },
     ],
     availability: true,
-    image: 'https://images.unsplash.com/photo-1607595304128-2d5b6a7e6c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxTaGFybSUyMEVsJTIwU2hlaWtoJTIwRGl2aW5nfGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+        'https://images.unsplash.com/photo-1607595304128-2d5b6a7e6c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxTaGFybSUyMEVsJTIwU2hlaWtoJTIwRGl2aW5nfGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://placehold.co/800x600.png',
+        'https://placehold.co/800x600.png'
+    ],
     rating: 5.0,
     durationText: "7 Days / 6 Nights",
     tourType: "Diving & Watersports",
@@ -210,7 +226,11 @@ const tours: Tour[] = [
       { day: 6, activity: 'Departure from Hurghada.' },
     ],
     availability: true,
-    image: 'https://images.unsplash.com/photo-1616262495333-33633842c65a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxIdXJnaGFkYSUyMEJlYWNofGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+        'https://images.unsplash.com/photo-1616262495333-33633842c65a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxIdXJnaGFkYSUyMEJlYWNofGVufDB8fHx8MTc1Mjg4MTM3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://placehold.co/800x600.png',
+        'https://placehold.co/800x600.png'
+    ],
     rating: 4.7,
     durationText: "6 Days / 5 Nights",
     tourType: "Beach & Leisure",
@@ -251,7 +271,11 @@ const tours: Tour[] = [
         { day: 1, activity: 'Pick up from your hotel in Cairo or Giza. Drive to Alexandria. Visit Pompey\'s Pillar, the Catacombs, the Library of Alexandria, and Qaitbay Citadel from the outside. Lunch at a local fish market restaurant. Return to Cairo in the evening.' }
     ],
     availability: false,
-    image: 'https://images.unsplash.com/photo-1623674620242-613d6a7e6c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBcHJpbCUyMDIwMjQlMjBBbGV4YW5kcmlhJTIwRWd5cHR8ZW58MHx8fHwxNzUyODgxMzcyfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    images: [
+        'https://images.unsplash.com/photo-1623674620242-613d6a7e6c0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxBcHJpbCUyMDIwMjQlMjBBbGV4YW5kcmlhJTIwRWd5cHR8ZW58MHx8fHwxNzUyODgxMzcyfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        'https://placehold.co/800x600.png',
+        'https://placehold.co/800x600.png'
+    ],
     rating: 4.6,
     durationText: "10 Hours",
     tourType: "Private Day Tour",

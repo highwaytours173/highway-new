@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useActionState } from 'react';
@@ -47,7 +48,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map(item => (
               <Card key={item.tour.id} className="flex items-center p-4">
-                <Image src={item.tour.image} alt={item.tour.name} width={128} height={128} className="rounded-md object-cover h-32 w-32" data-ai-hint={`${item.tour.destination} landscape`} />
+                <Image src={item.tour.images[0]} alt={item.tour.name} width={128} height={128} className="rounded-md object-cover h-32 w-32" data-ai-hint={`${item.tour.destination} landscape`} />
                 <div className="ml-4 flex-grow">
                   <h2 className="font-bold text-lg">{item.tour.name}</h2>
                   <p className="text-sm text-muted-foreground">{item.tour.destination}</p>
