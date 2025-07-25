@@ -45,6 +45,7 @@ const tourCategories = [
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
+  slug: z.string().min(1, "Slug is required.").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase with words separated by dashes."),
   destination: z.enum(destinations as [string, ...string[]], {
     errorMap: () => ({ message: "Please select a destination." }),
   }),
@@ -75,6 +76,7 @@ export default function NewTourPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      slug: "",
       destination: undefined,
       duration: 1,
       description: "",
@@ -204,6 +206,14 @@ export default function NewTourPage() {
                                 <FormItem>
                                     <FormLabel>Tour Name</FormLabel>
                                     <FormControl><Input placeholder="e.g., Pyramids & Sphinx Expedition" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField control={form.control} name="slug" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Slug</FormLabel>
+                                    <FormControl><Input placeholder="e.g., pyramids-sphinx-expedition" {...field} /></FormControl>
+                                    <FormDescription>A unique, URL-friendly identifier for the tour.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )} />

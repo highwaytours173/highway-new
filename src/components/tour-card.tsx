@@ -33,7 +33,7 @@ export function TourCard({ tour }: TourCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border rounded-lg">
       <div className="relative h-56 w-full overflow-hidden">
-        <Link href={`/tours/${tour.id}`}>
+        <Link href={`/tours/${tour.slug}`}>
           <Image
             src={tour.images[0]}
             alt={tour.name}
@@ -75,7 +75,7 @@ export function TourCard({ tour }: TourCardProps) {
         </div>
         
         <h3 className="font-headline text-lg font-semibold h-12">
-          <Link href={`/tours/${tour.id}`} className="hover:text-primary transition-colors">
+          <Link href={`/tours/${tour.slug}`} className="hover:text-primary transition-colors">
             {tour.name}
           </Link>
         </h3>
@@ -87,7 +87,7 @@ export function TourCard({ tour }: TourCardProps) {
                 <span className="text-muted-foreground">/person</span>
             </p>
             <Button variant="ghost" asChild className="text-primary hover:text-primary">
-                <Link href={`/tours/${tour.id}`}>
+                <Link href={`/tours/${tour.slug}`}>
                     Details <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>

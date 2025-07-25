@@ -58,7 +58,7 @@ export const columns: ColumnDef<Tour>[] = [
     cell: ({ row }) => {
       const tour = row.original
       return (
-        <Link href={`/tours/${tour.id}`} target="_blank" className="font-medium text-primary hover:underline">
+        <Link href={`/tours/${tour.slug}`} target="_blank" className="font-medium text-primary hover:underline">
           {row.getValue("name")}
         </Link>
       )
@@ -128,13 +128,13 @@ export const columns: ColumnDef<Tour>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(tour.id)}
+              onClick={() => navigator.clipboard.writeText(tour.slug)}
             >
-              Copy Tour ID
+              Copy Slug
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/tours/${tour.id}`} target="_blank">View Details</Link>
+              <Link href={`/tours/${tour.slug}`} target="_blank">View Details</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Edit Tour</DropdownMenuItem>
              <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">

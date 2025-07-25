@@ -4,6 +4,7 @@ import type { Tour } from '@/types';
 const tours: Tour[] = [
   {
     id: '1',
+    slug: 'pyramids-and-sphinx-expedition',
     name: 'Pyramids & Sphinx Expedition',
     destination: 'Cairo',
     type: ['Cultural'],
@@ -54,6 +55,7 @@ const tours: Tour[] = [
   },
   {
     id: '2',
+    slug: 'luxor-valley-of-the-kings',
     name: 'Luxor: Valley of the Kings',
     destination: 'Luxor',
     type: ['Cultural'],
@@ -104,6 +106,7 @@ const tours: Tour[] = [
   },
   {
     id: '3',
+    slug: 'nile-cruise-from-aswan',
     name: 'Nile Cruise from Aswan',
     destination: 'Aswan',
     type: ['Relaxation'],
@@ -154,6 +157,7 @@ const tours: Tour[] = [
   },
   {
     id: '4',
+    slug: 'red-sea-diving-adventure',
     name: 'Red Sea Diving Adventure',
     destination: 'Sharm El Sheikh',
     type: ['Adventure'],
@@ -207,6 +211,7 @@ const tours: Tour[] = [
   },
   {
     id: '5',
+    slug: 'hurghada-beach-getaway',
     name: 'Hurghada Beach Getaway',
     destination: 'Hurghada',
     type: ['Relaxation'],
@@ -257,6 +262,7 @@ const tours: Tour[] = [
   },
   {
     id: '6',
+    slug: 'alexandria-pearl-of-the-mediterranean',
     name: 'Alexandria: Pearl of the Mediterranean',
     destination: 'Alexandria',
     type: ['Cultural', 'Daily'],
@@ -309,4 +315,4 @@ const tours: Tour[] = [
 // @ts-ignore
 export const getTours = (): Tour[] => tours.filter(tour => tour.priceTiers);
 
-export const getTourById = (id: string): Tour | undefined => getTours().find(tour => tour.id === id);
+export const getTourById = (idOrSlug: string): Tour | undefined => getTours().find(tour => tour.id === idOrSlug || tour.slug === idOrSlug);

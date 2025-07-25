@@ -30,7 +30,7 @@ const categoryIcons = {
 
 function LastMinuteOfferCard({ tour }: { tour: Tour }) {
   return (
-    <Link href={`/tours/${tour.id}`} className="block group relative rounded-lg overflow-hidden shadow-lg text-white">
+    <Link href={`/tours/${tour.slug}`} className="block group relative rounded-lg overflow-hidden shadow-lg text-white">
       <Image 
         src={tour.images[0]}
         alt={tour.name}

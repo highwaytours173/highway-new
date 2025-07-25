@@ -9,6 +9,7 @@ export type PriceTier = {
 
 export type Tour = {
   id: string;
+  slug: string;
   name: string;
   destination: string;
   type: string[];
