@@ -1,9 +1,12 @@
+
 "use server";
 
 import { suggestAlternativeTours } from '@/ai/flows/suggest-alternative-tours';
+import { generateBlogPost } from '@/ai/flows/generate-blog-post';
 import { z } from 'zod';
 
-const ActionInputSchema = z.object({
+// For AI Suggestions in Cart
+const SuggestionActionInputSchema = z.object({
   tourDescriptions: z.array(z.string()).min(1, { message: 'At least one tour description is required.' }),
 });
 
@@ -18,7 +21,7 @@ export async function getAiSuggestions(prevState: SuggestionsState, formData: Fo
       tourDescriptions: formData.getAll('descriptions') as string[],
     };
     
-    const validatedInput = ActionInputSchema.safeParse(rawInput);
+    const validatedInput = SuggestionActionInputSchema.safeParse(rawInput);
     
     if (!validatedInput.success) {
       return { message: validatedInput.error.errors[0].message, suggestions: [] };
@@ -35,4 +38,40 @@ export async function getAiSuggestions(prevState: SuggestionsState, formData: Fo
     console.error(error);
     return { message: 'An unexpected error occurred. Please try again.', suggestions: [] };
   }
+}
+
+
+// For AI Blog Post Generation
+const BlogPostActionInputSchema = z.object({
+  topic: z.string().min(5, { message: 'Please enter a topic with at least 5 characters.' }),
+});
+
+type BlogPostState = {
+  message: string;
+  content: string;
+}
+
+export async function generateBlogPostAction(prevState: BlogPostState, formData: FormData): Promise<BlogPostState> {
+    try {
+        const rawInput = {
+            topic: formData.get('topic') as string,
+        };
+
+        const validatedInput = BlogPostActionInputSchema.safeParse(rawInput);
+
+        if (!validatedInput.success) {
+            return { message: validatedInput.error.errors[0].message, content: '' };
+        }
+
+        const result = await generateBlogPost(validatedInput.data);
+
+        if (!result.content) {
+            return { message: 'Could not generate content based on the topic.', content: '' };
+        }
+
+        return { message: 'Success', content: result.content };
+    } catch (error) {
+        console.error(error);
+        return { message: 'An unexpected error occurred. Please try again.', content: '' };
+    }
 }

@@ -12,11 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { getPostBySlug, getAuthors } from "@/lib/blog";
 import { Combobox } from "@/components/ui/combobox";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState, useActionState } from "react";
+import { generateBlogPostAction } from "@/app/actions";
+import { useFormStatus } from "react-dom";
 
 const authors = getAuthors();
 const availableTags = [
@@ -38,12 +40,25 @@ const formSchema = z.object({
   featuredImage: z.array(z.any()).optional(),
 });
 
+function GenerateButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending} variant="outline" className="w-full">
+      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+      Generate Content with AI
+    </Button>
+  );
+}
+
 export default function EditPostPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
   const isNewPost = slug === 'new';
   const post = useMemo(() => isNewPost ? null : getPostBySlug(slug), [slug, isNewPost]);
+  
+  const [aiState, generateAction, isGenerating] = useActionState(generateBlogPostAction, { message: '', content: '' });
+  const [topic, setTopic] = useState('');
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,6 +86,12 @@ export default function EditPostPage() {
       });
     }
   }, [post, form]);
+
+  useEffect(() => {
+    if (aiState.content) {
+      form.setValue('content', aiState.content, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [aiState.content, form]);
 
   if (!isNewPost && !post) {
     return <div>Post not found.</div>;
@@ -120,6 +141,31 @@ export default function EditPostPage() {
                                     <FormMessage />
                                 </FormItem>
                             )} />
+                            
+                             <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">AI Content Generator</CardTitle>
+                                    <CardDescription>Provide a topic and let AI draft the content for you.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                     <form action={generateAction}>
+                                        <div className="flex gap-2">
+                                            <Input 
+                                                name="topic"
+                                                value={topic}
+                                                onChange={(e) => setTopic(e.target.value)}
+                                                placeholder="e.g., A 3-day itinerary for Luxor"
+                                                disabled={isGenerating}
+                                            />
+                                            <GenerateButton />
+                                        </div>
+                                         {aiState.message && aiState.message !== 'Success' && (
+                                            <p className="text-sm text-destructive mt-2">{aiState.message}</p>
+                                        )}
+                                    </form>
+                                </CardContent>
+                            </Card>
+
                              <FormField control={form.control} name="content" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Content</FormLabel>
