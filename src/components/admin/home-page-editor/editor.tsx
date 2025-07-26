@@ -18,6 +18,13 @@ const defaultHomePageData = {
         title: "Let's Make Your Best<br />Trip With Us",
         subtitle: "Explore the world with our curated travel packages. Adventure awaits!",
     },
+    whyChooseUs: {
+        pretitle: "Why Choose Us",
+        title: "Great Opportunity For<br/>Adventure & Travels",
+        feature1: { title: "Safety First", description: "We prioritize your safety to ensure you have a worry-free and memorable experience." },
+        feature2: { title: "Professional Guide", description: "Our guides are local experts who bring destinations to life with their passion and knowledge." },
+        feature3: { title: "Exclusive Trip", description: "We offer unique itineraries and exclusive access to create once-in-a-lifetime journeys." },
+    },
     discountBanners: {
         banner1: {
             title: "35% OFF",
@@ -47,7 +54,15 @@ const defaultHomePageData = {
           avatar: 'https://placehold.co/100x100.png',
           text: 'Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.',
         }
-    ]
+    ],
+    videoSection: {
+        pretitle: "Watch Our Story",
+        title: "We Provide The Best Tour Facilities"
+    },
+    newsSection: {
+        pretitle: "News & Updates",
+        title: "Our Latest News & Articles"
+    }
 };
 
 const testimonialSchema = z.object({
@@ -57,10 +72,22 @@ const testimonialSchema = z.object({
     text: z.string().min(10, "Testimonial text is too short"),
 });
 
+const featureSchema = z.object({
+    title: z.string().min(1, "Feature title is required"),
+    description: z.string().min(1, "Feature description is required"),
+});
+
 const formSchema = z.object({
   hero: z.object({
     title: z.string().min(1, "Hero title is required"),
     subtitle: z.string().min(1, "Hero subtitle is required"),
+  }),
+  whyChooseUs: z.object({
+      pretitle: z.string().min(1, "Pre-title is required"),
+      title: z.string().min(1, "Title is required"),
+      feature1: featureSchema,
+      feature2: featureSchema,
+      feature3: featureSchema,
   }),
   discountBanners: z.object({
       banner1: z.object({
@@ -73,6 +100,14 @@ const formSchema = z.object({
       }),
   }),
   testimonials: z.array(testimonialSchema),
+  videoSection: z.object({
+    pretitle: z.string().min(1, "Pre-title is required"),
+    title: z.string().min(1, "Title is required"),
+  }),
+  newsSection: z.object({
+    pretitle: z.string().min(1, "Pre-title is required"),
+    title: z.string().min(1, "Title is required"),
+  }),
 });
 
 
@@ -92,10 +127,32 @@ export function HomePageEditorForm() {
     alert("Home page content saved! Check the console for the data.");
   }
 
+  const renderFeatureFields = (featureName: "feature1" | "feature2" | "feature3", title: string) => (
+    <Card>
+        <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+        <CardContent className="grid gap-4">
+             <FormField control={form.control} name={`whyChooseUs.${featureName}.title`} render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}/>
+             <FormField control={form.control} name={`whyChooseUs.${featureName}.description`} render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl><Textarea {...field} rows={3} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}/>
+        </CardContent>
+    </Card>
+  )
+
   return (
     <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full">
+            <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6']} className="w-full">
                 <AccordionItem value="item-1">
                     <AccordionTrigger className="text-lg font-semibold">Hero Section</AccordionTrigger>
                     <AccordionContent>
@@ -119,8 +176,37 @@ export function HomePageEditorForm() {
                         </Card>
                     </AccordionContent>
                 </AccordionItem>
-
+                
                  <AccordionItem value="item-2">
+                    <AccordionTrigger className="text-lg font-semibold">Why Choose Us Section</AccordionTrigger>
+                    <AccordionContent>
+                        <Card className="border-0 shadow-none">
+                             <CardContent className="pt-6 grid gap-6">
+                                <FormField control={form.control} name="whyChooseUs.pretitle" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Pre-title</FormLabel>
+                                        <FormControl><Input {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={form.control} name="whyChooseUs.title" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Title</FormLabel>
+                                        <FormControl><Textarea {...field} rows={2} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <div className="grid md:grid-cols-3 gap-6">
+                                    {renderFeatureFields("feature1", "Feature 1")}
+                                    {renderFeatureFields("feature2", "Feature 2")}
+                                    {renderFeatureFields("feature3", "Feature 3")}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </AccordionContent>
+                </AccordionItem>
+
+                 <AccordionItem value="item-3">
                     <AccordionTrigger className="text-lg font-semibold">Discount Banners</AccordionTrigger>
                     <AccordionContent>
                          <Card className="border-0 shadow-none">
@@ -168,7 +254,7 @@ export function HomePageEditorForm() {
                     </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-3">
+                <AccordionItem value="item-4">
                     <AccordionTrigger className="text-lg font-semibold">Testimonials</AccordionTrigger>
                     <AccordionContent>
                         <Card className="border-0 shadow-none">
@@ -223,6 +309,54 @@ export function HomePageEditorForm() {
                                 >
                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Testimonial
                                 </Button>
+                            </CardContent>
+                        </Card>
+                    </AccordionContent>
+                </AccordionItem>
+                
+                 <AccordionItem value="item-5">
+                    <AccordionTrigger className="text-lg font-semibold">Video Section</AccordionTrigger>
+                    <AccordionContent>
+                        <Card className="border-0 shadow-none">
+                            <CardContent className="pt-6 grid gap-6">
+                                <FormField control={form.control} name="videoSection.pretitle" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Pre-title</FormLabel>
+                                        <FormControl><Input {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={form.control} name="videoSection.title" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Title</FormLabel>
+                                        <FormControl><Textarea {...field} rows={2} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                            </CardContent>
+                        </Card>
+                    </AccordionContent>
+                </AccordionItem>
+                
+                 <AccordionItem value="item-6">
+                    <AccordionTrigger className="text-lg font-semibold">News & Articles Section</AccordionTrigger>
+                    <AccordionContent>
+                        <Card className="border-0 shadow-none">
+                            <CardContent className="pt-6 grid gap-6">
+                                <FormField control={form.control} name="newsSection.pretitle" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Pre-title</FormLabel>
+                                        <FormControl><Input {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={form.control} name="newsSection.title" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Title</FormLabel>
+                                        <FormControl><Textarea {...field} rows={2} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
                             </CardContent>
                         </Card>
                     </AccordionContent>
