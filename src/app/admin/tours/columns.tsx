@@ -127,16 +127,18 @@ export const columns: ColumnDef<Tour>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+                <Link href={`/admin/tours/${tour.slug}/edit`}>Edit Tour</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/tours/${tour.slug}`} target="_blank">View on Site</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(tour.slug)}
             >
               Copy Slug
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={`/tours/${tour.slug}`} target="_blank">View Details</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>Edit Tour</DropdownMenuItem>
              <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
               Delete Tour
             </DropdownMenuItem>
