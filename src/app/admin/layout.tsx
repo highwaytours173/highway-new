@@ -47,7 +47,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [user, setUser] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
+  // const [loading, setLoading] = React.useState(true);
   const supabase = createClient();
 
   React.useEffect(() => {
@@ -56,7 +56,6 @@ export default function AdminLayout({
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-      setLoading(false);
     };
     getUser();
   }, []);
@@ -65,10 +64,6 @@ export default function AdminLayout({
     await supabase.auth.signOut();
     window.location.href = '/admin';
   };
-
-  if (loading) {
-    return <div>Loading...</div>; // Or a proper skeleton loader
-  }
   
   if (!user && (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'production')) {
       redirect('/admin');
