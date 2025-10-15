@@ -39,8 +39,8 @@ export function RecentSales() {
       {recentBookings.map((booking, index) => (
         <div key={index} className="flex items-center">
           <Avatar className="h-9 w-9" data-ai-hint="person portrait">
-            <AvatarImage src={booking.avatar} alt={booking.user} />
-            <AvatarFallback>{booking.user.charAt(0)}</AvatarFallback>
+            <AvatarImage src={booking.avatar} alt={`${booking.user}'s avatar`} />
+            <AvatarFallback>{booking.user.split(' ').map((n) => n[0]).join('').substring(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="ml-4 space-y-1">
             <p className="text-sm font-medium leading-none">{booking.user}</p>

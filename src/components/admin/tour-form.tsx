@@ -68,7 +68,7 @@ const tourCategories = [
   { value: "Daily", label: "Daily" },
 ];
 
-const formSchema = z.object({
+export const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   slug: z
     .string()
@@ -126,7 +126,7 @@ export function TourForm({ initialData, onSubmit, formType }: TourFormProps) {
           excludes: initialData.excludes?.map((e) => ({ value: e })) ?? [
             { value: "" },
           ],
-          images: [], // Can't pre-populate file inputs
+          images: initialData.images || [], // Pass existing image URLs
         }
       : {
           name: "",

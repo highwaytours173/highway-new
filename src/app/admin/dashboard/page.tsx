@@ -10,6 +10,7 @@ import { OverviewChart } from "@/components/admin/overview-chart";
 import { RecentSales } from "@/components/admin/recent-sales";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 export default function AdminDashboard() {
   return (
@@ -18,11 +19,14 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <div className="flex items-center gap-2">
           <DateRangePicker />
-          <Button>Download</Button>
+          <Button variant="outline" className="gap-2">
+            <Download className="size-4" />
+            <span>Download</span>
+          </Button>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="rounded-lg shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -34,7 +38,7 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Bookings
@@ -48,7 +52,7 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">New Customers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -60,7 +64,7 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-lg shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Tours</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -75,7 +79,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <Card className="lg:col-span-4 rounded-lg shadow-sm">
           <CardHeader>
             <CardTitle>Overview</CardTitle>
           </CardHeader>
@@ -83,7 +87,7 @@ export default function AdminDashboard() {
             <OverviewChart />
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 rounded-lg shadow-sm">
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
             <CardDescription>You made 265 sales this month.</CardDescription>

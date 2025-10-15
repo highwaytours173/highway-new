@@ -1,34 +1,21 @@
-"use client";
+import { getTourBySlug } from "@/lib/supabase/tours";
+import { notFound } from "next/navigation";
+import { TourEditClient } from "./tour-edit-client";
 
-import { TourForm } from "@/components/admin/tour-form";
-import { getTourById } from "@/lib/tours";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo } from "react";
-import type { Tour } from "@/types";
-
-export default function EditTourPage() {
-  const router = useRouter();
-  const params = useParams();
-  const slug = params.slug as string;
-
-  const tour = useMemo(() => getTourById(slug), [slug]);
-
-  const handleSubmit = (values: any) => {
-    // In a real app, you would send this data to your backend/database to update the tour.
-    console.log("Updated Tour Data:", values);
-    alert(`Tour "${values.name}" updated! Check the console for the data.`);
-    router.push("/admin/tours");
+interface EditTourPageProps {
+  params: {
+    slug: string;
   };
+}
+
+export default async function EditTourPage({
+  params,
+}: EditTourPageProps) {
+  const tour = await getTourBySlug(params.slug);
 
   if (!tour) {
-    return <div>Tour not found.</div>;
+    notFound();
   }
 
-  return (
-    <TourForm
-      initialData={tour as Tour}
-      onSubmit={handleSubmit}
-      formType="edit"
-    />
-  );
+  return <TourEditClient tour={tour} />;
 }
