@@ -21,7 +21,7 @@ function toCamelCase(obj: any): any {
 }
 
 export async function getUpsellItems(): Promise<UpsellItem[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("upsell_items")
     .select("*")
@@ -37,7 +37,7 @@ export async function getUpsellItems(): Promise<UpsellItem[]> {
 export async function getUpsellItemById(
   id: string,
 ): Promise<UpsellItem | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("upsell_items")
     .select("*")
@@ -57,7 +57,7 @@ async function handleImageUpload(
   images: any[] | undefined,
   existingImageUrl?: string,
 ): Promise<string | undefined> {
-  const supabase = createClient();
+  const supabase = await createClient();
   let imageUrl: string | undefined = existingImageUrl;
 
   if (images && images.length > 0) {
@@ -89,7 +89,7 @@ export async function addUpsellItem(
     images?: any[];
   },
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const imageUrl = await handleImageUpload(formData.images);
 
@@ -119,7 +119,7 @@ export async function updateUpsellItem(
     imageUrl?: string;
   },
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const imageUrl = await handleImageUpload(formData.images, formData.imageUrl); // Pass existing URL
 
@@ -146,7 +146,7 @@ export async function updateUpsellItem(
 }
 
 export async function deleteUpsellItem(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Optional: Delete image from storage if it exists
   const { data: itemToDelete } = await supabase

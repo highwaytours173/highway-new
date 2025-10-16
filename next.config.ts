@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+// Avoid strict typing to allow all valid Next config keys (e.g., experimental flags may change across versions)
+const nextConfig = {
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,

@@ -36,7 +36,7 @@ import { ArrowLeft } from "lucide-react";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import type { UpsellItem, Tour } from "@/types";
 import { useEffect, useState } from "react";
-import { getTours } from "@/lib/supabase/tours";
+import { getToursSelect } from "@/lib/supabase/tours-client";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -52,7 +52,7 @@ const formSchema = z.object({
 
 interface UpsellItemFormProps {
   initialData?: UpsellItem;
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
+  onSubmit: (values: z.infer<typeof formSchema>) => Promise<void> | void;
   formType: "new" | "edit";
 }
 
@@ -61,12 +61,17 @@ export function UpsellItemForm({
   onSubmit,
   formType,
 }: UpsellItemFormProps) {
-  const [tours, setTours] = useState<Tour[]>([]);
+  const [tours, setTours] = useState<Array<Pick<Tour, "id" | "name">>>([]);
 
   useEffect(() => {
     const fetchTours = async () => {
-      const fetchedTours = await getTours();
-      setTours(fetchedTours);
+      try {
+        const fetchedTours = await getToursSelect();
+        setTours(fetchedTours);
+      } catch (e) {
+        console.error("Failed to fetch tours for select:", e);
+        setTours([]);
+      }
     };
     fetchTours();
   }, []);

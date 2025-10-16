@@ -4,6 +4,8 @@ import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { UpsellItemsClient } from "./upsell-items-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function UpsellItemsPage() {
   const upsellItems = await getUpsellItems();
 
