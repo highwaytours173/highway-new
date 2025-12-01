@@ -8,8 +8,8 @@ export default function HomePageEditor() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Home Page Editor</h2>
         <p className="text-muted-foreground">
-          Modify sections of the main home page. Click "Save Changes" at the
-          bottom to commit your updates.
+          Modify sections of the main home page. Click &quot;Save Changes&quot;
+          at the bottom to commit your updates.
         </p>
       </div>
       <HomePageEditorForm />

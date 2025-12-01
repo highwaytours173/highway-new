@@ -4,21 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Tour } from "@/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-// Helper function to convert snake_case to camelCase
-function toCamelCase(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map((v) => toCamelCase(v));
-  }
-  if (obj !== null && obj.constructor === Object) {
-    return Object.keys(obj).reduce((result, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      result[camelKey] = toCamelCase(obj[key]);
-      return result;
-    }, {} as any);
-  }
-  return obj;
-}
+import { toCamelCase } from "@/lib/utils";
 
 type GetToursOptions = {
   q?: string;
@@ -26,46 +12,53 @@ type GetToursOptions = {
   type?: string; // matches tour_type in DB or tour.tourType in app
 };
 
+function ensureTourDefaults(tour: Tour): Tour {
+  return {
+    ...tour,
+    images: tour.images || [],
+    type: tour.type || [],
+    itinerary: tour.itinerary || [],
+    priceTiers: tour.priceTiers || [],
+    highlights: tour.highlights || [],
+    includes: tour.includes || [],
+    excludes: tour.excludes || [],
+  };
+}
+
 export async function getTours(options: GetToursOptions = {}): Promise<Tour[]> {
   const { q, destination, type } = options;
   const supabase = await createClient();
 
-  try {
-    let query = supabase.from("tours").select("*");
+  let query = supabase.from("tours").select("*");
 
-    if (q && q.trim()) {
-      // Search in name (and optionally description)
-      query = query.ilike("name", `%${q.trim()}%`);
-    }
-    if (destination && destination.trim()) {
-      query = query.eq("destination", destination.trim());
-    }
-    if (type && type.trim()) {
-      // tour_type is a text column representing the primary type
-      query = query.eq("tour_type", type.trim());
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    if (!data) return [];
-    return (data as any[]).map(toCamelCase) as Tour[];
-  } catch (err) {
-    console.warn("Falling back to mock tours due to Supabase error:", err);
-    // Fallback to mock data when Supabase is unavailable or table isn't ready
-    const { getTours: getMockTours } = await import("@/lib/tours");
-    const all = getMockTours();
-    return all.filter((tour) => {
-      const matchesQ = q ? tour.name.toLowerCase().includes(q.toLowerCase()) : true;
-      const matchesDestination = destination
-        ? tour.destination.toLowerCase() === destination.toLowerCase()
-        : true;
-      const matchesType = type
-        ? (tour.tourType?.toLowerCase() === type.toLowerCase()) ||
-          (Array.isArray(tour.type) && tour.type.map((t) => t.toLowerCase()).includes(type.toLowerCase()))
-        : true;
-      return matchesQ && matchesDestination && matchesType;
-    });
+  if (q && q.trim()) {
+    // Search in name (and optionally description)
+    query = query.ilike("name", `%${q.trim()}%`);
   }
+  if (destination && destination.trim()) {
+    query = query.eq("destination", destination.trim());
+  }
+  if (type && type.trim()) {
+    // tour_type is a text column representing the primary type
+    query = query.eq("tour_type", type.trim());
+  }
+
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error("Supabase error fetching tours:", error);
+    // Only fallback if specifically requested or strictly needed during dev
+    // Ideally, we should throw or return empty array to debug DB issues
+    throw error; 
+  }
+  
+  if (!data || data.length === 0) {
+    console.log("No tours found in Supabase database.");
+    return [];
+  }
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[]).map((item) => ensureTourDefaults(toCamelCase(item) as Tour));
 }
 
 export async function getTourBySlug(slug: string): Promise<Tour | null> {
@@ -86,10 +79,15 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
   }
 
   console.log(`Tour data for slug ${slug}:`, data);
-  return toCamelCase(data) as Tour;
+  return ensureTourDefaults(toCamelCase(data) as Tour);
 }
 
-export async function addTour(formData: Omit<Tour, "id">) {
+export async function addTour(
+  formData: Omit<Tour, "id" | "images"> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    images: any[];
+  },
+) {
   const supabase = await createClient();
 
   // 1. Handle image uploads

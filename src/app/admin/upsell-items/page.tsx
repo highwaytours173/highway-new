@@ -17,7 +17,7 @@ export default async function UpsellItemsPage() {
             Upsell Items Management
           </h2>
           <p className="text-muted-foreground">
-            Here's a list of all your upsell items. You can add, edit, or delete
+            Here&apos;s a list of all your upsell items. You can add, edit, or delete
             them.
           </p>
         </div>
@@ -37,3 +37,4 @@ export default async function UpsellItemsPage() {
     </div>
   );
 }
+

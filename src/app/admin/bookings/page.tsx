@@ -12,7 +12,7 @@ export default async function BookingsPage() {
             Bookings Management
           </h2>
           <p className="text-muted-foreground">
-            Here's a list of all tour bookings from your customers.
+            Here&apos;s a list of all tour bookings from your customers.
           </p>
         </div>
       </div>

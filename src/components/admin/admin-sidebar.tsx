@@ -21,7 +21,6 @@ import {
   UserCircle,
   Users,
   Newspaper,
-  PanelLeft,
   LayoutDashboard,
   Tag,
 } from "lucide-react";
@@ -36,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import type { User } from "@supabase/supabase-js";
 
 const menuItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: Home },
@@ -68,7 +68,7 @@ export function AdminSidebar({
   handleSignOut,
   children,
 }: {
-  user: any;
+  user: User;
   handleSignOut: () => void;
   children: React.ReactNode;
 }) {
@@ -136,3 +136,4 @@ export function AdminSidebar({
     </SidebarProvider>
   );
 }
+

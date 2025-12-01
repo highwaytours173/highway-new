@@ -17,8 +17,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -29,7 +27,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import Image from "next/image";
@@ -123,7 +121,7 @@ const formSchema = z.object({
   hero: z.object({
     title: z.string().min(1, "Hero title is required"),
     subtitle: z.string().min(1, "Hero subtitle is required"),
-    image: z.array(z.any()).optional(),
+    image: z.array(z.instanceof(File)).optional(),
     imageAlt: z.string().optional(),
   }),
   whyChooseUs: z.object({
@@ -160,6 +158,7 @@ const formSchema = z.object({
 });
 
 export function HomePageEditorForm() {
+  const [existingHeroUrl, setExistingHeroUrl] = useState<string | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultHomePageData,
@@ -178,23 +177,25 @@ export function HomePageEditorForm() {
         .select("data")
         .eq("id", 1)
         .maybeSingle();
-      if (!error && data && (data as any).data) {
-        const content = (data as any).data;
+      
+      if (!error && data && data.data) {
+        const content = data.data as Partial<typeof defaultHomePageData>;
+        // Safe casting for nested properties
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const heroContent = (content.hero || {}) as any;
+        
         form.reset({
           ...defaultHomePageData,
           ...content,
           hero: {
-            title: content?.hero?.title ?? defaultHomePageData.hero.title,
-            subtitle:
-              content?.hero?.subtitle ?? defaultHomePageData.hero.subtitle,
+            title: heroContent.title ?? defaultHomePageData.hero.title,
+            subtitle: heroContent.subtitle ?? defaultHomePageData.hero.subtitle,
             image: [],
-            imageAlt:
-              content?.hero?.imageAlt ?? defaultHomePageData.hero.imageAlt,
+            imageAlt: heroContent.imageAlt ?? defaultHomePageData.hero.imageAlt,
           },
         });
-        // Store existing hero image URL in a hidden field via form's values
-        // so we can show preview without forcing the user to re-upload
-        (form as any)._existingHeroUrl = content?.hero?.imageUrl || null;
+        
+        setExistingHeroUrl(heroContent.imageUrl || null);
       }
     }
     loadContent();
@@ -204,7 +205,7 @@ export function HomePageEditorForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const supabase = createClient();
     // Handle hero image upload if provided
-    let heroUrl: string | null = (form as any)._existingHeroUrl || null;
+    let heroUrl: string | null = existingHeroUrl;
     try {
       const heroFile = values.hero?.image && values.hero.image[0];
       if (heroFile && heroFile instanceof File) {
@@ -223,43 +224,37 @@ export function HomePageEditorForm() {
           heroUrl = publicUrlData.publicUrl;
         }
       }
-    } catch (_) {
+    } catch {
       // ignore upload failure
     }
 
     // Build content payload excluding transient file field
-    const { hero, ...rest } = values as any;
+    const { hero: _hero, ...rest } = values;
     const contentToSave = {
       ...rest,
       hero: {
-        title: hero?.title ?? defaultHomePageData.hero.title,
-        subtitle: hero?.subtitle ?? defaultHomePageData.hero.subtitle,
-        imageUrl: heroUrl ?? defaultHomePageData.hero.imageUrl,
-        imageAlt: hero?.imageAlt ?? defaultHomePageData.hero.imageAlt,
+        title: values.hero.title,
+        subtitle: values.hero.subtitle,
+        imageUrl: heroUrl,
+        imageAlt: values.hero.imageAlt,
       },
     };
-    const payload = {
-      id: 1,
-      data: contentToSave,
-      updated_at: new Date().toISOString(),
-    };
+
     const { error } = await supabase
       .from("home_page_content")
-      .upsert(payload, { onConflict: "id" });
-    if (error) {
-      alert(`Failed to save home content: ${error.message}`);
+      .upsert({ id: 1, data: contentToSave });
+
+    if (!error) {
+      alert("Home page content updated successfully!");
     } else {
-      alert("Home page content saved!");
+      alert("Failed to update content.");
     }
   }
 
-  const renderFeatureFields = (
-    featureName: "feature1" | "feature2" | "feature3",
-    title: string,
-  ) => (
+  const renderFeatureFields = (featureName: "feature1" | "feature2" | "feature3", label: string) => (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{label}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
         <FormField
@@ -267,7 +262,7 @@ export function HomePageEditorForm() {
           name={`whyChooseUs.${featureName}.title`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Feature Title</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -295,20 +290,8 @@ export function HomePageEditorForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion
-          type="multiple"
-          defaultValue={[
-            "item-1",
-            "item-2",
-            "item-3",
-            "item-4",
-            "item-5",
-            "item-6",
-            "item-7",
-          ]}
-          className="w-full"
-        >
-          <AccordionItem value="item-1">
+        <Accordion type="single" collapsible defaultValue="hero" className="w-full">
+          <AccordionItem value="hero">
             <AccordionTrigger className="text-lg font-semibold">
               Hero Section
             </AccordionTrigger>
@@ -316,11 +299,11 @@ export function HomePageEditorForm() {
               <Card className="border-0 shadow-none">
                 <CardContent className="pt-6 grid gap-6">
                   {/* Preview existing hero image */}
-                  {((form as any)._existingHeroUrl || defaultHomePageData.hero.imageUrl) && (
+                  {(existingHeroUrl || defaultHomePageData.hero.imageUrl) && (
                     <div className="relative w-full h-40 rounded-md overflow-hidden border">
                       <Image
-                        src={(form as any)._existingHeroUrl || defaultHomePageData.hero.imageUrl}
-                        alt={form.getValues("hero.imageAlt") || defaultHomePageData.hero.imageAlt}
+                        src={existingHeroUrl || defaultHomePageData.hero.imageUrl}
+                        alt={form.getValues("hero.imageAlt") || defaultHomePageData.hero.imageAlt || "Hero Image"}
                         fill
                         className="object-cover"
                         sizes="100vw"

@@ -1,24 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Booking, CartItem } from "@/types";
+import type { Booking, CartItem, Tour, UpsellItem, PriceTier } from "@/types";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-
-// Helper function to convert snake_case to camelCase
-function toCamelCase(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map((v) => toCamelCase(v));
-  }
-  if (obj !== null && obj.constructor === Object) {
-    return Object.keys(obj).reduce((result, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      result[camelKey] = toCamelCase(obj[key]);
-      return result;
-    }, {} as any);
-  }
-  return obj;
-}
+import { toCamelCase } from "@/lib/utils";
 
 export async function getBookings(): Promise<Booking[]> {
   const supabase = await createClient();
@@ -125,12 +110,12 @@ export async function createBooking(data: CreateBookingData) {
     let upsellItemId: string | undefined;
 
     if (item.productType === "tour") {
-      const tour = item.product as any;
+      const tour = item.product as Tour;
       tourId = tour.id;
       const totalPeople = (item.adults ?? 0) + (item.children ?? 0);
       const priceTier =
         tour.priceTiers.find(
-          (tier: any) =>
+          (tier: PriceTier) =>
             totalPeople >= tier.minPeople &&
             (tier.maxPeople === null || totalPeople <= tier.maxPeople),
         ) || tour.priceTiers[tour.priceTiers.length - 1];
@@ -139,7 +124,7 @@ export async function createBooking(data: CreateBookingData) {
         (item.adults ?? 0) * priceTier.pricePerAdult +
         (item.children ?? 0) * priceTier.pricePerChild;
     } else if (item.productType === "upsell") {
-      const upsellItem = item.product as any;
+      const upsellItem = item.product as UpsellItem;
       upsellItemId = upsellItem.id;
       itemPrice = upsellItem.price * (item.quantity ?? 1);
     }

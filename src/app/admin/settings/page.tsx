@@ -121,7 +121,9 @@ export default function SettingsPage() {
         .eq("id", 1)
         .maybeSingle();
       if (!error && data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const settingsData = (data as any).data ?? {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setExistingLogoUrl((data as any).logo_url ?? null);
         form.reset({
           agencyName: settingsData.agencyName ?? "",
@@ -179,7 +181,7 @@ export default function SettingsPage() {
           logoUrl = publicUrlData.publicUrl;
         }
       }
-    } catch (_) {
+    } catch {
       // ignore upload failure
     }
 
@@ -224,7 +226,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
               <CardDescription>
-                Update your tour agency's public information.
+                Update your tour agency&apos;s public information.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -368,7 +370,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>About & Address</CardTitle>
               <CardDescription>
-                Information that may appear on your website's footer or contact
+                Information that may appear on your website&apos;s footer or contact
                 page.
               </CardDescription>
             </CardHeader>
@@ -413,7 +415,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Social Media</CardTitle>
               <CardDescription>
-                Links to your agency's social media profiles.
+                Links to your agency&apos;s social media profiles.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-6">

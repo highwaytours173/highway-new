@@ -628,7 +628,7 @@ export function TourForm({ initialData, onSubmit, formType }: TourFormProps) {
                           />
                         </FormControl>
                         <FormDescription className="text-xs">
-                          A more specific type, e.g., 'Luxury Nile Cruise'.
+                          A more specific type, e.g., &apos;Luxury Nile Cruise&apos;.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/hooks/use-cart.tsx";
+import { useCart } from "@/hooks/use-cart";
 import type { Tour } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
@@ -11,11 +11,13 @@ interface AddToCartButtonProps {
 
 export function AddToCartButton({ tour }: AddToCartButtonProps) {
   const { addToCart, cartItems } = useCart();
-  const isInCart = cartItems.some((item) => item.tour.id === tour.id);
+  const isInCart = cartItems.some(
+    (item) => item.product.id === tour.id && item.productType === "tour",
+  );
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    addToCart(tour);
+    addToCart(tour, "tour");
   };
 
   return (
@@ -30,3 +32,4 @@ export function AddToCartButton({ tour }: AddToCartButtonProps) {
     </Button>
   );
 }
+

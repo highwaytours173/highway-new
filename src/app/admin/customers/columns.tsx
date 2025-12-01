@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Customer } from "@/types";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,6 +36,68 @@ import { cn } from "@/lib/utils";
 
 interface ColumnsProps {
   onDelete: (customerId: string) => void;
+}
+
+interface ActionCellProps {
+  customer: Customer;
+  onDelete: (customerId: string) => void;
+}
+
+function ActionCell({ customer, onDelete }: ActionCellProps) {
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+  return (
+    <>
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              customer and all associated booking data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete(customer.id);
+                setIsAlertOpen(false);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/customers/${customer.id}`}>
+              View Customer Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>Send Email</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive focus:bg-destructive/10"
+            onClick={() => setIsAlertOpen(true)}
+          >
+            Delete Customer
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
 }
 
 export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
@@ -135,62 +197,8 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const customer = row.original;
-      const [isAlertOpen, setIsAlertOpen] = React.useState(false);
-
-      return (
-        <>
-          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  customer and all associated booking data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    onDelete(customer.id);
-                    setIsAlertOpen(false);
-                  }}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/customers/${customer.id}`}>
-                  View Customer Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>Send Email</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                onClick={() => setIsAlertOpen(true)}
-              >
-                Delete Customer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
-      );
-    },
+    cell: ({ row }) => (
+      <ActionCell customer={row.original} onDelete={onDelete} />
+    ),
   },
 ];

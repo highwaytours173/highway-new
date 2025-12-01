@@ -1,24 +1,28 @@
-"use client";
-
 import React, { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import { getTours } from "@/lib/supabase/tours";
 import { TourCard } from "@/components/tour-card";
-import type { Tour } from "@/types";
 
-export default function SearchResultsPage() {
+export default async function SearchResultsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   return (
     <Suspense fallback={<div>Loading search results...</div>}>
-      <SearchResultsContent />
+      <SearchResultsContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function SearchResultsContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get("q") || "";
-  const destination = searchParams.get("destination") || "";
-  const type = searchParams.get("type") || "";
+async function SearchResultsContent({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const query = (resolvedSearchParams.q as string) || "";
+  const destination = (resolvedSearchParams.destination as string) || "";
+  const type = (resolvedSearchParams.type as string) || "";
 
   const tours = await getTours();
 
@@ -66,11 +70,10 @@ async function SearchResultsContent() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <h2 className="text-2xl font-semibold mb-4">No Tours Found</h2>
-          <p className="text-muted-foreground">
-            We couldn't find any tours matching your search criteria. Try
-            broadening your search.
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold">No tours found</h2>
+          <p className="text-muted-foreground mt-2">
+            We couldn&apos;t find any tours matching your criteria.
           </p>
         </div>
       )}

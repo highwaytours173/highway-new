@@ -1,12 +1,16 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/supabase/blog";
+import Image from "next/image";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
-export default async function BlogPostPage({ params }: Props) {
-  const post = await getPostBySlug(params.slug);
-  if (!post) return notFound();
+export default async function BlogPost({ params }: Props) {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+
+  if (!post) {
+    notFound();
+  }
 
   return (
     <article className="container mx-auto py-10 prose prose-neutral dark:prose-invert">

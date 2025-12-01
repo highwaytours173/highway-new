@@ -16,7 +16,7 @@ export default async function ToursPage() {
             Tours Management
           </h2>
           <p className="text-muted-foreground">
-            Here's a list of all your tours. You can add, edit, or delete them.
+            Here&apos;s a list of all your tours. You can add, edit, or delete them.
           </p>
         </div>
         <div className="flex gap-2">
@@ -38,3 +38,4 @@ export default async function ToursPage() {
     </div>
   );
 }
+

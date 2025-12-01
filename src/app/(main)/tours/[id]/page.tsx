@@ -3,15 +3,15 @@ import { notFound } from "next/navigation";
 import { TourDetailsClient } from "@/components/tour-details-client";
 
 interface TourDetailsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function TourDetailsPage({
   params,
 }: TourDetailsPageProps) {
-  const { id } = await Promise.resolve(params);
+  const { id } = await params;
   // The slug is passed as `id` from the folder name [id]
   const tour = await getTourBySlug(id);
 
@@ -21,3 +21,4 @@ export default async function TourDetailsPage({
 
   return <TourDetailsClient tour={tour} />;
 }
+

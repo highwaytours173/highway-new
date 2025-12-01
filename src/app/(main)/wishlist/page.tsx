@@ -23,7 +23,7 @@ export default function WishlistPage() {
             <Heart className="h-16 w-16 mx-auto text-muted-foreground" />
             <h2 className="text-2xl font-semibold">Your wishlist is empty</h2>
             <p className="text-muted-foreground">
-              Looks like you haven't saved any tours yet.
+              Looks like you haven&apos;t saved any tours yet.
             </p>
             <Button asChild>
               <Link href="/">Explore Tours</Link>

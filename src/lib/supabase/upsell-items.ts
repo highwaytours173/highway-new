@@ -4,20 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import type { UpsellItem } from "@/types";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { toCamelCase } from "@/lib/utils";
 
-// Helper function to convert snake_case to camelCase
-function toCamelCase(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map((v) => toCamelCase(v));
-  }
-  if (obj !== null && obj.constructor === Object) {
-    return Object.keys(obj).reduce((result, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      result[camelKey] = toCamelCase(obj[key]);
-      return result;
-    }, {} as any);
-  }
-  return obj;
+function ensureUpsellItemDefaults(item: UpsellItem): UpsellItem {
+  return {
+    ...item,
+    isActive: item.isActive ?? false,
+    price: item.price ?? 0,
+  };
 }
 
 export async function getUpsellItems(): Promise<UpsellItem[]> {
@@ -31,7 +25,8 @@ export async function getUpsellItems(): Promise<UpsellItem[]> {
     console.error("Error fetching upsell items:", error);
     return [];
   }
-  return data.map(toCamelCase) as UpsellItem[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[]).map((item) => ensureUpsellItemDefaults(toCamelCase(item) as UpsellItem));
 }
 
 export async function getUpsellItemById(
@@ -50,10 +45,11 @@ export async function getUpsellItemById(
   }
   if (!data) return null;
 
-  return toCamelCase(data) as UpsellItem;
+  return ensureUpsellItemDefaults(toCamelCase(data) as UpsellItem);
 }
 
 async function handleImageUpload(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   images: any[] | undefined,
   existingImageUrl?: string,
 ): Promise<string | undefined> {
@@ -86,6 +82,7 @@ async function handleImageUpload(
 
 export async function addUpsellItem(
   formData: Omit<UpsellItem, "id" | "createdAt" | "imageUrl"> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images?: any[];
   },
 ) {
@@ -115,6 +112,7 @@ export async function addUpsellItem(
 export async function updateUpsellItem(
   id: string,
   formData: Omit<UpsellItem, "id" | "createdAt" | "imageUrl"> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images?: any[];
     imageUrl?: string;
   },

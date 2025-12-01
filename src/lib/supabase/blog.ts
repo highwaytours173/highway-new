@@ -2,7 +2,6 @@
 
 import { createClient } from "./server";
 import type { Post } from "@/types";
-import * as mock from "@/lib/blog";
 
 type DbPost = {
   id: string;
@@ -43,12 +42,16 @@ export async function getPosts(): Promise<Post[]> {
         "id, slug, title, content, author, status, created_at, updated_at, featured_image, tags",
       )
       .order("created_at", { ascending: false });
-    if (error) throw error;
-    if (!data) return mock.getPosts();
-    return data.map(toPost);
+    
+    if (error) {
+      console.error("Error fetching posts:", error);
+      return [];
+    }
+    
+    return (data || []).map(toPost);
   } catch (err) {
-    // Fallback to mock posts if table doesn't exist or query fails
-    return mock.getPosts();
+    console.error("Unexpected error fetching posts:", err);
+    return [];
   }
 }
 
@@ -62,11 +65,17 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
       )
       .eq("slug", slug)
       .maybeSingle();
-    if (error) throw error;
-    if (!data) return mock.getPostBySlug(slug) ?? null;
+      
+    if (error) {
+      console.error("Error fetching post by slug:", error);
+      return null;
+    }
+    
+    if (!data) return null;
     return toPost(data as DbPost);
   } catch (err) {
-    return mock.getPostBySlug(slug) ?? null;
+    console.error("Unexpected error fetching post by slug:", err);
+    return null;
   }
 }
 
@@ -90,6 +99,7 @@ export async function upsertPost(post: Post): Promise<{ ok: boolean; error?: str
     });
     if (error) throw error;
     return { ok: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { ok: false, error: err?.message ?? String(err) };
   }
@@ -101,6 +111,7 @@ export async function deletePostBySlug(slug: string): Promise<{ ok: boolean; err
     const { error } = await supabase.from("posts").delete().eq("slug", slug);
     if (error) throw error;
     return { ok: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return { ok: false, error: err?.message ?? String(err) };
   }

@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +24,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createBooking } from "@/lib/supabase/bookings";
+import { format } from "date-fns";
+import { type Tour, type UpsellItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { format } from "date-fns";
-
-import { createBooking } from "@/lib/supabase/bookings";
 
 const formSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   phoneNumber: z
@@ -100,7 +102,7 @@ export default function CheckoutPage() {
           Please add items to your cart before checking out.
         </p>
         <Button asChild className="mt-4">
-          <a href="/">Go to Homepage</a>
+          <Link href="/">Go to Homepage</Link>
         </Button>
       </div>
     );
@@ -200,35 +202,35 @@ export default function CheckoutPage() {
           <CardContent className="space-y-4">
             {cartItems.map((item) => {
               let itemTotal = 0;
-              let productName = item.product.name;
+              const productName = item.product.name;
               let productDescription = "";
               let productImage = "";
 
               if (item.productType === "tour") {
-                const tour = item.product as any;
-                productImage = tour.images[0];
-                productDescription = `${item.adults} Adults, ${item.children} Children`;
+                const tour = item.product as Tour;
+                productImage = tour.images?.[0] || "";
+                productDescription = `${item.adults ?? 0} Adults, ${item.children ?? 0} Children`;
                 if (item.date) {
                   productDescription += `, ${format(new Date(item.date), "PPP")}`;
                 }
                 const totalPeople = (item.adults ?? 0) + (item.children ?? 0);
+                
+                const priceTiers = tour.priceTiers || [];
                 const priceTier =
-                  tour.priceTiers.find(
-                    (tier: {
-                      minPeople: number;
-                      maxPeople: number | null;
-                      pricePerAdult: number;
-                      pricePerChild: number;
-                    }) =>
+                  priceTiers.find(
+                    (tier) =>
                       totalPeople >= tier.minPeople &&
                       (tier.maxPeople === null ||
-                        totalPeople <= tier.maxPeople),
-                  ) || tour.priceTiers[tour.priceTiers.length - 1];
-                itemTotal =
-                  (item.adults ?? 0) * priceTier.pricePerAdult +
-                  (item.children ?? 0) * priceTier.pricePerChild;
+                        totalPeople <= tier.maxPeople!),
+                  ) || priceTiers[priceTiers.length - 1];
+                
+                if (priceTier) {
+                  itemTotal =
+                    (item.adults ?? 0) * priceTier.pricePerAdult +
+                    (item.children ?? 0) * priceTier.pricePerChild;
+                }
               } else if (item.productType === "upsell") {
-                const upsellItem = item.product as any;
+                const upsellItem = item.product as UpsellItem;
                 productImage = upsellItem.imageUrl || "/placeholder-upsell.png"; // Use upsell item image or generic placeholder
                 productDescription =
                   upsellItem.description || "Additional Service";

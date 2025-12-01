@@ -8,6 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   ArrowLeft,
   Calendar,
@@ -19,21 +20,21 @@ import {
   Phone,
   Globe,
 } from "lucide-react";
-import Link from "next/link";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface BookingDetailsPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function BookingDetailsPage({
   params,
 }: BookingDetailsPageProps) {
-  const booking = await getBookingById(params.id);
+  const { id } = await params;
+  const booking = await getBookingById(id);
 
   if (!booking) {
     notFound();

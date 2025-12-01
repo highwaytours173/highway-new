@@ -4,12 +4,13 @@ import { ToursClient } from "./tours-client";
 export default async function AllToursPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const q = typeof searchParams?.q === "string" ? searchParams.q : "";
+  const resolvedSearchParams = await searchParams;
+  const q = typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q : "";
   const destination =
-    typeof searchParams?.destination === "string" ? searchParams.destination : "";
-  const type = typeof searchParams?.type === "string" ? searchParams.type : "";
+    typeof resolvedSearchParams?.destination === "string" ? resolvedSearchParams.destination : "";
+  const type = typeof resolvedSearchParams?.type === "string" ? resolvedSearchParams.type : "";
 
   const tours = await getTours({ q, destination, type });
 
@@ -85,3 +86,4 @@ export default async function AllToursPage({
     </div>
   );
 }
+

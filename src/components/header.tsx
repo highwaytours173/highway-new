@@ -11,19 +11,14 @@ import {
   Twitter,
   Facebook,
   Instagram,
-  ChevronDown,
   Heart,
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+
 import { createClient } from "@/lib/supabase/client";
 
 type SettingsData = {
@@ -119,6 +114,10 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const headerClasses = isScrolled
+    ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
+    : "bg-background";
+
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -129,12 +128,15 @@ export function Header() {
           .eq("id", 1)
           .maybeSingle();
         if (!error && data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           setSettings({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: ((data as any).data || {}) as SettingsData,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             logo_url: (data as any).logo_url || null,
           });
         }
-      } catch (_) {
+      } catch {
         // ignore
       }
     };
@@ -143,19 +145,6 @@ export function Header() {
 
   const itemCount = isClient ? cartItems.length : 0;
   const wishlistItemCount = isClient ? wishlistItems.length : 0;
-
-  const headerClasses = isScrolled
-    ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md"
-    : "bg-background";
-
-  const egyptianDestinations = [
-    "Cairo",
-    "Luxor",
-    "Aswan",
-    "Sharm El Sheikh",
-    "Hurghada",
-    "Alexandria",
-  ];
 
   return (
     <header className={`sticky top-0 z-50 w-full transition-all duration-300`}>

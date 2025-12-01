@@ -2,9 +2,10 @@
 
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, X, File as FileIcon } from "lucide-react";
+import { UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ImageUploaderProps {
   value: File[];
@@ -80,14 +81,15 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {previews.map((preview, index) => (
             <div key={index} className="relative group aspect-square">
-              <img
+              <Image
                 src={preview}
                 alt={`Preview ${index}`}
                 onLoad={() => {
                   // Optional: if it was a blob URL, we can revoke it now if we want
                   // URL.revokeObjectURL(preview);
                 }}
-                className="object-cover w-full h-full rounded-md"
+                fill
+                className="object-cover rounded-md"
               />
               <Button
                 type="button"
@@ -106,3 +108,4 @@ export function ImageUploader({ value, onChange }: ImageUploaderProps) {
     </div>
   );
 }
+

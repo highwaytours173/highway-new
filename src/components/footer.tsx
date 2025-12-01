@@ -37,9 +37,10 @@ export function Footer() {
           .eq("id", 1)
           .maybeSingle();
         if (!error && data) {
-          setSettings({ data: ((data as any).data || {}) as SettingsData, logo_url: (data as any).logo_url || null });
+          const settingsData = data as unknown as { data: SettingsData; logo_url: string | null };
+          setSettings({ data: settingsData.data || {}, logo_url: settingsData.logo_url || null });
         }
-      } catch (_) {
+      } catch {
         // ignore
       }
     };
@@ -96,16 +97,16 @@ export function Footer() {
               {settings?.data?.navLinks && settings.data.navLinks.length > 0 ? (
                 settings.data.navLinks.slice(0, 6).map((l) => (
                   <li key={`${l.label}-${l.href}`}>
-                    <a href={l.href} className="hover:text-primary transition-colors">{l.label}</a>
+                    <Link href={l.href} className="hover:text-primary transition-colors">{l.label}</Link>
                   </li>
                 ))
               ) : (
                 <>
-                  <li><a href="/" className="hover:text-primary transition-colors">Home</a></li>
-                  <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
-                  <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
-                  <li><a href="/#services" className="hover:text-primary transition-colors">Services</a></li>
-                  <li><a href="/#tours" className="hover:text-primary transition-colors">Tour</a></li>
+                  <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
+                  <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
+                  <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+                  <li><Link href="/#services" className="hover:text-primary transition-colors">Services</Link></li>
+                  <li><Link href="/#tours" className="hover:text-primary transition-colors">Tour</Link></li>
                 </>
               )}
             </ul>

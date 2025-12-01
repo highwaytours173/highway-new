@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { UpsellItem } from "@/types";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";

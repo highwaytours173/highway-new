@@ -1,17 +1,15 @@
-import { getTourBySlug } from "@/lib/supabase/tours";
 import { notFound } from "next/navigation";
+import { getTourBySlug } from "@/lib/supabase/tours";
 import { TourEditClient } from "./tour-edit-client";
-
-interface EditTourPageProps {
-  params: {
-    slug: string;
-  };
-}
 
 export default async function EditTourPage({
   params,
-}: EditTourPageProps) {
-  const { slug } = params;
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
+  const { slug } = await params;
   const tour = await getTourBySlug(slug);
 
   if (!tour) {
@@ -20,3 +18,4 @@ export default async function EditTourPage({
 
   return <TourEditClient tour={tour} />;
 }
+

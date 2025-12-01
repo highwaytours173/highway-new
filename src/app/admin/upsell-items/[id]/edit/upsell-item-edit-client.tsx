@@ -5,13 +5,16 @@ import type { UpsellItem } from "@/types";
 
 interface UpsellItemEditClientProps {
   initialData: UpsellItem;
-  id: string;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (
+    data: Omit<UpsellItem, "id" | "createdAt" | "imageUrl"> & {
+      images?: (string | File)[];
+      imageUrl?: string;
+    },
+  ) => Promise<void>;
 }
 
-export function UpsellItemEditClient({
+export default function UpsellItemEditClient({
   initialData,
-  id,
   onSubmit,
 }: UpsellItemEditClientProps) {
   return (

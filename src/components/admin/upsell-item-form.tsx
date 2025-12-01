@@ -38,7 +38,7 @@ import type { UpsellItem, Tour } from "@/types";
 import { useEffect, useState } from "react";
 import { getToursSelect } from "@/lib/supabase/tours-client";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   description: z.string().optional(),
   price: z.coerce.number().min(0, "Price must be positive."),
@@ -219,7 +219,7 @@ export function UpsellItemForm({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Link this upsell item to a specific tour if it's an
+                      Link this upsell item to a specific tour if it&apos;s an
                       add-on.
                     </FormDescription>
                     <FormMessage />

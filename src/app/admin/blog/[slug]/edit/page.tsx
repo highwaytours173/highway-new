@@ -32,13 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, PlusCircle, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { createClient } from "@/lib/supabase/client";
 import { Combobox } from "@/components/ui/combobox";
-import { useEffect, useMemo, useState, useActionState, useRef } from "react";
+import { useEffect, useState, useActionState, useRef } from "react";
 import { generateBlogPostAction } from "@/app/actions";
 import { HtmlEditorToolbar } from "@/components/admin/html-editor-toolbar";
+import type { Post } from "@/types";
 
 const authors = ["Admin User", "Guest Writer"];
 const availableTags = [
@@ -93,7 +94,7 @@ export default function EditPostPage() {
   const router = useRouter();
   const slug = params.slug as string;
   const isNewPost = slug === "new";
-  const [post, setPost] = useState<any | null>(null);
+  const [post, setPost] = useState<Post | null>(null);
   const [existingId, setExistingId] = useState<string | null>(null);
 
   const [aiState, formAction, isGenerating] = useActionState(
@@ -125,12 +126,19 @@ export default function EditPostPage() {
       const { data, error } = await supabase
         .from("posts")
         .select(
-          "id, slug, title, content, author, status, tags, featured_image",
+          "id, slug, title, content, author, status, tags, featured_image, created_at, updated_at",
         )
         .eq("slug", slug)
         .maybeSingle();
       if (!error && data) {
-        setPost(data);
+        const mappedPost = {
+          ...data,
+          featuredImage: data.featured_image,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        } as unknown as Post;
+        
+        setPost(mappedPost);
         setExistingId(data.id as string);
         form.reset({
           title: data.title,
@@ -165,7 +173,7 @@ export default function EditPostPage() {
     if (action === "generate") {
       formAction(formData);
     } else {
-      form.handleSubmit(onSubmit)(form.getValues());
+      form.handleSubmit(onSubmit)();
     }
   };
 
@@ -192,7 +200,7 @@ export default function EditPostPage() {
           featuredImageUrl = publicUrlData.publicUrl;
         }
       }
-    } catch (_) {
+    } catch {
       // Ignore upload errors for now
     }
 
@@ -204,8 +212,8 @@ export default function EditPostPage() {
       author: values.author,
       status: values.status,
       tags: values.tags ?? [],
-      featured_image: featuredImageUrl ?? post?.featured_image ?? null,
-      created_at: post?.created_at ?? new Date().toISOString(),
+      featured_image: featuredImageUrl ?? post?.featuredImage ?? null,
+      created_at: post?.createdAt ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 

@@ -37,7 +37,7 @@ export type UpsellItem = {
   description?: string;
   price: number;
   type: "service" | "tour_addon";
-  relatedTourId?: string; // uuid
+  relatedTourId?: string | null; // uuid
   imageUrl?: string; // New: URL for the upsell item image
   isActive: boolean;
   createdAt: string;
@@ -90,10 +90,14 @@ export type Customer = {
   name: string;
   email: string;
   source: "Booking" | "Newsletter";
+  status?: "active" | "inactive";
   totalBookings: number;
   totalSpent: number;
   createdAt: string; // ISO string format for dates
+  lastActive?: string;
   bookings: Booking[];
+  posts?: Post[];
+  avatarUrl?: string;
 };
 
 export type Post = {
@@ -108,3 +112,4 @@ export type Post = {
   featuredImage: string;
   tags: string[];
 };
+

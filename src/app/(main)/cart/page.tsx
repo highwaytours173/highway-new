@@ -73,7 +73,7 @@ export default function CartPage() {
             <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground" />
             <h2 className="text-2xl font-semibold">Your cart is empty</h2>
             <p className="text-muted-foreground">
-              Looks like you haven't added any tours yet.
+              Looks like you haven&apos;t added any tours yet.
             </p>
             <Button asChild>
               <Link href="/">Explore Tours</Link>
@@ -87,8 +87,11 @@ export default function CartPage() {
               <Card key={item.product.id} className="flex items-center p-4">
                 {item.productType === "tour" ? (
                   <Image
-className="rounded-md object-cover h-24 w-24 sm:h-32 sm:w-32"
-                    data-ai-hint={`${(item.product as Tour).destination} landscape`}
+                    src={(item.product as Tour).images?.[0] || "/placeholder.png"}
+                    alt={(item.product as Tour).name}
+                    width={128}
+                    height={128}
+                    className="rounded-md object-cover h-24 w-24 sm:h-32 sm:w-32"
                   />
                 ) : (
                   <Image

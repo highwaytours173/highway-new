@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import type { Tour } from "@/types";
 import Image from "next/image";
-import { useCart } from "@/hooks/use-cart.tsx";
+import { useCart } from "@/hooks/use-cart";
 
 import {
   Card,
@@ -27,13 +27,11 @@ import {
   MapPin,
   Star,
   Tag,
-  Users,
   Minus,
   Plus,
   ShoppingCart,
   CheckCircle,
   XCircle,
-  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
@@ -142,7 +140,7 @@ export function TourDetailsClient({ tour }: TourDetailsClientProps) {
                                 try {
                                   const parsed = JSON.parse(item);
                                   return parsed.value || item;
-                                } catch (e) {
+                                } catch {
                                   return item;
                                 }
                               })()}
@@ -166,7 +164,7 @@ export function TourDetailsClient({ tour }: TourDetailsClientProps) {
                                 try {
                                   const parsed = JSON.parse(item);
                                   return parsed.value || item;
-                                } catch (e) {
+                                } catch {
                                   return item;
                                 }
                               })()}
@@ -280,7 +278,7 @@ export function TourDetailsClient({ tour }: TourDetailsClientProps) {
                           try {
                             const parsed = JSON.parse(highlight);
                             return parsed.value || highlight;
-                          } catch (e) {
+                          } catch {
                             return highlight;
                           }
                         })()}

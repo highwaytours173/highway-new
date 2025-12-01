@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Booking } from "@/types";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,6 +32,78 @@ import { cn } from "@/lib/utils";
 interface ColumnsProps {
   onUpdateStatus: (bookingId: string, status: Booking["status"]) => void;
   onDelete: (bookingId: string) => void;
+}
+
+interface ActionCellProps {
+  booking: Booking;
+  onUpdateStatus: (bookingId: string, status: Booking["status"]) => void;
+  onDelete: (bookingId: string) => void;
+}
+
+function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+  return (
+    <>
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              booking and remove its data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete(booking.id);
+                setIsAlertOpen(false);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/bookings/${booking.id}`}>
+              View Booking Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onUpdateStatus(booking.id, "Confirmed")}
+          >
+            Mark as Confirmed
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onUpdateStatus(booking.id, "Cancelled")}
+          >
+            Mark as Cancelled
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => setIsAlertOpen(true)}
+          >
+            Delete Booking
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
 }
 
 export const columns = ({
@@ -148,71 +220,12 @@ export const columns = ({
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const booking = row.original;
-      const [isAlertOpen, setIsAlertOpen] = React.useState(false);
-
-      return (
-        <>
-          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  booking and remove its data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    onDelete(booking.id);
-                    setIsAlertOpen(false);
-                  }}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/bookings/${booking.id}`}>
-                  View Booking Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onUpdateStatus(booking.id, "Confirmed")}
-              >
-                Mark as Confirmed
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onUpdateStatus(booking.id, "Cancelled")}
-              >
-                Mark as Cancelled
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                onClick={() => setIsAlertOpen(true)}
-              >
-                Delete Booking
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
-      );
-    },
+    cell: ({ row }) => (
+      <ActionCell
+        booking={row.original}
+        onUpdateStatus={onUpdateStatus}
+        onDelete={onDelete}
+      />
+    ),
   },
 ];

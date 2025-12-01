@@ -68,7 +68,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     (tourId: string) => {
       let tourName: string | undefined;
       setWishlistItems((prevItems) => {
-        tourName = prevItems.find((item) => item.id === tourId)?.tour.name;
+        tourName = prevItems.find((item) => item.id === tourId)?.name;
         return prevItems.filter((item) => item.id !== tourId);
       });
 

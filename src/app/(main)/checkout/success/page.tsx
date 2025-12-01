@@ -14,7 +14,7 @@ export default function CheckoutSuccessPage() {
           </h1>
           <p className="text-muted-foreground">
             Thank you for booking with Wanderlust Hub! A confirmation email is
-            on its way to you. We can't wait to see you on your next adventure.
+            on its way to you. We can&apos;t wait to see you on your next adventure.
           </p>
           <Button asChild size="lg" className="w-full">
             <Link href="/">Continue Exploring</Link>
@@ -24,3 +24,4 @@ export default function CheckoutSuccessPage() {
     </div>
   );
 }
+
