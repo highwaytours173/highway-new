@@ -48,22 +48,25 @@ const defaultContent = {
   },
   testimonials: [
     {
+      id: "1",
       name: "Brooklyn Simmons",
       role: "Brooklyn Simmons",
       avatar: "https://placehold.co/100x100.png",
-      text: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
+      content: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
     },
     {
+      id: "2",
       name: "Kristin Watson",
       role: "Web Designer",
       avatar: "https://placehold.co/100x100.png",
-      text: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
+      content: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
     },
     {
+      id: "3",
       name: "Wade Warren",
       role: "President Of Sales",
       avatar: "https://placehold.co/100x100.png",
-      text: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
+      content: "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
     },
   ],
   videoSection: {
