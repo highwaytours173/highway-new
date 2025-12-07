@@ -117,11 +117,17 @@ const featureSchema = z.object({
   description: z.string().min(1, "Feature description is required"),
 });
 
+// Safe File check for SSR
+const fileSchema =
+  typeof window !== "undefined" && typeof File !== "undefined"
+    ? z.instanceof(File)
+    : z.any();
+
 const formSchema = z.object({
   hero: z.object({
     title: z.string().min(1, "Hero title is required"),
     subtitle: z.string().min(1, "Hero subtitle is required"),
-    image: z.array(z.instanceof(File)).optional(),
+    image: z.array(fileSchema).optional(),
     imageAlt: z.string().optional(),
   }),
   whyChooseUs: z.object({
@@ -208,7 +214,7 @@ export function HomePageEditorForm() {
     let heroUrl: string | null = existingHeroUrl;
     try {
       const heroFile = values.hero?.image && values.hero.image[0];
-      if (heroFile && heroFile instanceof File) {
+      if (heroFile && typeof File !== "undefined" && heroFile instanceof File) {
         const ext = heroFile.name.split(".").pop() || "png";
         const path = `home/hero-${Date.now()}.${ext}`;
         const { error: uploadError } = await supabase.storage
