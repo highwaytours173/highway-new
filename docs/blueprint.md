@@ -1,4 +1,4 @@
-# **App Name**: Wanderlust Hub
+# **App Name**: tix and trips egypt
 
 ## Core Features:
 

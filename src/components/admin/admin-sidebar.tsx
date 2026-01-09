@@ -85,7 +85,7 @@ export function AdminSidebar({
             <Logo />
             <div className="flex flex-col">
               <span className="font-headline text-lg font-semibold text-foreground">
-                Wanderlust Hub
+                tix and trips egypt
               </span>
               <span className="text-xs text-muted-foreground">Admin Panel</span>
             </div>
@@ -108,10 +108,12 @@ export function AdminSidebar({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur-sm sticky top-0">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+          <div className="flex min-w-0 items-center gap-4">
             <SidebarTrigger className="md:hidden" />
-            <h1 className="text-lg font-semibold">{getPageTitle(pathname)}</h1>
+            <h1 className="truncate text-lg font-semibold">
+              {getPageTitle(pathname)}
+            </h1>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -125,7 +127,9 @@ export function AdminSidebar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+              <DropdownMenuLabel className="max-w-[240px] truncate">
+                {user.email}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
@@ -134,7 +138,7 @@ export function AdminSidebar({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

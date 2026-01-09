@@ -87,18 +87,6 @@ const browseCategoryIcons: Record<BrowseCategoryIconKey, React.ReactNode> = {
   plane: <Plane className="h-8 w-8 text-primary" />,
 };
 
-const defaultBrowseCategories: BrowseCategoryItem[] = [
-  { label: "Adventure", type: "adventure", icon: "mountain" },
-  { label: "Relaxation", type: "relaxation", icon: "sailboat" },
-  { label: "Cultural", type: "cultural", icon: "building2" },
-  { label: "Culinary", type: "culinary", icon: "utensils" },
-  { label: "Family", type: "family", icon: "ferrisWheel" },
-  { label: "Honeymoon", type: "honeymoon", icon: "plane" },
-];
-
-const defaultWhyChooseUsImageUrl =
-  "https://images.unsplash.com/photo-1699115823831-cf1329dfc58f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhZHZlbnR1cmUlMjB0cmF2ZWx8ZW58MHx8fHwxNzUyNjIyOTA5fDA&ixlib=rb-4.1.0&q=80&w=1080";
-
 const egyptianDestinations = [
   "Cairo",
   "Luxor",
@@ -146,9 +134,6 @@ function LastMinuteOfferCard({ tour }: { tour: Tour }) {
         />
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      <div className="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1 text-xs font-bold rounded-md shadow-md">
-        -50% OFF
-      </div>
       <div className="absolute bottom-0 left-0 p-4 w-full">
         <h3 className="font-bold text-xl mb-1 font-headline">{tour.destination}</h3>
         <p className="text-sm font-medium opacity-90">
@@ -171,7 +156,12 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
 
   React.useEffect(() => {
     if (homeContent?.testimonials && Array.isArray(homeContent.testimonials)) {
-      const count = homeContent.testimonialCount || 6;
+      const count =
+        typeof homeContent.testimonialCount === "number" &&
+        Number.isFinite(homeContent.testimonialCount) &&
+        homeContent.testimonialCount > 0
+          ? homeContent.testimonialCount
+          : homeContent.testimonials.length;
       setTestimonials(
         homeContent.testimonials.slice(0, count).map((t) => ({
           ...t,
@@ -203,7 +193,21 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
       ? browseCategoriesFromContent
           .map((category) => normalizeBrowseCategoryItem(category))
           .filter((v): v is BrowseCategoryItem => v != null)
-      : defaultBrowseCategories;
+      : [];
+
+  const popularToursCount =
+    typeof homeContent.popularDestinations?.count === "number" &&
+    Number.isFinite(homeContent.popularDestinations.count) &&
+    homeContent.popularDestinations.count > 0
+      ? homeContent.popularDestinations.count
+      : tours.length;
+
+  const lastMinuteToursCount =
+    typeof homeContent.lastMinuteOffers?.count === "number" &&
+    Number.isFinite(homeContent.lastMinuteOffers.count) &&
+    homeContent.lastMinuteOffers.count > 0
+      ? homeContent.lastMinuteOffers.count
+      : tours.length;
 
   return (
       <div className="space-y-16 md:space-y-32 overflow-hidden">
@@ -215,28 +219,32 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
           variants={fadeIn}
           className="relative h-[65vh] md:h-[85vh] min-h-[600px] flex items-center justify-center"
         >
-          <Image
-            src={homeContent.hero.imageUrl}
-            alt={homeContent.hero.imageAlt}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-            data-ai-hint="Egypt travel"
-          />
+          {homeContent.hero?.imageUrl ? (
+            <Image
+              src={homeContent.hero.imageUrl}
+              alt={homeContent.hero.imageAlt || ""}
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority
+              data-ai-hint="Egypt travel"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-muted" />
+          )}
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-background via-background/20 to-black/40" />
           
           <div className="relative z-20 container mx-auto px-4 text-center text-white mt-10">
             <motion.h1
               variants={fadeInUp}
               className="font-headline text-3xl sm:text-5xl md:text-7xl font-bold leading-tight mb-4 md:mb-6 drop-shadow-lg"
-              dangerouslySetInnerHTML={{ __html: homeContent.hero.title }}
+              dangerouslySetInnerHTML={{ __html: homeContent.hero?.title ?? "" }}
             />
             <motion.p 
               variants={fadeInUp}
               className="text-base md:text-2xl max-w-3xl mx-auto mb-8 md:mb-10 text-white/90 drop-shadow-md font-light"
             >
-              {homeContent.hero.subtitle}
+              {homeContent.hero?.subtitle}
             </motion.p>
             
             <motion.div 
@@ -315,7 +323,8 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
         )}
 
         {/* Categories Section */}
-        {homeContent.visibility?.browseCategory !== false && (
+        {homeContent.visibility?.browseCategory !== false &&
+        (browseCategories.length > 0 || homeContent.browseCategory?.title) ? (
         <section className="container mx-auto px-4 -mt-16 md:-mt-24 relative z-20">
           <motion.div 
             initial="hidden"
@@ -325,12 +334,16 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             className="bg-card rounded-xl md:rounded-2xl shadow-2xl p-6 md:p-10 border border-border/40"
           >
             <div className="text-center mb-6 md:mb-10">
-              <h2 className="font-headline text-2xl md:text-4xl font-bold text-foreground">
-                {homeContent.browseCategory?.title || "Browse By Destination Category"}
-              </h2>
-              <p className="text-muted-foreground mt-2 md:mt-3 text-base md:text-lg">
-                {homeContent.browseCategory?.subtitle || "Select a category to see our exclusive tour packages"}
-              </p>
+              {homeContent.browseCategory?.title ? (
+                <h2 className="font-headline text-2xl md:text-4xl font-bold text-foreground">
+                  {homeContent.browseCategory.title}
+                </h2>
+              ) : null}
+              {homeContent.browseCategory?.subtitle ? (
+                <p className="text-muted-foreground mt-2 md:mt-3 text-base md:text-lg">
+                  {homeContent.browseCategory.subtitle}
+                </p>
+              ) : null}
             </div>
             <motion.div 
               variants={staggerContainer}
@@ -362,10 +375,10 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             </motion.div>
           </motion.div>
         </section>
-        )}
+        ) : null}
 
         {/* Why Choose Us Section */}
-        {homeContent.visibility?.whyChooseUs !== false && (
+        {homeContent.visibility?.whyChooseUs !== false && homeContent.whyChooseUs ? (
         <section className="container mx-auto px-4">
           <motion.div 
             initial="hidden"
@@ -375,13 +388,15 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             className="grid md:grid-cols-2 gap-8 md:gap-16 items-center"
           >
             <motion.div variants={fadeInUp} className="order-2 md:order-1">
-              <p className="text-primary font-bold tracking-wide uppercase text-xs md:text-sm">
-                {homeContent.whyChooseUs.pretitle}
-              </p>
+              {homeContent.whyChooseUs?.pretitle ? (
+                <p className="text-primary font-bold tracking-wide uppercase text-xs md:text-sm">
+                  {homeContent.whyChooseUs.pretitle}
+                </p>
+              ) : null}
               <h2 className="font-headline text-3xl md:text-5xl font-bold text-foreground mt-2 mb-6 leading-tight">
                 <span
                   dangerouslySetInnerHTML={{
-                    __html: homeContent.whyChooseUs.title,
+                    __html: homeContent.whyChooseUs?.title ?? "",
                   }}
                 />
               </h2>
@@ -416,33 +431,39 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
               variants={fadeInUp}
               className="relative h-full min-h-[300px] md:min-h-[500px] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl order-1 md:order-2"
             >
-              <Image
-                src={homeContent.whyChooseUs.imageUrl || defaultWhyChooseUsImageUrl}
-                alt={homeContent.whyChooseUs.imageAlt || "Adventure travel"}
-                fill
-                style={{ objectFit: 'cover' }}
-                className="hover:scale-105 transition-transform duration-700"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                data-ai-hint="adventure travel"
-              />
+              {homeContent.whyChooseUs.imageUrl ? (
+                <Image
+                  src={homeContent.whyChooseUs.imageUrl}
+                  alt={homeContent.whyChooseUs.imageAlt || ""}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  className="hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  data-ai-hint="adventure travel"
+                />
+              ) : (
+                <div className="h-full w-full bg-muted" />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
-              <motion.div 
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -bottom-6 -right-6 md:-bottom-8 md:-right-8 bg-primary text-primary-foreground p-6 md:p-8 rounded-tl-3xl shadow-2xl w-48 md:w-64 text-center z-10"
-              >
-                <p className="text-3xl md:text-5xl font-bold font-headline mb-1">
-                  {homeContent.whyChooseUs.badgeValue || "25+"}
-                </p>
-                <p className="text-sm md:text-base font-medium opacity-90">
-                  {homeContent.whyChooseUs.badgeLabel || "Years Of Experience"}
-                </p>
-              </motion.div>
+              {homeContent.whyChooseUs.badgeValue && homeContent.whyChooseUs.badgeLabel ? (
+                <motion.div 
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="absolute -bottom-6 -right-6 md:-bottom-8 md:-right-8 bg-primary text-primary-foreground p-6 md:p-8 rounded-tl-3xl shadow-2xl w-48 md:w-64 text-center z-10"
+                >
+                  <p className="text-3xl md:text-5xl font-bold font-headline mb-1">
+                    {homeContent.whyChooseUs.badgeValue}
+                  </p>
+                  <p className="text-sm md:text-base font-medium opacity-90">
+                    {homeContent.whyChooseUs.badgeLabel}
+                  </p>
+                </motion.div>
+              ) : null}
             </motion.div>
           </motion.div>
         </section>
-        )}
+        ) : null}
 
         {/* Popular Destinations Section */}
         {homeContent.visibility?.popularDestinations !== false && (
@@ -455,17 +476,21 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
           >
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-10 gap-4">
               <motion.div variants={fadeInUp}>
-                <p className="text-primary font-bold tracking-wide uppercase text-xs md:text-sm">
-                  {homeContent.popularDestinations?.pretitle || "Top Destinations"}
-                </p>
-                <h2 className="font-headline text-3xl md:text-5xl font-bold text-foreground mt-2">
-                  {homeContent.popularDestinations?.title || "Popular Tours We Offer"}
-                </h2>
+                {homeContent.popularDestinations?.pretitle ? (
+                  <p className="text-primary font-bold tracking-wide uppercase text-xs md:text-sm">
+                    {homeContent.popularDestinations.pretitle}
+                  </p>
+                ) : null}
+                {homeContent.popularDestinations?.title ? (
+                  <h2 className="font-headline text-3xl md:text-5xl font-bold text-foreground mt-2">
+                    {homeContent.popularDestinations.title}
+                  </h2>
+                ) : null}
               </motion.div>
               <motion.div variants={fadeInUp}>
                 <Button variant="outline" className="border-primary/20 hover:border-primary text-foreground hover:text-primary hover:bg-primary/5" asChild>
                   <Link href="/tours">
-                    View All Tour <ArrowRight className="ml-2 h-4 w-4" />
+                    View Tours <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </motion.div>
@@ -473,7 +498,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             
             {tours.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {tours.slice(0, homeContent.popularDestinations?.count || 6).map((tour, i) => (
+                {tours.slice(0, popularToursCount).map((tour, i) => (
                   <motion.div key={tour.id} variants={fadeInUp} custom={i}>
                     <TourCard tour={tour} />
                   </motion.div>
@@ -506,25 +531,34 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             >
               <div className="relative z-10 max-w-[60%]">
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground font-headline mb-2 md:mb-3">
-                  {homeContent.discountBanners.banner1.title}
+                  {homeContent.discountBanners?.banner1?.title}
                 </h3>
                 <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6">
-                  {homeContent.discountBanners.banner1.description}
+                  {homeContent.discountBanners?.banner1?.description}
                 </p>
-                <Button className="shadow-lg group-hover:scale-105 transition-transform" asChild>
-                  <Link href={homeContent.discountBanners.banner1.buttonLink || "/tours"}>
-                    {homeContent.discountBanners.banner1.buttonText || "Book Now"} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                {homeContent.discountBanners?.banner1?.buttonLink &&
+                homeContent.discountBanners?.banner1?.buttonText ? (
+                  <Button
+                    className="shadow-lg group-hover:scale-105 transition-transform"
+                    asChild
+                  >
+                    <Link href={homeContent.discountBanners.banner1.buttonLink}>
+                      {homeContent.discountBanners.banner1.buttonText}{" "}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : null}
               </div>
               <div className="relative w-40 h-40 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-48 md:h-48 lg:w-64 lg:h-64 opacity-90 md:opacity-80 group-hover:scale-110 transition-transform duration-500">
-                <Image
-                  src={homeContent.discountBanners.banner1.imageUrl || "https://placehold.co/200x150.png"}
-                  alt={homeContent.discountBanners.banner1.title}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  sizes="(max-width: 768px) 160px, 256px"
-                />
+                {homeContent.discountBanners.banner1.imageUrl ? (
+                  <Image
+                    src={homeContent.discountBanners.banner1.imageUrl}
+                    alt={homeContent.discountBanners.banner1.title}
+                    fill
+                    style={{ objectFit: "contain" }}
+                    sizes="(max-width: 768px) 160px, 256px"
+                  />
+                ) : null}
               </div>
             </motion.div>
 
@@ -537,25 +571,35 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             >
               <div className="relative z-10 max-w-[60%]">
                 <h3 className="text-2xl md:text-3xl font-bold font-headline mb-2 md:mb-3">
-                  {homeContent.discountBanners.banner2.title}
+                  {homeContent.discountBanners?.banner2?.title}
                 </h3>
                 <p className="text-base md:text-lg text-primary-foreground/80 mb-4 md:mb-6">
-                  {homeContent.discountBanners.banner2.description}
+                  {homeContent.discountBanners?.banner2?.description}
                 </p>
-                <Button variant="secondary" className="shadow-lg group-hover:scale-105 transition-transform" asChild>
-                  <Link href={homeContent.discountBanners.banner2.buttonLink || "/tours"}>
-                    {homeContent.discountBanners.banner2.buttonText || "Book Now"} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                {homeContent.discountBanners?.banner2?.buttonLink &&
+                homeContent.discountBanners?.banner2?.buttonText ? (
+                  <Button
+                    variant="secondary"
+                    className="shadow-lg group-hover:scale-105 transition-transform"
+                    asChild
+                  >
+                    <Link href={homeContent.discountBanners.banner2.buttonLink}>
+                      {homeContent.discountBanners.banner2.buttonText}{" "}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : null}
               </div>
               <div className="relative w-40 h-40 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-48 md:h-48 lg:w-64 lg:h-64 opacity-90 md:opacity-80 group-hover:scale-110 transition-transform duration-500">
-                <Image
-                  src={homeContent.discountBanners.banner2.imageUrl || "https://placehold.co/200x150.png"}
-                  alt={homeContent.discountBanners.banner2.title}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  sizes="(max-width: 768px) 160px, 256px"
-                />
+                {homeContent.discountBanners.banner2.imageUrl ? (
+                  <Image
+                    src={homeContent.discountBanners.banner2.imageUrl}
+                    alt={homeContent.discountBanners.banner2.title}
+                    fill
+                    style={{ objectFit: "contain" }}
+                    sizes="(max-width: 768px) 160px, 256px"
+                  />
+                ) : null}
               </div>
             </motion.div>
           </div>
@@ -598,7 +642,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                     className="w-full"
                   >
                     <CarouselContent>
-                      {tours.slice(0, homeContent.lastMinuteOffers.count || 4).map((tour, index) => (
+                      {tours.slice(0, lastMinuteToursCount).map((tour, index) => (
                         <CarouselItem key={index} className="md:basis-1/2 pl-4">
                           <div className="p-1 h-full">
                             <LastMinuteOfferCard tour={tour} />
@@ -811,14 +855,18 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                       <div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
                         <Calendar className="h-3 w-3" /> {new Date(article.createdAt).toLocaleDateString()}
                       </div>
-                      <Image
-                        src={article.featuredImage || "https://placehold.co/600x400.png"}
-                        alt={article.title}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        className="transition-transform duration-700 group-hover:scale-110"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
+                      {article.featuredImage ? (
+                        <Image
+                          src={article.featuredImage}
+                          alt={article.title}
+                          fill
+                          style={{ objectFit: "cover" }}
+                          className="transition-transform duration-700 group-hover:scale-110"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-muted to-muted/40" />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                     <CardContent className="p-6 space-y-4">

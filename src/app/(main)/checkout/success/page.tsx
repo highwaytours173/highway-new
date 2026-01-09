@@ -84,7 +84,7 @@ export default function CheckoutSuccessPage() {
 
   const heroSubtitle =
     paymentState === "confirmed"
-      ? "Thanks for booking with Wanderlust Hub. A confirmation email is on its way."
+      ? "Thanks for booking with tix and trips egypt. A confirmation email is on its way."
       : paymentState === "cancelled"
         ? "Your payment was not completed. You can try again from the cart."
         : paymentState === "pending"

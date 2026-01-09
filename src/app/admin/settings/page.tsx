@@ -124,12 +124,12 @@ export default function SettingsPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      agencyName: "Wanderlust Hub",
-      phoneNumber: "+1 (234) 567-890",
-      contactEmail: "contact@wanderlusthub.com",
-      address: "123 Adventure Lane, Travel City, 98765",
+      agencyName: "tix and trips egypt",
+      phoneNumber: "",
+      contactEmail: "",
+      address: "",
       logo: [],
-      tagline: "Explore The World",
+      tagline: "",
       navLinks: [
         { label: "Home", href: "/" },
         { label: "About Us", href: "/about" },
@@ -139,13 +139,12 @@ export default function SettingsPage() {
         { label: "Blog", href: "/blog" },
         { label: "Contact", href: "/contact" },
       ],
-      aboutUs:
-        "Wanderlust Hub is your premier partner for unforgettable journeys in Egypt. We are dedicated to providing curated travel experiences that blend adventure, culture, and relaxation.",
+      aboutUs: "",
       socialMedia: {
-        facebook: "https://facebook.com",
-        twitter: "https://twitter.com",
-        instagram: "https://instagram.com",
-        linkedin: "https://linkedin.com",
+        facebook: "",
+        twitter: "",
+        instagram: "",
+        linkedin: "",
       },
       currentPassword: "",
       newPassword: "",
@@ -184,7 +183,7 @@ export default function SettingsPage() {
           contactEmail: settingsData.contactEmail ?? "",
           address: settingsData.address ?? "",
           logo: [],
-          tagline: settingsData.tagline ?? "Explore The World",
+          tagline: settingsData.tagline ?? "",
           navLinks: settingsData.navLinks ?? [
             { label: "Home", href: "/" },
             { label: "About Us", href: "/about" },
@@ -343,7 +342,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Tagline</FormLabel>
                     <FormControl>
-                      <Input placeholder="Explore The World" {...field} />
+                      <Input placeholder="Your tagline" {...field} />
                     </FormControl>
                     <FormDescription>
                       Short phrase under the logo in the header/footer.

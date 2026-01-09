@@ -68,11 +68,11 @@ export function Footer() {
     loadSettings();
   }, []);
 
-  const agencyName = settings?.data?.agencyName || "Turmet";
-  const tagline = settings?.data?.tagline || "Explore The World";
-  const contactEmail = settings?.data?.contactEmail || "info@turmet.com";
-  const phoneNumber = settings?.data?.phoneNumber || "+256 214 203 215";
-  const address = settings?.data?.address || "9550 Bolsa Ave #126, United States";
+  const agencyName = settings?.data?.agencyName || "tix and trips egypt";
+  const tagline = settings?.data?.tagline || "";
+  const contactEmail = settings?.data?.contactEmail || "";
+  const phoneNumber = settings?.data?.phoneNumber || "";
+  const address = settings?.data?.address || "";
 
   return (
     <footer className="bg-[#181E29] text-gray-300">
@@ -84,7 +84,7 @@ export function Footer() {
               <Logo logoUrl={settings?.logo_url ?? undefined} alt={agencyName} />
               <div>
                 <span className="font-headline text-2xl font-bold text-white">{agencyName}</span>
-                <p className="text-xs text-gray-400">{tagline}</p>
+                {tagline ? <p className="text-xs text-gray-400">{tagline}</p> : null}
               </div>
             </Link>
             <h3 className="font-headline font-semibold text-white">Subscribe Newsletter</h3>
@@ -96,18 +96,26 @@ export function Footer() {
               </Button>
             </form>
             <div className="flex space-x-3 pt-2">
-              <a href={settings?.data?.socialMedia?.facebook || "#"} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Facebook">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href={settings?.data?.socialMedia?.twitter || "#"} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Twitter">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href={settings?.data?.socialMedia?.linkedin || "#"} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="LinkedIn">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href={settings?.data?.socialMedia?.instagram || "#"} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Instagram">
-                <Instagram className="h-5 w-5" />
-              </a>
+              {settings?.data?.socialMedia?.facebook ? (
+                <a href={settings.data.socialMedia.facebook} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Facebook">
+                  <Facebook className="h-5 w-5" />
+                </a>
+              ) : null}
+              {settings?.data?.socialMedia?.twitter ? (
+                <a href={settings.data.socialMedia.twitter} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Twitter">
+                  <Twitter className="h-5 w-5" />
+                </a>
+              ) : null}
+              {settings?.data?.socialMedia?.linkedin ? (
+                <a href={settings.data.socialMedia.linkedin} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="LinkedIn">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              ) : null}
+              {settings?.data?.socialMedia?.instagram ? (
+                <a href={settings.data.socialMedia.instagram} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Instagram">
+                  <Instagram className="h-5 w-5" />
+                </a>
+              ) : null}
             </div>
           </div>
 
@@ -136,49 +144,44 @@ export function Footer() {
           {/* Column 3: Services */}
           <div>
             <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">Services</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">Car Rental</Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">SIM Cards</Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">Airport Pickup</Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">Private Guide</Link>
-              </li>
-              <li>
-                <Link href="/services" className="hover:text-primary transition-colors">Hotel Booking</Link>
-              </li>
-            </ul>
+            <p className="text-sm text-gray-400 mb-4">
+              Explore what we can arrange for your trip.
+            </p>
+            <Link href="/services" className="inline-flex items-center gap-2 hover:text-primary transition-colors">
+              View services <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
           {/* Column 4: Contact Us */}
           <div>
             <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">Contact Us</h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <span>{address}</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <span>{contactEmail}</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
-                  <Phone className="h-5 w-5" />
-                </div>
-                <div>
-                  <p>{phoneNumber}</p>
-                </div>
-              </li>
+              {address ? (
+                <li className="flex items-start gap-3">
+                  <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <span>{address}</span>
+                </li>
+              ) : null}
+              {contactEmail ? (
+                <li className="flex items-start gap-3">
+                  <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <span>{contactEmail}</span>
+                </li>
+              ) : null}
+              {phoneNumber ? (
+                <li className="flex items-start gap-3">
+                  <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p>{phoneNumber}</p>
+                  </div>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>

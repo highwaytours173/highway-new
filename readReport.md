@@ -1,7 +1,7 @@
-# Wanderlust Hub – Technical Assessment and Development Plan
+# tix and trips egypt – Technical Assessment and Development Plan
 
 ## Executive Summary
-Wanderlust Hub is a Next.js 15 application with a modern App Router architecture, Tailwind CSS styling, Shadcn UI components, and Supabase for data and storage. The product already provides core browsing and booking experiences for tours, a shopping cart and checkout flow that creates bookings (without payments), an admin panel for managing tours, bookings, customers (derived), upsell items, a dashboard with analytics, and AI features for cart suggestions and blog post generation.
+tix and trips egypt is a Next.js 15 application with a modern App Router architecture, Tailwind CSS styling, Shadcn UI components, and Supabase for data and storage. The product already provides core browsing and booking experiences for tours, a shopping cart and checkout flow that creates bookings (without payments), an admin panel for managing tours, bookings, customers (derived), upsell items, a dashboard with analytics, and AI features for cart suggestions and blog post generation.
 
 Key gaps remain around production-grade data persistence for CMS features (blog, homepage, settings), robust authentication/authorization (admin roles), payment integration (Stripe), and comprehensive security (RLS policies). This plan defines functional requirements, technical specifications, and a roadmap to achieve a production-ready release.
 

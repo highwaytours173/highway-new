@@ -19,7 +19,7 @@ export function TourCard({ tour }: TourCardProps) {
   const imageUrl =
     Array.isArray(tour.images) && tour.images.length > 0
       ? tour.images[0]
-      : "https://placehold.co/1200x800.png";
+      : null;
 
   const startingPrice = (() => {
     const prices: number[] = [];
@@ -60,15 +60,19 @@ export function TourCard({ tour }: TourCardProps) {
     <Card className="group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         <Link href={`/tours/${tour.slug}`} className="block h-full w-full">
-          <Image
-            src={imageUrl}
-            alt={tour.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            data-ai-hint={`${tour.destination} ${(Array.isArray(tour.type) ? tour.type[0] : "") || "travel"}`}
-            priority={false}
-          />
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={tour.name}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              data-ai-hint={`${tour.destination} ${(Array.isArray(tour.type) ? tour.type[0] : "") || "travel"}`}
+              priority={false}
+            />
+          ) : (
+            <div className="h-full w-full bg-muted" />
+          )}
         </Link>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
         <Badge

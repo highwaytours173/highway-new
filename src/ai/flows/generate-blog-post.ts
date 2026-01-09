@@ -39,7 +39,7 @@ const prompt = ai.definePrompt({
   name: "generateBlogPostPrompt",
   input: { schema: GenerateBlogPostInputSchema },
   output: { schema: GenerateBlogPostOutputSchema },
-  prompt: `You are an expert travel blogger writing for "Wanderlust Hub", a company specializing in tours of Egypt. Your tone is engaging, informative, and inspiring.
+  prompt: `You are an expert travel blogger writing for "tix and trips egypt", a company specializing in tours of Egypt. Your tone is engaging, informative, and inspiring.
 
 Generate a full blog post based on the following topic. The post should be at least 500 words long and formatted in HTML.
 

@@ -1,4 +1,4 @@
-# Wanderlust Hub
+# tix and trips egypt
 
 This is a Next.js application for browsing and booking tour packages, created with Firebase Studio.
 

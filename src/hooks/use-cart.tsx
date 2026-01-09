@@ -37,10 +37,11 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
+  const CART_STORAGE_KEY = "tix-and-trips-egypt-cart";
 
   useEffect(() => {
     try {
-      const storedCart = localStorage.getItem("wanderlust-hub-cart");
+      const storedCart = localStorage.getItem(CART_STORAGE_KEY);
       if (storedCart) {
         setCartItems(JSON.parse(storedCart));
       }
@@ -51,7 +52,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem("wanderlust-hub-cart", JSON.stringify(cartItems));
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
     } catch (error) {
       console.error("Could not save cart to localStorage", error);
     }

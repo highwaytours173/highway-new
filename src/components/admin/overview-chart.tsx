@@ -7,8 +7,8 @@ type ChartPoint = { name: string; total: number };
 
 export function OverviewChart({ data }: { data: ChartPoint[] }) {
   return (
-    <Card className="p-4">
-      <ResponsiveContainer width="100%" height={350}>
+    <Card className="h-[240px] p-4 sm:h-[350px]">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <XAxis
             dataKey="name"

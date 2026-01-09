@@ -25,10 +25,11 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlistItems, setWishlistItems] = useState<Tour[]>([]);
   const { toast } = useToast();
+  const WISHLIST_STORAGE_KEY = "tix-and-trips-egypt-wishlist";
 
   useEffect(() => {
     try {
-      const storedWishlist = localStorage.getItem("wanderlust-hub-wishlist");
+      const storedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
       if (storedWishlist) {
         setWishlistItems(JSON.parse(storedWishlist));
       }
@@ -40,7 +41,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     try {
       localStorage.setItem(
-        "wanderlust-hub-wishlist",
+        WISHLIST_STORAGE_KEY,
         JSON.stringify(wishlistItems),
       );
     } catch (error) {

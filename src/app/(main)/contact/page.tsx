@@ -19,10 +19,10 @@ export default async function ContactPage({
   const sent = resolved.sent === "1";
   const sentError = resolved.sent === "0";
 
-  let agencyName = "Wanderlust Hub";
-  let phoneNumber = "+20 000 000 000";
-  let contactEmail = "info@wanderlusthub.com";
-  let address = "Cairo, Egypt";
+  let agencyName = "";
+  let phoneNumber = "";
+  let contactEmail = "";
+  let address = "";
 
   try {
     const supabase = await createClient();
@@ -46,13 +46,18 @@ export default async function ContactPage({
           | null
       )?.data;
 
-      agencyName = settingsData?.agencyName || agencyName;
-      phoneNumber = settingsData?.phoneNumber || phoneNumber;
-      contactEmail = settingsData?.contactEmail || contactEmail;
-      address = settingsData?.address || address;
+      agencyName = settingsData?.agencyName ?? agencyName;
+      phoneNumber = settingsData?.phoneNumber ?? phoneNumber;
+      contactEmail = settingsData?.contactEmail ?? contactEmail;
+      address = settingsData?.address ?? address;
     }
   } catch {
   }
+
+  const displayAgencyName =
+    typeof agencyName === "string" && agencyName.trim().length > 0
+      ? agencyName
+      : "tix and trips egypt";
 
   async function submit(formData: FormData) {
     "use server";
@@ -97,7 +102,7 @@ export default async function ContactPage({
                 Contact
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                Talk to {agencyName}
+                Talk to {displayAgencyName}
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
                 Send a message and we’ll get back to you as soon as possible.
@@ -128,37 +133,43 @@ export default async function ContactPage({
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
-                  <Mail className="mt-0.5 h-5 w-5 text-primary" />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Email</p>
-                    <a
-                      className="text-sm text-muted-foreground hover:text-primary"
-                      href={`mailto:${contactEmail}`}
-                    >
-                      {contactEmail}
-                    </a>
+                {contactEmail ? (
+                  <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
+                    <Mail className="mt-0.5 h-5 w-5 text-primary" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Email</p>
+                      <a
+                        className="text-sm text-muted-foreground hover:text-primary"
+                        href={`mailto:${contactEmail}`}
+                      >
+                        {contactEmail}
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
-                  <Phone className="mt-0.5 h-5 w-5 text-primary" />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Phone</p>
-                    <a
-                      className="text-sm text-muted-foreground hover:text-primary"
-                      href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
-                    >
-                      {phoneNumber}
-                    </a>
+                ) : null}
+                {phoneNumber ? (
+                  <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
+                    <Phone className="mt-0.5 h-5 w-5 text-primary" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Phone</p>
+                      <a
+                        className="text-sm text-muted-foreground hover:text-primary"
+                        href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
+                      >
+                        {phoneNumber}
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
-                  <MapPin className="mt-0.5 h-5 w-5 text-primary" />
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Address</p>
-                    <p className="text-sm text-muted-foreground">{address}</p>
+                ) : null}
+                {address ? (
+                  <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
+                    <MapPin className="mt-0.5 h-5 w-5 text-primary" />
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Address</p>
+                      <p className="text-sm text-muted-foreground">{address}</p>
+                    </div>
                   </div>
-                </div>
+                ) : null}
                 <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
                   <Clock className="mt-0.5 h-5 w-5 text-primary" />
                   <div className="space-y-0.5">

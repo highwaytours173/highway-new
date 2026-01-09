@@ -81,44 +81,56 @@ function TopBar({
     <div className="bg-secondary text-secondary-foreground text-sm py-2 border-b">
       <div className="container flex justify-between items-center max-w-screen-2xl">
         <div className="flex items-center gap-6">
-          <a
-            href={contactEmail ? `mailto:${contactEmail}` : "#"}
-            className="flex items-center gap-2 hover:text-primary"
-          >
-            <Mail className="w-4 h-4" />
-            <span>{contactEmail || "contact@example.com"}</span>
-          </a>
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            <span>{phoneNumber || "+990 123 456 789"}</span>
-          </div>
-          <div className="hidden md:flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            <span>{address || "123 Main St, City"}</span>
-          </div>
+          {contactEmail ? (
+            <a
+              href={`mailto:${contactEmail}`}
+              className="flex items-center gap-2 hover:text-primary"
+            >
+              <Mail className="w-4 h-4" />
+              <span>{contactEmail}</span>
+            </a>
+          ) : null}
+          {phoneNumber ? (
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4" />
+              <span>{phoneNumber}</span>
+            </div>
+          ) : null}
+          {address ? (
+            <div className="hidden md:flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              <span>{address}</span>
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-4">
-          <a
-            href={socialMedia?.twitter || "#"}
-            className="hover:text-primary"
-            aria-label="Twitter"
-          >
-            <Twitter className="w-4 h-4" />
-          </a>
-          <a
-            href={socialMedia?.facebook || "#"}
-            className="hover:text-primary"
-            aria-label="Facebook"
-          >
-            <Facebook className="w-4 h-4" />
-          </a>
-          <a
-            href={socialMedia?.instagram || "#"}
-            className="hover:text-primary"
-            aria-label="Instagram"
-          >
-            <Instagram className="w-4 h-4" />
-          </a>
+          {socialMedia?.twitter ? (
+            <a
+              href={socialMedia.twitter}
+              className="hover:text-primary"
+              aria-label="Twitter"
+            >
+              <Twitter className="w-4 h-4" />
+            </a>
+          ) : null}
+          {socialMedia?.facebook ? (
+            <a
+              href={socialMedia.facebook}
+              className="hover:text-primary"
+              aria-label="Facebook"
+            >
+              <Facebook className="w-4 h-4" />
+            </a>
+          ) : null}
+          {socialMedia?.instagram ? (
+            <a
+              href={socialMedia.instagram}
+              className="hover:text-primary"
+              aria-label="Instagram"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
+          ) : null}
         </div>
       </div>
     </div>
@@ -193,12 +205,19 @@ export function Header() {
             href="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <Logo logoUrl={settings?.logo_url ?? undefined} alt={settings?.data?.agencyName || "Agency Logo"} />
+            <Logo
+              logoUrl={settings?.logo_url ?? undefined}
+              alt={settings?.data?.agencyName || "tix and trips egypt"}
+            />
             <div className="hidden sm:block">
               <span className="font-headline text-xl md:text-2xl font-bold text-foreground">
-                {settings?.data?.agencyName || "Turmet"}
+                {settings?.data?.agencyName || "tix and trips egypt"}
               </span>
-              <p className="text-[10px] md:text-xs text-muted-foreground">{settings?.data?.tagline || "Explore The World"}</p>
+              {settings?.data?.tagline ? (
+                <p className="text-[10px] md:text-xs text-muted-foreground">
+                  {settings.data.tagline}
+                </p>
+              ) : null}
             </div>
           </Link>
 

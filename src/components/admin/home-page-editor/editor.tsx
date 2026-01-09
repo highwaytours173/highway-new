@@ -42,117 +42,82 @@ import Image from "next/image";
 import { browseCategoryIconKeys } from "@/types";
 import type { BrowseCategoryItem } from "@/types";
 
-const defaultBrowseCategories: BrowseCategoryItem[] = [
-  { label: "Adventure", type: "adventure", icon: "mountain" },
-  { label: "Relaxation", type: "relaxation", icon: "sailboat" },
-  { label: "Cultural", type: "cultural", icon: "building2" },
-  { label: "Culinary", type: "culinary", icon: "utensils" },
-  { label: "Family", type: "family", icon: "ferrisWheel" },
-  { label: "Honeymoon", type: "honeymoon", icon: "plane" },
-];
+const defaultBrowseCategories: BrowseCategoryItem[] = [];
 
-// In a real app, this default data would come from a database or API
 const defaultHomePageData = {
   hero: {
-    title: "Let's Make Your Best<br />Trip With Us",
-    subtitle:
-      "Explore the world with our curated travel packages. Adventure awaits!",
-    imageUrl: "https://placehold.co/1920x1080.png",
-    imageAlt: "Ancient Egyptian temples",
+    title: "",
+    subtitle: "",
+    imageUrl: "",
+    imageAlt: "",
   },
   whyChooseUs: {
-    pretitle: "Why Choose Us",
-    title: "Great Opportunity For<br/>Adventure & Travels",
-    imageUrl:
-      "https://images.unsplash.com/photo-1699115823831-cf1329dfc58f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhZHZlbnR1cmUlMjB0cmF2ZWx8ZW58MHx8fHwxNzUyNjIyOTA5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    imageAlt: "Adventure travel",
-    badgeValue: "25+",
-    badgeLabel: "Years Of Experience",
+    pretitle: "",
+    title: "",
+    imageUrl: "",
+    imageAlt: "",
+    badgeValue: "",
+    badgeLabel: "",
     feature1: {
-      title: "Safety First",
-      description:
-        "We prioritize your safety to ensure you have a worry-free and memorable experience.",
+      title: "",
+      description: "",
     },
     feature2: {
-      title: "Professional Guide",
-      description:
-        "Our guides are local experts who bring destinations to life with their passion and knowledge.",
+      title: "",
+      description: "",
     },
     feature3: {
-      title: "Exclusive Trip",
-      description:
-        "We offer unique itineraries and exclusive access to create once-in-a-lifetime journeys.",
+      title: "",
+      description: "",
     },
   },
   browseCategory: {
-    title: "Browse By Destination Category",
-    subtitle: "Select a category to see our exclusive tour packages",
+    title: "",
+    subtitle: "",
     categories: defaultBrowseCategories,
   },
   popularDestinations: {
-    pretitle: "Top Destinations",
-    title: "Popular Tours We Offer",
-    count: 6,
+    pretitle: "",
+    title: "",
+    count: 0,
   },
   discountBanners: {
     banner1: {
-      title: "35% OFF",
-      description: "Explore The World tour Hotel Booking.",
-      imageUrl: "https://placehold.co/200x150.png",
-      buttonText: "Book Now",
-      buttonLink: "/tours",
+      title: "",
+      description: "",
+      imageUrl: "",
+      buttonText: "",
+      buttonLink: "",
     },
     banner2: {
-      title: "35% OFF",
-      description: "On Flight Ticket Grab This Now.",
-      imageUrl: "https://placehold.co/200x150.png",
-      buttonText: "Book Now",
-      buttonLink: "/tours",
+      title: "",
+      description: "",
+      imageUrl: "",
+      buttonText: "",
+      buttonLink: "",
     },
   },
   lastMinuteOffers: {
-    discount: "50%",
-    pretitle: "Deals & Offers",
-    title: "Incredible Last-Minute Offers",
-    count: 4,
+    discount: "",
+    pretitle: "",
+    title: "",
+    count: 0,
   },
-  testimonials: [
-    {
-      name: "Brooklyn Simmons",
-      role: "Brooklyn Simmons",
-      avatar: "https://placehold.co/100x100.png",
-      content:
-        "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
-    },
-    {
-      name: "Kristin Watson",
-      role: "Web Designer",
-      avatar: "https://placehold.co/100x100.png",
-      content:
-        "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
-    },
-    {
-      name: "Wade Warren",
-      role: "President Of Sales",
-      avatar: "https://placehold.co/100x100.png",
-      content:
-        "Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.",
-    },
-  ],
-  testimonialCount: 6,
+  testimonials: [],
+  testimonialCount: 0,
   videoSection: {
-    pretitle: "Watch Our Story",
-    title: "We Provide The Best Tour Facilities",
-    backgroundImageUrl: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    button1Text: "Find Out More",
-    button1Link: "/tours",
-    button2Text: "Watch Video",
-    button2Link: "#",
+    pretitle: "",
+    title: "",
+    backgroundImageUrl: "",
+    button1Text: "",
+    button1Link: "",
+    button2Text: "",
+    button2Link: "",
   },
   newsSection: {
-    pretitle: "News & Updates",
-    title: "Our Latest News & Articles",
-    count: 3,
+    pretitle: "",
+    title: "",
+    count: 0,
   },
   visibility: {
     hero: true,
@@ -170,7 +135,7 @@ const defaultHomePageData = {
 const testimonialSchema = z.object({
   name: z.string().min(1, "Name is required"),
   role: z.string().min(1, "Role is required"),
-  avatar: z.string().url("Must be a valid URL"),
+  avatar: z.string().url("Must be a valid URL").or(z.literal("")),
   content: z.string().min(10, "Testimonial text is too short"),
 });
 
@@ -322,7 +287,7 @@ export function HomePageEditorForm() {
           (t) => ({
             name: (t as { name?: string }).name ?? "",
             role: (t as { role?: string }).role ?? "",
-            avatar: (t as { avatar?: string }).avatar ?? "https://placehold.co/100x100.png",
+            avatar: (t as { avatar?: string }).avatar ?? "",
             content:
               (t as { content?: string }).content ??
               (t as { text?: string }).text ??
@@ -1401,7 +1366,7 @@ export function HomePageEditorForm() {
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="https://placehold.co/100x100.png"
+                                placeholder="https://..."
                               />
                             </FormControl>
                             <FormMessage />

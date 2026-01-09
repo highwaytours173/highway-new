@@ -13,10 +13,9 @@ import {
 } from "lucide-react";
 
 export default async function AboutPage() {
-  let agencyName = "Wanderlust Hub";
-  let aboutUs =
-    "We craft memorable journeys across Egypt with thoughtful itineraries, local guides, and seamless logistics.";
-  let tagline = "Curated journeys. Local expertise. Seamless travel.";
+  let agencyName = "";
+  let aboutUs = "";
+  let tagline = "";
 
   try {
     const supabase = await createClient();
@@ -33,12 +32,17 @@ export default async function AboutPage() {
           | null
       )?.data;
 
-      agencyName = settingsData?.agencyName || agencyName;
-      aboutUs = settingsData?.aboutUs || aboutUs;
-      tagline = settingsData?.tagline || tagline;
+      agencyName = settingsData?.agencyName ?? agencyName;
+      aboutUs = settingsData?.aboutUs ?? aboutUs;
+      tagline = settingsData?.tagline ?? tagline;
     }
   } catch {
   }
+
+  const displayAgencyName =
+    typeof agencyName === "string" && agencyName.trim().length > 0
+      ? agencyName
+      : "tix and trips egypt";
 
   const aboutParagraphs = aboutUs
     .split(/\n+/)
@@ -65,11 +69,13 @@ export default async function AboutPage() {
                 About
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                About {agencyName}
+                About {displayAgencyName}
               </h1>
-              <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                {tagline}
-              </p>
+              {tagline ? (
+                <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+                  {tagline}
+                </p>
+              ) : null}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
@@ -98,7 +104,7 @@ export default async function AboutPage() {
               {aboutParagraphs.length > 0 ? (
                 aboutParagraphs.map((p, idx) => <p key={idx}>{p}</p>)
               ) : (
-                <p>{aboutUs}</p>
+                <p>About content is not set yet.</p>
               )}
             </div>
           </CardContent>

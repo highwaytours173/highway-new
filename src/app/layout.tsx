@@ -13,8 +13,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Wanderlust Hub",
-  description: "Your ultimate destination for curated tour packages.",
+  title: "tix and trips egypt",
+  description: "Tours and travel experiences in Egypt.",
 };
 
 export default function RootLayout({
