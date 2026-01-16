@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { Tour } from "@/types";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/hooks/use-currency";
 
 import {
   Card,
@@ -43,6 +44,7 @@ interface TourDetailsClientProps {
 
 export function TourDetailsClient({ tour }: TourDetailsClientProps) {
   const { addToCart } = useCart();
+  const { format } = useCurrency();
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -340,10 +342,10 @@ export function TourDetailsClient({ tour }: TourDetailsClientProps) {
                         {tier.maxPeople ? ` - ${tier.maxPeople}` : "+"} persons
                       </td>
                       <td className="py-2 text-center">
-                        ${tier.pricePerAdult}
+                        {format(tier.pricePerAdult)}
                       </td>
                       <td className="py-2 text-center">
-                        ${tier.pricePerChild}
+                        {format(tier.pricePerChild)}
                       </td>
                     </tr>
                   ))}
@@ -469,20 +471,20 @@ export function TourDetailsClient({ tour }: TourDetailsClientProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Adults Price</span>
                   <span>
-                    {adults} x $
-                    {currentPriceTier?.pricePerAdult.toLocaleString()}
+                    {adults} x{" "}
+                    {format(currentPriceTier?.pricePerAdult ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Children Price</span>
                   <span>
-                    {children} x $
-                    {currentPriceTier?.pricePerChild.toLocaleString()}
+                    {children} x{" "}
+                    {format(currentPriceTier?.pricePerChild ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-xl text-primary pt-2">
                   <span>Total Price</span>
-                  <span>${totalPrice.toLocaleString()}</span>
+                  <span>{format(totalPrice)}</span>
                 </div>
               </div>
             </CardContent>

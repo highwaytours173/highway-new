@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/hooks/use-currency";
 import { ArrowUpDown, PlusCircle, Search, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,7 @@ export function ServicesClient({
   searchPlaceholder?: string;
 }) {
   const { addToCart, cartItems } = useCart();
+  const { format } = useCurrency();
   const [q, setQ] = React.useState("");
   const [sort, setSort] = React.useState<"recommended" | "price_asc" | "price_desc">(
     "recommended",
@@ -303,10 +305,7 @@ export function ServicesClient({
                         >
                           {variants.map((v) => (
                             <option key={getVariantKey(v)} value={getVariantKey(v)}>
-                              {v.name} • $
-                              {new Intl.NumberFormat("en-US", {
-                                maximumFractionDigits: 0,
-                              }).format(v.price ?? 0)}
+                              {v.name} • {format(v.price ?? 0)}
                             </option>
                           ))}
                         </select>

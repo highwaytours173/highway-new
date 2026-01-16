@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/hooks/use-currency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ type PaymentMethod = z.infer<typeof formSchema>["paymentMethod"];
 
 export default function CheckoutPage() {
   const { cartItems, getCartTotal, getDiscountAmount, getFinalTotal, promoCode } = useCart();
+  const { format: formatPrice } = useCurrency();
   const { toast } = useToast();
   const [paymentConfig, setPaymentConfig] = useState<{
     cash: boolean;
@@ -515,7 +517,7 @@ export default function CheckoutPage() {
                           <p className="text-sm text-muted-foreground">{summary.productDescription}</p>
                         </div>
                       </div>
-                      <p className="font-semibold">${summary.itemTotal.toLocaleString()}</p>
+                      <p className="font-semibold">{formatPrice(summary.itemTotal)}</p>
                     </div>
                   );
                 })}
@@ -526,12 +528,12 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${getCartTotal().toLocaleString()}</span>
+                  <span className="font-medium">{formatPrice(getCartTotal())}</span>
                 </div>
                 {promoCode ? (
                   <div className="flex justify-between text-green-600">
                     <span>Discount ({promoCode.code})</span>
-                    <span>-${getDiscountAmount().toLocaleString()}</span>
+                    <span>-{formatPrice(getDiscountAmount())}</span>
                   </div>
                 ) : null}
                 <div className="flex items-center justify-between">
@@ -542,7 +544,7 @@ export default function CheckoutPage() {
             </CardContent>
             <CardFooter className="flex items-center justify-between border-t pt-4 text-lg font-bold">
               <span>Total</span>
-              <span>${getFinalTotal().toLocaleString()}</span>
+              <span>{formatPrice(getFinalTotal())}</span>
             </CardFooter>
           </Card>
         </div>

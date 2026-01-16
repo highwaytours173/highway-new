@@ -5,6 +5,7 @@ import type { UpsellItem } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/hooks/use-currency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +22,7 @@ function formatUsd(value: number) {
 
 export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
   const { addToCart, cartItems } = useCart();
+  const { format } = useCurrency();
   const variants = React.useMemo(() => service.variants ?? [], [service.variants]);
   const [selectedVariantKey, setSelectedVariantKey] = React.useState<string | undefined>(() => {
     const first = (service.variants ?? [])[0];
@@ -104,7 +106,7 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
               >
                 {variants.map((v) => (
                   <option key={v.id ?? v.name} value={v.id ?? v.name}>
-                    {v.name} • {formatUsd(v.price ?? 0)}
+                    {v.name} • {format(v.price ?? 0)}
                   </option>
                 ))}
               </select>

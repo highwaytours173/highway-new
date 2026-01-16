@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useFormStatus } from "react-dom";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/hooks/use-currency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ export default function CartPage() {
     getFinalTotal,
     promoCode
   } = useCart();
+  const { format: formatPrice } = useCurrency();
   const [state, formAction] = useActionState(getAiSuggestions, {
     message: "",
     suggestions: [],
@@ -307,7 +309,7 @@ export default function CartPage() {
                           </div>
                           <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start">
                             <p className="text-lg font-semibold text-primary">
-                              ${itemTotal.toLocaleString()}
+                              {formatPrice(itemTotal)}
                             </p>
                             <Button
                               variant="ghost"
@@ -357,13 +359,13 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${getCartTotal().toLocaleString()}</span>
+                  <span className="font-medium">{formatPrice(getCartTotal())}</span>
                 </div>
                 
                 {promoCode ? (
                   <div className="flex justify-between text-green-600">
                     <span>Discount ({promoCode.code})</span>
-                    <span>-${getDiscountAmount().toLocaleString()}</span>
+                    <span>-{formatPrice(getDiscountAmount())}</span>
                   </div>
                 ) : null}
 
@@ -391,7 +393,7 @@ export default function CartPage() {
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>${getFinalTotal().toLocaleString()}</span>
+                  <span>{formatPrice(getFinalTotal())}</span>
                 </div>
                 <div className="grid gap-2 rounded-2xl border bg-muted/30 p-4 text-sm">
                   <div className="flex items-center justify-between">
@@ -482,7 +484,7 @@ export default function CartPage() {
                             </SelectContent>
                           </Select>
                         ) : null}
-                        <span className="font-semibold">${display.price.toLocaleString()}</span>
+                        <span className="font-semibold">{formatPrice(display.price)}</span>
                         <Button
                           size="sm"
                           onClick={() =>
