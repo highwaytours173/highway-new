@@ -51,6 +51,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
+import { useLanguage } from "@/hooks/use-language";
+import { useCurrency } from "@/hooks/use-currency";
 
 // Animation Variants
 const fadeInUp: Variants = {
@@ -114,6 +116,7 @@ function normalizeBrowseCategoryItem(value: unknown): BrowseCategoryItem | null 
 }
 
 function LastMinuteOfferCard({ tour }: { tour: Tour }) {
+  const { format } = useCurrency();
   if (!tour || !tour.images || tour.images.length === 0) return null;
   const startingPrice =
     tour.priceTiers?.[0]?.pricePerAdult ??
@@ -137,7 +140,7 @@ function LastMinuteOfferCard({ tour }: { tour: Tour }) {
       <div className="absolute bottom-0 left-0 p-4 w-full">
         <h3 className="font-bold text-xl mb-1 font-headline">{tour.destination}</h3>
         <p className="text-sm font-medium opacity-90">
-          {startingPrice != null ? `$${startingPrice}` : "Contact us"}
+          {startingPrice != null ? format(startingPrice) : "Contact us"}
         </p>
       </div>
     </Link>
@@ -151,6 +154,7 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ initialTours, homeContent, articles = [] }: HomePageClientProps) {
+  const { t } = useLanguage();
   const [testimonials, setTestimonials] = React.useState<Testimonial[]>([]);
   const tours = initialTours;
 
@@ -254,24 +258,24 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
               <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4">
                 <div className="md:col-span-4">
                   <label htmlFor="home-search-q" className="sr-only">
-                    Search tour
+                    {t("hero.search")}
                   </label>
                   <Input
                     id="home-search-q"
-                    placeholder="Search tour..."
+                    placeholder={`${t("hero.search")}...`}
                     className="bg-white/90 border-0 h-10 md:h-12 text-foreground focus-visible:ring-2 focus-visible:ring-primary text-sm md:text-base"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 <div className="md:col-span-3">
-                  <label className="sr-only">Destination</label>
+                  <label className="sr-only">{t("nav.destination")}</label>
                   <Select value={destination} onValueChange={setDestination}>
                     <SelectTrigger
                       className="bg-white/90 border-0 h-10 md:h-12 text-foreground focus:ring-primary text-sm md:text-base"
-                      aria-label="Destination"
+                      aria-label={t("nav.destination")}
                     >
-                      <SelectValue placeholder="Destination" />
+                      <SelectValue placeholder={t("nav.destination")} />
                     </SelectTrigger>
                     <SelectContent>
                       {egyptianDestinations.map((dest) => (
@@ -292,30 +296,30 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cultural">Cultural</SelectItem>
-                      <SelectItem value="adventure">Adventure</SelectItem>
-                      <SelectItem value="culinary">Culinary</SelectItem>
-                      <SelectItem value="relaxation">Relaxation</SelectItem>
+                      <SelectItem value="cultural">{t("hero.type.cultural")}</SelectItem>
+                      <SelectItem value="adventure">{t("hero.type.adventure")}</SelectItem>
+                      <SelectItem value="culinary">{t("hero.type.culinary")}</SelectItem>
+                      <SelectItem value="relaxation">{t("hero.type.relaxation")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="md:col-span-2">
                   <Button size="lg" className="w-full h-10 md:h-12 text-sm md:text-base font-semibold shadow-lg hover:scale-105 transition-transform" onClick={handleSearch}>
-                    Search
+                    {t("hero.search")}
                   </Button>
                 </div>
               </div>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="mt-6 md:mt-8">
-               <p className="text-white/90 mb-2 md:mb-3 text-base md:text-lg font-medium drop-shadow-md">Want a personalized experience?</p>
+               <p className="text-white/90 mb-2 md:mb-3 text-base md:text-lg font-medium drop-shadow-md">{t("hero.personalized")}</p>
                <Button 
                  size="lg" 
                  variant="secondary" 
                  className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg font-bold rounded-full shadow-xl hover:scale-105 transition-transform bg-white text-primary hover:bg-gray-100 border-2 border-white/20"
                  onClick={() => router.push('/tailor-made')}
                >
-                 ✨ Tailor Made Your Tour with AI
+                 ✨ {t("hero.customize")}
                </Button>
             </motion.div>
           </div>
@@ -490,7 +494,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
               <motion.div variants={fadeInUp}>
                 <Button variant="outline" className="border-primary/20 hover:border-primary text-foreground hover:text-primary hover:bg-primary/5" asChild>
                   <Link href="/tours">
-                    View Tours <ArrowRight className="ml-2 h-4 w-4" />
+                    {t("featured.title")} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </motion.div>
@@ -507,10 +511,10 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             ) : (
               <div className="text-center py-16 bg-muted/30 rounded-3xl border-2 border-dashed border-muted">
                 <h3 className="text-xl font-semibold text-muted-foreground">
-                  No tours available at the moment
+                  {t("common.noTours")}
                 </h3>
                 <p className="text-muted-foreground mt-2">
-                  Please check back later for our exclusive packages.
+                  {t("common.checkBack")}
                 </p>
               </div>
             )}
@@ -657,7 +661,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                   </Carousel>
                 ) : (
                   <div className="text-white/80 text-center py-8">
-                    No offers available at the moment.
+                    {t("common.noOffers")}
                   </div>
                 )}
               </div>
@@ -678,7 +682,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
           >
             <motion.p variants={fadeInUp} className="text-primary font-bold tracking-wide uppercase text-sm">Testimonial</motion.p>
             <motion.h2 variants={fadeInUp} className="font-headline text-4xl md:text-5xl font-bold text-foreground mt-2">
-              Our Clients Feedback
+              {t("testimonials.title")}
             </motion.h2>
           </motion.div>
           
@@ -751,7 +755,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
           </motion.div>
         ) : (
            <div className="text-center py-12 text-muted-foreground">
-              No testimonials yet.
+              {t("common.noTestimonials")}
            </div>
         )}
       </section>
@@ -886,7 +890,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                         className="p-0 h-auto text-primary group-hover:translate-x-2 transition-transform"
                       >
                         <Link href={`/blog/${article.slug}`}>
-                          Read More <ArrowRight className="ml-2 h-4 w-4" />
+                          {t("news.readMore")} <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
                     </CardContent>
@@ -896,7 +900,7 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              No articles available at the moment.
+              {t("common.noArticles")}
             </div>
           )}
         </motion.div>

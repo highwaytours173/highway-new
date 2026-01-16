@@ -46,6 +46,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { LanguageProvider } from "@/hooks/use-language";
+import { CurrencyProvider } from "@/hooks/use-currency";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,12 +57,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} ${playfair.variable}`} suppressHydrationWarning={true}>
-        <WishlistProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
-        </WishlistProvider>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <WishlistProvider>
+              <CartProvider>
+                {children}
+                <Toaster />
+              </CartProvider>
+            </WishlistProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

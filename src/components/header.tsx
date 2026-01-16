@@ -13,12 +13,28 @@ import {
   Instagram,
   Heart,
   Menu,
+  ChevronDown,
+  Globe,
+  Check,
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import type { Language } from "@/hooks/use-language";
+import type { Currency } from "@/hooks/use-currency";
+import { useLanguage, languages } from "@/hooks/use-language";
+import { useCurrency, currencies } from "@/hooks/use-currency";
+import { cn } from "@/lib/utils";
 
 
 import { createClient } from "@/lib/supabase/client";
@@ -137,9 +153,78 @@ function TopBar({
   );
 }
 
+function LanguageCurrencySelector() {
+  const { language, setLanguage } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
+  const currentLang = languages.find((l) => l.code === language);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="hidden lg:flex items-center gap-2 px-3 hover:bg-muted/50 transition-colors">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-1 text-xs font-medium">
+            <span>{currentLang?.flag}</span>
+            <span className="mx-1 h-3 w-[1px] bg-border" />
+            <span>{currency}</span>
+          </div>
+          <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 p-2">
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+          Language
+        </DropdownMenuLabel>
+        <div className="grid grid-cols-1 gap-1 mb-2">
+          {languages.map((lang) => (
+            <DropdownMenuItem
+              key={lang.code}
+              onClick={() => setLanguage(lang.code as Language)}
+              className={cn(
+                "flex items-center justify-between px-3 py-2 cursor-pointer rounded-md",
+                language === lang.code ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg leading-none">{lang.flag}</span>
+                <span>{lang.name}</span>
+              </div>
+              {language === lang.code && <Check className="h-3.5 w-3.5" />}
+            </DropdownMenuItem>
+          ))}
+        </div>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground uppercase tracking-wider px-2 py-1.5 mt-2">
+          Currency
+        </DropdownMenuLabel>
+        <div className="grid grid-cols-2 gap-1">
+          {currencies.map((curr) => (
+            <DropdownMenuItem
+              key={curr.code}
+              onClick={() => setCurrency(curr.code as Currency)}
+              className={cn(
+                "flex items-center justify-center gap-1.5 px-2 py-2 cursor-pointer rounded-md text-xs",
+                currency === curr.code 
+                  ? "bg-primary/10 text-primary font-bold border border-primary/20" 
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              <span>{curr.symbol}</span>
+              <span>{curr.code}</span>
+            </DropdownMenuItem>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Header() {
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [settings, setSettings] = useState<{ data: SettingsData; logo_url?: string | null } | null>(null);
@@ -234,18 +319,19 @@ export function Header() {
               ))
             ) : (
               <>
-                <Link href="/" className="font-medium text-foreground transition-colors hover:text-primary">Home</Link>
-                <Link href="/about" className="font-medium text-foreground transition-colors hover:text-primary">About Us</Link>
-                <Link href="/destination" className="font-medium text-foreground transition-colors hover:text-primary">Destination</Link>
-                <Link href="/tours" className="font-medium text-foreground transition-colors hover:text-primary">Tour</Link>
-                <Link href="/services" className="font-medium text-foreground transition-colors hover:text-primary">Services</Link>
-                <Link href="/blog" className="font-medium text-foreground transition-colors hover:text-primary">Blog</Link>
-                <Link href="/contact" className="font-medium text-foreground transition-colors hover:text-primary">Contact</Link>
+                <Link href="/" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.home")}</Link>
+                <Link href="/about" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.about")}</Link>
+                <Link href="/destination" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.destination")}</Link>
+                <Link href="/tours" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.tours")}</Link>
+                <Link href="/services" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.services")}</Link>
+                <Link href="/blog" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.blog")}</Link>
+                <Link href="/contact" className="font-medium text-foreground transition-colors hover:text-primary">{t("nav.contact")}</Link>
               </>
             )}
           </nav>
 
           <div className="flex items-center gap-1 md:gap-2">
+            <LanguageCurrencySelector />
             <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Search className="h-5 w-5 text-foreground" />
               <span className="sr-only">Search</span>

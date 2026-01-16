@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Tour } from "@/types";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useCurrency } from "@/hooks/use-currency";
+import { useLanguage } from "@/hooks/use-language";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, Star, Heart, ArrowRight } from "lucide-react";
@@ -14,6 +16,8 @@ interface TourCardProps {
 
 export function TourCard({ tour }: TourCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { format } = useCurrency();
+  const { t } = useLanguage();
   const isFavorited = isInWishlist(tour.id);
 
   const imageUrl =
@@ -36,12 +40,7 @@ export function TourCard({ tour }: TourCardProps) {
     return Number.isFinite(min) ? min : null;
   })();
 
-  const currency = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
-
-  const durationLabel = `${tour.duration} Day${tour.duration === 1 ? "" : "s"}`;
+  const durationLabel = `${tour.duration} ${t("featured.duration")}`;
   const ratingLabel =
     typeof tour.rating === "number" && Number.isFinite(tour.rating) && tour.rating > 0
       ? tour.rating.toFixed(1)
@@ -122,10 +121,10 @@ export function TourCard({ tour }: TourCardProps) {
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3">
           <div className="min-w-0">
-            <div className="text-sm text-muted-foreground">From</div>
+            <div className="text-sm text-muted-foreground">{t("featured.from")}</div>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-primary">
-                {startingPrice != null ? currency.format(startingPrice) : "Contact us"}
+                {startingPrice != null ? format(startingPrice) : "Contact us"}
               </span>
               {startingPrice != null && (
                 <span className="text-xs text-muted-foreground">/person</span>

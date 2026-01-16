@@ -7,6 +7,7 @@ import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/hooks/use-language";
 
 type SettingsData = {
   agencyName?: string;
@@ -46,6 +47,7 @@ function normalizeNavHref(href: string | undefined | null) {
 }
 
 export function Footer() {
+  const { t } = useLanguage();
   const [settings, setSettings] = React.useState<{ data: SettingsData; logo_url?: string | null } | null>(null);
 
   React.useEffect(() => {
@@ -131,11 +133,11 @@ export function Footer() {
                 ))
               ) : (
                 <>
-                  <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
-                  <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                  <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
-                  <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
-                  <li><Link href="/tours" className="hover:text-primary transition-colors">Tour</Link></li>
+                  <li><Link href="/" className="hover:text-primary transition-colors">{t("nav.home")}</Link></li>
+                  <li><Link href="/about" className="hover:text-primary transition-colors">{t("nav.about")}</Link></li>
+                  <li><Link href="/blog" className="hover:text-primary transition-colors">{t("nav.blog")}</Link></li>
+                  <li><Link href="/services" className="hover:text-primary transition-colors">{t("nav.services")}</Link></li>
+                  <li><Link href="/tours" className="hover:text-primary transition-colors">{t("nav.tours")}</Link></li>
                 </>
               )}
             </ul>
@@ -143,7 +145,7 @@ export function Footer() {
 
           {/* Column 3: Services */}
           <div>
-            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">Services</h3>
+            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">{t("footer.services")}</h3>
             <p className="text-sm text-gray-400 mb-4">
               Explore what we can arrange for your trip.
             </p>
@@ -154,7 +156,7 @@ export function Footer() {
 
           {/* Column 4: Contact Us */}
           <div>
-            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">Contact Us</h3>
+            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">{t("footer.contact")}</h3>
             <ul className="space-y-4">
               {address ? (
                 <li className="flex items-start gap-3">
@@ -188,7 +190,7 @@ export function Footer() {
       </div>
       <div className="border-t border-gray-700">
         <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center text-sm">
-          <p>&copy; {new Date().getFullYear()} {agencyName}. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {agencyName}. {t("footer.rights")}</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-primary">Terms of use</a>
             <a href="#" className="hover:text-primary">Privacy Policy</a>
