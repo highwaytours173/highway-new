@@ -38,4 +38,4 @@ export default async function ToursPage() {
     </div>
   );
 }
-
+
