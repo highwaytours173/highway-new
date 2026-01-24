@@ -1,7 +1,7 @@
 
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentAgencyId } from "@/lib/supabase/agencies";
 import { HomeContent } from "@/types";
 import { revalidatePath } from "next/cache";
@@ -24,6 +24,34 @@ export type SiteSeoSettings = {
   faviconUrl?: string;
 };
 
+export type DestinationFallbackImage = {
+  destination: string;
+  imageUrl: string;
+};
+
+export type DestinationPageCardContent = {
+  destination: string;
+  description?: string;
+};
+
+export type DestinationPageSettings = {
+  heroTitle?: string;
+  heroSubtitle?: string;
+  cards?: DestinationPageCardContent[];
+};
+
+export type AgencyImageSettings = {
+  aboutHeroUrl?: string;
+  aboutSideImageUrl?: string;
+  contactHeroUrl?: string;
+  contactCardImageUrl?: string;
+  servicesHeroUrl?: string;
+  blogHeroUrl?: string;
+  destinationHeroUrl?: string;
+  upsellHeroUrl?: string;
+  destinationFallbackImages?: DestinationFallbackImage[];
+};
+
 export type AgencySettingsData = {
   agencyName?: string;
   phoneNumber?: string;
@@ -32,6 +60,7 @@ export type AgencySettingsData = {
   tagline?: string;
   navLinks?: { label: string; href: string }[];
   aboutUs?: string;
+  images?: AgencyImageSettings;
   socialMedia?: {
     facebook?: string;
     twitter?: string;
@@ -58,17 +87,44 @@ export type AgencySettingsData = {
     destination?: PageSeoSettings;
     tailorMade?: PageSeoSettings;
   };
+  destinationPage?: DestinationPageSettings;
   tourDestinations?: string[];
   tourCategories?: string[];
 };
 
-export async function getAgencySettings() {
+export type TourTaxonomyType = "category" | "destination";
+
+type AgencySettingsRow = {
+  data: AgencySettingsData;
+  logo_url: string | null;
+  agency_id: string;
+};
+
+type TourTaxonomyRow = {
+  id: string;
+  name: string;
+  slug: string;
+  is_active: boolean;
+};
+
+function normalizeTaxonomyName(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function slugifyTaxonomyName(value: string) {
+  return normalizeTaxonomyName(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-+|-+$)/g, "");
+}
+
+async function getAgencySettingsRow(): Promise<AgencySettingsRow | null> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
     .from("settings")
-    .select("data, logo_url")
+    .select("data, logo_url, agency_id")
     .eq("agency_id", agencyId)
     .maybeSingle();
 
@@ -77,12 +133,52 @@ export async function getAgencySettings() {
     return null;
   }
 
-  return data
-    ? {
-        data: data.data as AgencySettingsData,
-        logo_url: data.logo_url as string | null,
-      }
-    : null;
+  return data ? (data as AgencySettingsRow) : null;
+}
+
+export async function getTourTaxonomy(type: TourTaxonomyType): Promise<string[]> {
+  const supabase = await createClient();
+  const agencyId = await getCurrentAgencyId();
+
+  const { data, error } = await supabase
+    .from("tour_taxonomy")
+    .select("name, sort_order")
+    .eq("agency_id", agencyId)
+    .eq("taxonomy_type", type)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching tour taxonomy:", error);
+    return [];
+  }
+
+  return (data ?? [])
+    .map((row) => normalizeTaxonomyName((row as { name: string }).name))
+    .filter(Boolean);
+}
+
+export async function getAgencySettings() {
+  const agencyId = await getCurrentAgencyId();
+
+  const [row, tourCategories, tourDestinations] = await Promise.all([
+    getAgencySettingsRow(),
+    getTourTaxonomy("category"),
+    getTourTaxonomy("destination"),
+  ]);
+
+  const baseData = (row?.data ?? {}) as AgencySettingsData;
+
+  return {
+    data: {
+      ...baseData,
+      tourCategories,
+      tourDestinations,
+    } as AgencySettingsData,
+    logo_url: row?.logo_url ?? null,
+    agency_id: row?.agency_id ?? agencyId,
+  };
 }
 
 export async function updateAgencySettings(
@@ -93,11 +189,17 @@ export async function updateAgencySettings(
   const agencyId = await getCurrentAgencyId();
 
   // Check if settings row exists for this agency
-  const existing = await getAgencySettings();
+  const existing = await getAgencySettingsRow();
+
+  const { tourCategories: _tourCategories, tourDestinations: _tourDestinations, ...settingsDataWithoutTaxonomy } =
+    settingsData ?? {};
+
+  const resolvedLogoUrl =
+    logoUrl === undefined ? existing?.logo_url ?? null : logoUrl;
 
   const payload = {
-    data: settingsData,
-    logo_url: logoUrl,
+    data: settingsDataWithoutTaxonomy,
+    logo_url: resolvedLogoUrl,
     updated_at: new Date().toISOString(),
     agency_id: agencyId,
   };
@@ -129,8 +231,148 @@ export async function updateAgencySettings(
   revalidatePath("/services");
   revalidatePath("/blog");
   revalidatePath("/destination");
+  revalidatePath("/upsell-items");
   revalidatePath("/tailor-made");
+  revalidatePath("/admin/tours");
+  revalidatePath("/admin/tours/new");
+  revalidatePath("/admin/tours/settings");
   revalidatePath("/admin/settings");
+}
+
+export async function updateTourTaxonomy(input: {
+  categories: string[];
+  destinations: string[];
+}) {
+  const agencyId = await getCurrentAgencyId();
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("You must be signed in to update tour settings.");
+  }
+
+  const { data: adminMembership, error: adminMembershipError } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (adminMembershipError) {
+    throw new Error(adminMembershipError.message);
+  }
+
+  if (!adminMembership) {
+    const { data: agencyMembership, error: agencyMembershipError } = await supabase
+      .from("agency_users")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("agency_id", agencyId)
+      .maybeSingle();
+
+    if (agencyMembershipError) {
+      throw new Error(agencyMembershipError.message);
+    }
+
+    const role = agencyMembership?.role;
+    if (role !== "owner" && role !== "admin") {
+      throw new Error("You are not authorized to update tour settings.");
+    }
+  }
+
+  const adminClient = createServiceRoleClient();
+  const now = new Date().toISOString();
+
+  async function syncType(taxonomyType: TourTaxonomyType, values: string[]) {
+    const normalizedValues = values
+      .map(normalizeTaxonomyName)
+      .filter(Boolean);
+
+    const seen = new Set<string>();
+    const unique = normalizedValues.filter((name) => {
+      const key = name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    unique.sort((a, b) => a.localeCompare(b));
+
+    const usedSlugs = new Set<string>();
+    const upsertRows = unique.map((name, idx) => {
+      let baseSlug = slugifyTaxonomyName(name);
+      if (!baseSlug) {
+        baseSlug = crypto.randomUUID();
+      }
+
+      let slug = baseSlug;
+      let suffix = 2;
+      while (usedSlugs.has(slug)) {
+        slug = `${baseSlug}-${suffix}`;
+        suffix += 1;
+      }
+      usedSlugs.add(slug);
+
+      return {
+        agency_id: agencyId,
+        taxonomy_type: taxonomyType,
+        name,
+        slug,
+        is_active: true,
+        sort_order: idx,
+        updated_at: now,
+      };
+    });
+
+    if (upsertRows.length > 0) {
+      const { error: upsertError } = await adminClient
+        .from("tour_taxonomy")
+        .upsert(upsertRows, { onConflict: "agency_id,taxonomy_type,slug" });
+
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
+    }
+
+    const { data: existingActive, error: existingError } = await adminClient
+      .from("tour_taxonomy")
+      .select("id, name, slug, is_active")
+      .eq("agency_id", agencyId)
+      .eq("taxonomy_type", taxonomyType)
+      .eq("is_active", true);
+
+    if (existingError) {
+      throw new Error(existingError.message);
+    }
+
+    const desiredKeys = new Set(unique.map((name) => name.toLowerCase()));
+    const toDeactivateIds = ((existingActive ?? []) as TourTaxonomyRow[])
+      .filter((row) => !desiredKeys.has(normalizeTaxonomyName(row.name).toLowerCase()))
+      .map((row) => row.id);
+
+    if (toDeactivateIds.length > 0) {
+      const { error: deactivateError } = await adminClient
+        .from("tour_taxonomy")
+        .update({ is_active: false, updated_at: now })
+        .in("id", toDeactivateIds);
+
+      if (deactivateError) {
+        throw new Error(deactivateError.message);
+      }
+    }
+  }
+
+  await syncType("category", input.categories ?? []);
+  await syncType("destination", input.destinations ?? []);
+
+  revalidatePath("/");
+  revalidatePath("/tours");
+  revalidatePath("/destination");
+  revalidatePath("/admin/tours");
+  revalidatePath("/admin/tours/new");
+  revalidatePath("/admin/tours/settings");
 }
 
 export async function getHomePageContent() {

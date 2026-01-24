@@ -60,12 +60,9 @@ export default async function AllToursPage({
     typeof resolvedSearchParams?.destination === "string" ? resolvedSearchParams.destination : "";
   const type = typeof resolvedSearchParams?.type === "string" ? resolvedSearchParams.type : "";
   const sort = typeof resolvedSearchParams?.sort === "string" ? resolvedSearchParams.sort : "";
-
-  const getTypeLabelFromTour = (tour: { tourType?: string; type?: string[] }) => {
-    if (tour.tourType && tour.tourType.trim()) return tour.tourType.trim();
-    const first = Array.isArray(tour.type) ? tour.type.find((v) => v && v.trim()) : undefined;
-    return first?.trim() || "";
-  };
+  const settings = await getAgencySettings();
+  const destinationOptions = settings?.data?.tourDestinations ?? [];
+  const typeOptions = settings?.data?.tourCategories ?? [];
   const getSortLabel = (value: string) => {
     switch (value) {
       case "rating_desc":
@@ -99,14 +96,6 @@ export default async function AllToursPage({
   } catch {
     allTours = tours;
   }
-
-  const uniqueDestinations = Array.from(
-    new Set(allTours.map((t) => t.destination).filter(Boolean)),
-  ).sort((a, b) => a.localeCompare(b));
-
-  const uniqueTypes = Array.from(
-    new Set(allTours.map(getTypeLabelFromTour).filter((v) => v && v.length > 0)),
-  ).sort((a, b) => a.localeCompare(b));
 
   const getMinAdultPrice = (tour: {
     priceTiers?: Array<{ pricePerAdult: number }>;
@@ -186,11 +175,17 @@ export default async function AllToursPage({
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">All destinations</option>
-              {uniqueDestinations.map((d) => (
-                <option key={d} value={d}>
-                  {d}
+              {destinationOptions.length > 0 ? (
+                destinationOptions.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No destinations configured
                 </option>
-              ))}
+              )}
             </select>
           </div>
 
@@ -205,11 +200,17 @@ export default async function AllToursPage({
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">All types</option>
-              {uniqueTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {typeOptions.length > 0 ? (
+                typeOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No types configured
                 </option>
-              ))}
+              )}
             </select>
           </div>
 

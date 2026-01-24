@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Calendar, Clock, Search, User } from "lucide-react";
-import { getPageMetadata } from "@/lib/supabase/agency-content";
+import { getAgencySettings, getPageMetadata } from "@/lib/supabase/agency-content";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +42,14 @@ export default async function BlogListPage({
   const q = typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q : "";
   const tag = typeof resolvedSearchParams?.tag === "string" ? resolvedSearchParams.tag : "";
 
+  let heroImageUrl =
+    "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=2400&q=70";
+  try {
+    const settings = await getAgencySettings();
+    heroImageUrl = settings?.data?.images?.blogHeroUrl || heroImageUrl;
+  } catch {
+  }
+
   const posts = (await getPosts()).filter((p) => p.status === "Published");
 
   const query = q.trim().toLowerCase();
@@ -69,7 +77,7 @@ export default async function BlogListPage({
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=2400&q=70"
+            src={heroImageUrl}
             alt=""
             fill
             priority

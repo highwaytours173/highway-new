@@ -34,7 +34,7 @@ async function SearchResultsContent({
       ? tour.destination?.toLowerCase() === destination.toLowerCase()
       : true;
     const matchesType = type
-      ? tour.tourType?.toLowerCase() === type.toLowerCase()
+      ? Array.isArray(tour.type) && tour.type.some((t) => t.toLowerCase() === type.toLowerCase())
       : true;
     return matchesQuery && matchesDestination && matchesType;
   });

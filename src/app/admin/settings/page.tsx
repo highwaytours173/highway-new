@@ -44,7 +44,9 @@ import { Loader2 } from "lucide-react";
 import {
   getAgencySettings,
   updateAgencySettings,
+  type AgencyImageSettings,
   AgencySettingsData,
+  type DestinationFallbackImage,
   PageSeoSettings,
   SiteSeoSettings,
 } from "@/lib/supabase/agency-content";
@@ -68,6 +70,26 @@ const formSchema = z
     aboutUs: z
       .string()
       .min(10, "About us description should be at least 10 characters."),
+    images: z
+      .object({
+        aboutHeroUrl: z.array(z.any()).optional(),
+        aboutSideImageUrl: z.array(z.any()).optional(),
+        contactHeroUrl: z.array(z.any()).optional(),
+        contactCardImageUrl: z.array(z.any()).optional(),
+        servicesHeroUrl: z.array(z.any()).optional(),
+        blogHeroUrl: z.array(z.any()).optional(),
+        destinationHeroUrl: z.array(z.any()).optional(),
+        upsellHeroUrl: z.array(z.any()).optional(),
+        destinationFallbackImages: z
+          .array(
+            z.object({
+              destination: z.string().min(1, "Destination is required"),
+              imageUrl: z.array(z.any()).optional(),
+            }),
+          )
+          .optional(),
+      })
+      .optional(),
     socialMedia: z.object({
       facebook: z.string().url().or(z.literal("")),
       twitter: z.string().url().or(z.literal("")),
@@ -179,6 +201,17 @@ export default function SettingsPage() {
         { label: "Contact", href: "/contact" },
       ],
       aboutUs: "",
+      images: {
+        aboutHeroUrl: [],
+        aboutSideImageUrl: [],
+        contactHeroUrl: [],
+        contactCardImageUrl: [],
+        servicesHeroUrl: [],
+        blogHeroUrl: [],
+        destinationHeroUrl: [],
+        upsellHeroUrl: [],
+        destinationFallbackImages: [],
+      },
       socialMedia: {
         facebook: "",
         twitter: "",
@@ -206,18 +239,30 @@ export default function SettingsPage() {
     name: "navLinks",
   });
 
+  const {
+    fields: destinationFallbackFields,
+    append: appendDestinationFallback,
+    remove: removeDestinationFallback,
+  } = useFieldArray({
+    control: form.control,
+    name: "images.destinationFallbackImages" as never,
+  });
+
   useEffect(() => {
     async function loadSettings() {
       const data = await getAgencySettings();
 
       if (data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const settingsData = data.data ?? {};
+        const settingsData = (data.data ?? {}) as AgencySettingsData;
         setLoadedSettingsData(settingsData);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const paymentMethods = settingsData.paymentMethods ?? {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const images: AgencyImageSettings = settingsData.images ?? {};
         setExistingLogoUrl(data.logo_url ?? null);
+        const destinationFallbackImages: DestinationFallbackImage[] = Array.isArray(
+          images.destinationFallbackImages,
+        )
+          ? images.destinationFallbackImages
+          : [];
         form.reset({
           agencyName: settingsData.agencyName ?? "",
           phoneNumber: settingsData.phoneNumber ?? "",
@@ -235,6 +280,28 @@ export default function SettingsPage() {
             { label: "Contact", href: "/contact" },
           ],
           aboutUs: settingsData.aboutUs ?? "",
+          images: {
+            aboutHeroUrl: images.aboutHeroUrl ? [images.aboutHeroUrl] : [],
+            aboutSideImageUrl: images.aboutSideImageUrl
+              ? [images.aboutSideImageUrl]
+              : [],
+            contactHeroUrl: images.contactHeroUrl ? [images.contactHeroUrl] : [],
+            contactCardImageUrl: images.contactCardImageUrl
+              ? [images.contactCardImageUrl]
+              : [],
+            servicesHeroUrl: images.servicesHeroUrl
+              ? [images.servicesHeroUrl]
+              : [],
+            blogHeroUrl: images.blogHeroUrl ? [images.blogHeroUrl] : [],
+            destinationHeroUrl: images.destinationHeroUrl
+              ? [images.destinationHeroUrl]
+              : [],
+            upsellHeroUrl: images.upsellHeroUrl ? [images.upsellHeroUrl] : [],
+            destinationFallbackImages: destinationFallbackImages.map((entry) => ({
+              destination: entry.destination,
+              imageUrl: entry.imageUrl ? [entry.imageUrl] : [],
+            })),
+          },
           socialMedia: settingsData.socialMedia ?? {
             facebook: "",
             twitter: "",
@@ -333,6 +400,110 @@ export default function SettingsPage() {
       // ignore upload failure
     }
 
+    const uploadSingleImage = async (
+      value: unknown[] | undefined,
+      pathPrefix: string,
+      fallbackUrl?: string,
+    ): Promise<string | undefined> => {
+      const first = value?.[0];
+      if (!first) return fallbackUrl;
+      if (typeof first === "string") return first;
+      if (!(first instanceof File)) return fallbackUrl;
+
+      const ext = first.name.split(".").pop() || "png";
+      const path = `page-images/${pathPrefix}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("cms")
+        .upload(path, first, {
+          contentType: first.type || "image/png",
+          upsert: true,
+        });
+
+      if (uploadError) return fallbackUrl;
+      const { data: publicUrlData } = supabase.storage
+        .from("cms")
+        .getPublicUrl(path);
+      return publicUrlData.publicUrl;
+    };
+
+    const slugify = (value: string) =>
+      value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+    const imagesPayload = values.images
+      ? {
+          aboutHeroUrl: await uploadSingleImage(
+            values.images.aboutHeroUrl,
+            "about-hero",
+            loadedSettingsData?.images?.aboutHeroUrl,
+          ),
+          aboutSideImageUrl: await uploadSingleImage(
+            values.images.aboutSideImageUrl,
+            "about-side",
+            loadedSettingsData?.images?.aboutSideImageUrl,
+          ),
+          contactHeroUrl: await uploadSingleImage(
+            values.images.contactHeroUrl,
+            "contact-hero",
+            loadedSettingsData?.images?.contactHeroUrl,
+          ),
+          contactCardImageUrl: await uploadSingleImage(
+            values.images.contactCardImageUrl,
+            "contact-card",
+            loadedSettingsData?.images?.contactCardImageUrl,
+          ),
+          servicesHeroUrl: await uploadSingleImage(
+            values.images.servicesHeroUrl,
+            "services-hero",
+            loadedSettingsData?.images?.servicesHeroUrl,
+          ),
+          blogHeroUrl: await uploadSingleImage(
+            values.images.blogHeroUrl,
+            "blog-hero",
+            loadedSettingsData?.images?.blogHeroUrl,
+          ),
+          destinationHeroUrl: await uploadSingleImage(
+            values.images.destinationHeroUrl,
+            "destination-hero",
+            loadedSettingsData?.images?.destinationHeroUrl,
+          ),
+          upsellHeroUrl: await uploadSingleImage(
+            values.images.upsellHeroUrl,
+            "upsell-hero",
+            loadedSettingsData?.images?.upsellHeroUrl,
+          ),
+          destinationFallbackImages: Array.isArray(values.images.destinationFallbackImages)
+            ? (
+                await Promise.all(
+                  values.images.destinationFallbackImages.map(async (entry) => {
+                    const destination =
+                      typeof entry?.destination === "string" ? entry.destination.trim() : "";
+                    if (!destination) return null;
+                    const existingEntry = loadedSettingsData?.images?.destinationFallbackImages?.find(
+                      (e) => e.destination === destination,
+                    );
+                    const url = await uploadSingleImage(
+                      entry.imageUrl,
+                      `destination-fallback-${slugify(destination) || "destination"}`,
+                      existingEntry?.imageUrl,
+                    );
+                    if (!url) return null;
+                    return { destination, imageUrl: url };
+                  }),
+                )
+              ).filter(
+                (
+                  value,
+                ): value is DestinationFallbackImage =>
+                  value !== null,
+              )
+            : undefined,
+        }
+      : undefined;
+
     const nextSettingsData: AgencySettingsData = {
       agencyName: values.agencyName,
       phoneNumber: values.phoneNumber,
@@ -341,6 +512,7 @@ export default function SettingsPage() {
       tagline: values.tagline ?? "",
       navLinks: values.navLinks ?? [],
       aboutUs: values.aboutUs,
+      images: imagesPayload,
       socialMedia: values.socialMedia,
       paymentMethods: values.paymentMethods,
       theme: values.theme,
@@ -557,6 +729,184 @@ export default function SettingsPage() {
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Images</CardTitle>
+              <CardDescription>
+                Customize hero and section images used on public pages.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name={"images.aboutHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>About Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.aboutSideImageUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>About Page Side Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.contactHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.contactCardImageUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Page Card Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.servicesHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Services Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.blogHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Blog Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.destinationHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destination Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"images.upsellHeroUrl" as never}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Upsell Items Page Hero Image</FormLabel>
+                      <FormControl>
+                        <ImageUploader value={field.value || []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Destination Fallback Images</p>
+                  <p className="text-sm text-muted-foreground">
+                    Used when a destination has no tour cover image.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {destinationFallbackFields.map((f, index) => (
+                    <div key={f.id} className="rounded-2xl border p-4">
+                      <div className="grid gap-4 md:grid-cols-[1fr,2fr,auto] md:items-end">
+                        <FormField
+                          control={form.control}
+                          name={`images.destinationFallbackImages.${index}.destination` as never}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Destination</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Cairo" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`images.destinationFallbackImages.${index}.imageUrl` as never}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Image</FormLabel>
+                              <FormControl>
+                                <ImageUploader value={field.value || []} onChange={field.onChange} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => removeDestinationFallback(index)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    appendDestinationFallback({ destination: "", imageUrl: [] } as never)
+                  }
+                >
+                  Add Destination Image
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

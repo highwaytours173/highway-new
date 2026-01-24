@@ -6,15 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Car, Luggage, PhoneCall } from "lucide-react";
+import { getAgencySettings } from "@/lib/supabase/agency-content";
 
 export const dynamic = "force-dynamic";
 
 export default async function UpsellItemsPage() {
   let items = [] as Awaited<ReturnType<typeof getUpsellItems>>;
+  let heroImageUrl =
+    "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=2400&q=70";
   try {
     items = await getUpsellItems();
   } catch {
     items = [];
+  }
+
+  try {
+    const settings = await getAgencySettings();
+    heroImageUrl = settings?.data?.images?.upsellHeroUrl || heroImageUrl;
+  } catch {
   }
 
   return (
@@ -22,7 +31,7 @@ export default async function UpsellItemsPage() {
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=2400&q=70"
+            src={heroImageUrl}
             alt=""
             fill
             priority
@@ -136,4 +145,3 @@ export default async function UpsellItemsPage() {
     </div>
   );
 }
-

@@ -24,6 +24,10 @@ export default async function AboutPage() {
   let agencyName = "";
   let aboutUs = "";
   let tagline = "";
+  let heroImageUrl =
+    "https://images.unsplash.com/photo-1544986581-efac024faf62?auto=format&fit=crop&w=2400&q=70";
+  let sideImageUrl =
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=70";
 
   try {
     const settings = await getAgencySettings();
@@ -32,6 +36,8 @@ export default async function AboutPage() {
       agencyName = settings.data.agencyName ?? agencyName;
       aboutUs = settings.data.aboutUs ?? aboutUs;
       tagline = settings.data.tagline ?? tagline;
+      heroImageUrl = settings.data.images?.aboutHeroUrl || heroImageUrl;
+      sideImageUrl = settings.data.images?.aboutSideImageUrl || sideImageUrl;
     }
   } catch {
   }
@@ -51,7 +57,7 @@ export default async function AboutPage() {
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1544986581-efac024faf62?auto=format&fit=crop&w=2400&q=70"
+            src={heroImageUrl}
             alt=""
             fill
             priority
@@ -110,7 +116,7 @@ export default async function AboutPage() {
         <Card className="relative overflow-hidden rounded-3xl">
           <div className="absolute inset-0">
             <Image
-              src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=70"
+              src={sideImageUrl}
               alt="Traveler looking at a scenic view"
               fill
               className="object-cover"

@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 interface ImageUploaderProps {
-  value: File[];
-  onChange: (files: File[]) => void;
+  value: (File | string)[];
+  onChange: (files: (File | string)[]) => void;
 }
 
 export function ImageUploader({ value, onChange }: ImageUploaderProps) {

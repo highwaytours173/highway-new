@@ -10,7 +10,7 @@ import { getCurrentAgencyId } from "@/lib/supabase/agencies";
 type GetToursOptions = {
   q?: string;
   destination?: string;
-  type?: string; // matches tour_type in DB or tour.tourType in app
+  type?: string; // matches tour categories (tour.type array)
   limit?: number;
 };
 
@@ -43,8 +43,7 @@ export async function getTours(options: GetToursOptions = {}): Promise<Tour[]> {
     query = query.ilike("destination", destination.trim());
   }
   if (type && type.trim()) {
-    // tour_type is a text column representing the primary type
-    query = query.ilike("tour_type", type.trim());
+    query = query.contains("type", [type.trim()]);
   }
   if (limit != null) {
     query = query.limit(limit);

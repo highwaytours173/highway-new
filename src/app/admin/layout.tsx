@@ -17,12 +17,7 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Should be handled by middleware, but as a fallback:
-    return (
-      <div className="flex min-h-screen bg-background items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
+    return children;
   }
 
   // Fetch current agency settings

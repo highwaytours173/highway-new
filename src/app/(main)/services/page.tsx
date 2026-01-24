@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Car, Luggage, PhoneCall } from "lucide-react";
 import type { Metadata } from "next";
-import { getPageMetadata } from "@/lib/supabase/agency-content";
+import { getAgencySettings, getPageMetadata } from "@/lib/supabase/agency-content";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ServicesPage() {
   let services = [] as Awaited<ReturnType<typeof getUpsellItems>>;
+  let heroImageUrl =
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2400&q=70";
   try {
     const items = await getUpsellItems();
     services = items.filter((i) => i.type === "service");
@@ -27,12 +29,18 @@ export default async function ServicesPage() {
     services = [];
   }
 
+  try {
+    const settings = await getAgencySettings();
+    heroImageUrl = settings?.data?.images?.servicesHeroUrl || heroImageUrl;
+  } catch {
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10">
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2400&q=70"
+            src={heroImageUrl}
             alt=""
             fill
             priority

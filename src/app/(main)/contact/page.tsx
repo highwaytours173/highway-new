@@ -31,6 +31,10 @@ export default async function ContactPage({
   let phoneNumber = "";
   let contactEmail = "";
   let address = "";
+  let heroImageUrl =
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2400&q=70";
+  let cardImageUrl =
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=70";
 
   try {
     const settings = await getAgencySettings();
@@ -40,6 +44,8 @@ export default async function ContactPage({
       phoneNumber = settings.data.phoneNumber ?? phoneNumber;
       contactEmail = settings.data.contactEmail ?? contactEmail;
       address = settings.data.address ?? address;
+      heroImageUrl = settings.data.images?.contactHeroUrl || heroImageUrl;
+      cardImageUrl = settings.data.images?.contactCardImageUrl || cardImageUrl;
     }
   } catch {
   }
@@ -77,7 +83,7 @@ export default async function ContactPage({
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2400&q=70"
+            src={heroImageUrl}
             alt=""
             fill
             priority
@@ -176,7 +182,7 @@ export default async function ContactPage({
           <Card className="overflow-hidden rounded-3xl">
             <div className="relative h-56 w-full">
               <Image
-                src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=70"
+                src={cardImageUrl}
                 alt="Travel planning"
                 fill
                 className="object-cover"

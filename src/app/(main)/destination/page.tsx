@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, MapPin } from "lucide-react";
 import type { Metadata } from "next";
-import { getPageMetadata } from "@/lib/supabase/agency-content";
+import { getAgencySettings, getPageMetadata } from "@/lib/supabase/agency-content";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +23,7 @@ type DestinationCard = {
   imageUrl?: string;
 };
 
-const destinationOrder = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Luxor",
-  "Aswan",
-  "Hurghada",
-  "Sharm El Sheikh",
-  "Siwa Oasis",
-] as const;
-
-const destinationFallbackImages: Record<string, string> = {
+const defaultDestinationFallbackImages: Record<string, string> = {
   Cairo:
     "https://images.unsplash.com/photo-1544986581-efac024faf62?auto=format&fit=crop&w=2400&q=70",
   Giza:
@@ -69,6 +58,64 @@ function buildToursUrl(destination: string) {
 }
 
 export default async function DestinationPage() {
+  const destinationFallbackImages: Record<string, string> = {
+    ...defaultDestinationFallbackImages,
+  };
+  const destinationOverrideImages: Record<string, string> = {};
+  const destinationDescriptions: Record<string, string> = {};
+  let heroImageUrl = defaultDestinationFallbackImages.Cairo;
+  let heroTitle = "Explore Egypt’s main regions";
+  let heroSubtitle =
+    "Pick a region to see available tours, highlights, and experiences.";
+  let preferredDestinationOrder: string[] = [];
+
+  try {
+    const settings = await getAgencySettings();
+    const images = settings?.data?.images;
+    if (images?.destinationHeroUrl) {
+      heroImageUrl = images.destinationHeroUrl;
+    }
+    if (Array.isArray(images?.destinationFallbackImages)) {
+      for (const entry of images.destinationFallbackImages) {
+        if (!entry?.destination || !entry?.imageUrl) continue;
+        const normalizedDestination = normalizeDestination(entry.destination);
+        destinationFallbackImages[normalizedDestination] = entry.imageUrl;
+        destinationOverrideImages[normalizedDestination] = entry.imageUrl;
+      }
+    }
+    const destinationPage = settings?.data?.destinationPage;
+    if (typeof destinationPage?.heroTitle === "string" && destinationPage.heroTitle.trim()) {
+      heroTitle = destinationPage.heroTitle.trim();
+    }
+    if (
+      typeof destinationPage?.heroSubtitle === "string" &&
+      destinationPage.heroSubtitle.trim()
+    ) {
+      heroSubtitle = destinationPage.heroSubtitle.trim();
+    }
+    if (Array.isArray(destinationPage?.cards)) {
+      for (const entry of destinationPage.cards) {
+        if (!entry?.destination || typeof entry.destination !== "string") continue;
+        if (!entry?.description || typeof entry.description !== "string") continue;
+        const key = normalizeDestination(entry.destination);
+        const description = entry.description.trim();
+        if (!key || !description) continue;
+        destinationDescriptions[key] = description;
+      }
+    }
+    if (Array.isArray(settings?.data?.tourDestinations)) {
+      preferredDestinationOrder = Array.from(
+        new Set(
+          settings.data.tourDestinations
+            .filter((d) => typeof d === "string")
+            .map((d) => normalizeDestination(d))
+            .filter(Boolean),
+        ),
+      );
+    }
+  } catch {
+  }
+
   let cards: DestinationCard[] = [];
   try {
     const tours = await getTours();
@@ -100,35 +147,42 @@ export default async function DestinationPage() {
       byDestination.set(name, existing);
     }
 
-    const ordered: DestinationCard[] = [];
-    for (const name of destinationOrder) {
-      const entry = byDestination.get(name);
-      ordered.push({
-        name,
-        count: entry?.count ?? 0,
-        imageUrl: entry?.coverUrl ?? destinationFallbackImages[name],
+    if (preferredDestinationOrder.length > 0) {
+      cards = preferredDestinationOrder.map((name) => {
+        const entry = byDestination.get(name);
+        return {
+          name,
+          count: entry?.count ?? 0,
+          imageUrl:
+            destinationOverrideImages[name] ??
+            entry?.coverUrl ??
+            destinationFallbackImages[name],
+        };
       });
-      byDestination.delete(name);
+    } else {
+      cards = Array.from(byDestination.entries())
+        .map(([name, v]) => ({
+          name,
+          count: v.count,
+          imageUrl:
+            destinationOverrideImages[name] ??
+            v.coverUrl ??
+            destinationFallbackImages[name],
+        }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     }
-
-    const remaining = Array.from(byDestination.entries())
-      .map(([name, v]) => ({
-        name,
-        count: v.count,
-        imageUrl: v.coverUrl,
-      }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-
-    cards = [...ordered, ...remaining];
   } catch {
-    cards = destinationOrder.map((name) => ({
-      name,
-      count: 0,
-      imageUrl: destinationFallbackImages[name],
-    }));
+    cards =
+      preferredDestinationOrder.length > 0
+        ? preferredDestinationOrder.map((name) => ({
+            name,
+            count: 0,
+            imageUrl: destinationFallbackImages[name],
+          }))
+        : [];
   }
 
-  const heroImage = destinationFallbackImages.Cairo;
+  const heroImage = heroImageUrl;
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10">
@@ -150,10 +204,10 @@ export default async function DestinationPage() {
                 Destinations
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                Explore Egypt’s main regions
+                {heroTitle}
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                Pick a region to see available tours, highlights, and experiences.
+                {heroSubtitle}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -169,7 +223,8 @@ export default async function DestinationPage() {
       </section>
 
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((d) => {
+        {cards.length > 0 ? (
+          cards.map((d) => {
           const href = buildToursUrl(d.name);
           return (
             <Card
@@ -207,7 +262,7 @@ export default async function DestinationPage() {
                 <div className="space-y-1">
                   <p className="text-lg font-semibold leading-snug">{d.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    Browse tours in {d.name}.
+                    {destinationDescriptions[d.name] ?? `Browse tours in ${d.name}.`}
                   </p>
                 </div>
                 <Button asChild variant="outline" className="shrink-0">
@@ -218,7 +273,17 @@ export default async function DestinationPage() {
               </CardContent>
             </Card>
           );
-        })}
+        })
+        ) : (
+          <Card className="rounded-3xl border bg-card">
+            <CardContent className="p-10 text-center">
+              <p className="text-lg font-semibold">No destinations yet</p>
+              <p className="mt-2 text-muted-foreground">
+                Add destinations in tour settings, or publish tours with destinations.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </section>
     </div>
   );

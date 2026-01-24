@@ -89,16 +89,6 @@ const browseCategoryIcons: Record<BrowseCategoryIconKey, React.ReactNode> = {
   plane: <Plane className="h-8 w-8 text-primary" />,
 };
 
-const egyptianDestinations = [
-  "Cairo",
-  "Luxor",
-  "Aswan",
-  "Alexandria",
-  "Sharm El Sheikh",
-  "Hurghada",
-  "Giza",
-];
-
 function isBrowseCategoryIconKey(value: unknown): value is BrowseCategoryIconKey {
   return typeof value === "string" && value in browseCategoryIcons;
 }
@@ -151,9 +141,17 @@ interface HomePageClientProps {
   initialTours: Tour[];
   homeContent: HomeContent | null;
   articles: Post[];
+  tourDestinations: string[];
+  tourCategories: string[];
 }
 
-export default function HomePageClient({ initialTours, homeContent, articles = [] }: HomePageClientProps) {
+export default function HomePageClient({
+  initialTours,
+  homeContent,
+  articles = [],
+  tourDestinations,
+  tourCategories,
+}: HomePageClientProps) {
   const { t } = useLanguage();
   const [testimonials, setTestimonials] = React.useState<Testimonial[]>([]);
   const tours = initialTours;
@@ -278,11 +276,17 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                       <SelectValue placeholder={t("nav.destination")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {egyptianDestinations.map((dest) => (
-                        <SelectItem key={dest} value={dest}>
-                          {dest}
-                        </SelectItem>
-                      ))}
+                      {tourDestinations.length > 0 ? (
+                        tourDestinations.map((dest) => (
+                          <SelectItem key={dest} value={dest}>
+                            {dest}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          No destinations found. Add some in tour settings.
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -296,10 +300,17 @@ export default function HomePageClient({ initialTours, homeContent, articles = [
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cultural">{t("hero.type.cultural")}</SelectItem>
-                      <SelectItem value="adventure">{t("hero.type.adventure")}</SelectItem>
-                      <SelectItem value="culinary">{t("hero.type.culinary")}</SelectItem>
-                      <SelectItem value="relaxation">{t("hero.type.relaxation")}</SelectItem>
+                      {tourCategories.length > 0 ? (
+                        tourCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          No categories found. Add some in tour settings.
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

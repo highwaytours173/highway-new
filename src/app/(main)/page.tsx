@@ -3,7 +3,7 @@ import { getTours } from "@/lib/supabase/tours";
 import { createClient } from "@/lib/supabase/server";
 import HomePageClient from "./home-client";
 import type { Post } from "@/types";
-import { getHomePageContent, getPageMetadata } from "@/lib/supabase/agency-content";
+import { getAgencySettings, getHomePageContent, getPageMetadata } from "@/lib/supabase/agency-content";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +18,7 @@ export default async function HomePage() {
 
   // Fetch home page content
   const homeContent = await getHomePageContent();
+  const settings = await getAgencySettings();
     
   // Fetch posts/articles from Supabase
   // Try 'articles' first, if not found (error), try 'posts'
@@ -64,6 +65,8 @@ export default async function HomePage() {
       initialTours={initialTours} 
       homeContent={homeContent}
       articles={articles}
+      tourDestinations={settings?.data?.tourDestinations ?? []}
+      tourCategories={settings?.data?.tourCategories ?? []}
     />
   );
 }

@@ -18,13 +18,9 @@ export default async function EditTourPage({
     notFound();
   }
 
-  const categories = settings?.data?.tourCategories || [
-    "Adventure", "Relaxation", "Cultural", "Culinary", "Family", "Honeymoon", "Package", "Daily"
-  ];
+  const categories = settings?.data?.tourCategories ?? [];
   
-  const destinations = settings?.data?.tourDestinations || [
-    "Cairo", "Luxor", "Aswan", "Sharm El Sheikh", "Hurghada", "Alexandria"
-  ];
+  const destinations = settings?.data?.tourDestinations ?? [];
 
   return <TourEditClient tour={tour} categories={categories} destinations={destinations} />;
 }
