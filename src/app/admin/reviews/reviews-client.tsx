@@ -1,17 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import type { Review } from "@/types";
-import { updateReviewStatus, deleteReview } from "@/lib/supabase/reviews";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useTransition } from 'react';
+import type { Review } from '@/types';
+import { updateReviewStatus, deleteReview } from '@/lib/supabase/reviews';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -19,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Star,
   CheckCircle,
@@ -40,7 +35,7 @@ import {
   Globe,
   Building2,
   MessageSquare,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ReviewsClientProps {
   initialReviews: Review[];
@@ -53,10 +48,10 @@ interface ReviewsClientProps {
 }
 
 const statusFilterTabs = [
-  { key: "all", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
+  { key: 'all', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
 ] as const;
 
 function StarRating({ rating }: { rating: number }) {
@@ -66,9 +61,7 @@ function StarRating({ rating }: { rating: number }) {
         <Star
           key={star}
           className={`h-3.5 w-3.5 ${
-            star <= rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-muted-foreground/30"
+            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'
           }`}
         />
       ))}
@@ -78,14 +71,14 @@ function StarRating({ rating }: { rating: number }) {
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
-    case "approved":
+    case 'approved':
       return (
         <Badge variant="default" className="bg-green-600 hover:bg-green-700">
           <CheckCircle className="mr-1 h-3 w-3" />
           Approved
         </Badge>
       );
-    case "rejected":
+    case 'rejected':
       return (
         <Badge variant="destructive">
           <XCircle className="mr-1 h-3 w-3" />
@@ -104,31 +97,27 @@ function StatusBadge({ status }: { status: string }) {
 
 export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState('all');
   const [reviews, setReviews] = useState(initialReviews);
   const [isPending, startTransition] = useTransition();
 
   const filteredReviews =
-    activeTab === "all"
-      ? reviews
-      : reviews.filter((r) => r.status === activeTab);
+    activeTab === 'all' ? reviews : reviews.filter((r) => r.status === activeTab);
 
-  const handleUpdateStatus = (reviewId: string, status: "approved" | "rejected") => {
+  const handleUpdateStatus = (reviewId: string, status: 'approved' | 'rejected') => {
     startTransition(async () => {
       try {
         await updateReviewStatus(reviewId, status);
-        setReviews((prev) =>
-          prev.map((r) => (r.id === reviewId ? { ...r, status } : r))
-        );
+        setReviews((prev) => prev.map((r) => (r.id === reviewId ? { ...r, status } : r)));
         toast({
           title: `Review ${status}`,
           description: `The review has been ${status}.`,
         });
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to update review status.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to update review status.',
+          variant: 'destructive',
         });
       }
     });
@@ -139,12 +128,12 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
       try {
         await deleteReview(reviewId);
         setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-        toast({ title: "Review deleted" });
+        toast({ title: 'Review deleted' });
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to delete review.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to delete review.',
+          variant: 'destructive',
         });
       }
     });
@@ -166,9 +155,7 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-600">
-              Pending
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-yellow-600">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.pending}</p>
@@ -176,9 +163,7 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">
-              Approved
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-green-600">Approved</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.approved}</p>
@@ -186,9 +171,7 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-red-600">
-              Rejected
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-red-600">Rejected</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{stats.rejected}</p>
@@ -204,14 +187,14 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
             <span className="ml-1.5 text-xs text-muted-foreground">
               (
-              {tab.key === "all"
+              {tab.key === 'all'
                 ? reviews.length
                 : reviews.filter((r) => r.status === tab.key).length}
               )
@@ -226,7 +209,7 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
             <MessageSquare className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
-              No {activeTab === "all" ? "" : activeTab} reviews yet.
+              No {activeTab === 'all' ? '' : activeTab} reviews yet.
             </p>
           </CardContent>
         </Card>
@@ -250,12 +233,8 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
                   <TableRow key={review.id}>
                     <TableCell>
                       <div>
-                        <p className="text-sm font-medium">
-                          {review.customerName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {review.customerEmail}
-                        </p>
+                        <p className="text-sm font-medium">{review.customerName}</p>
+                        <p className="text-xs text-muted-foreground">{review.customerEmail}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -263,16 +242,12 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
                         {review.tours ? (
                           <>
                             <Globe className="h-3.5 w-3.5 text-blue-500" />
-                            <span className="max-w-[120px] truncate">
-                              {review.tours.name}
-                            </span>
+                            <span className="max-w-[120px] truncate">{review.tours.name}</span>
                           </>
                         ) : review.hotels ? (
                           <>
                             <Building2 className="h-3.5 w-3.5 text-orange-500" />
-                            <span className="max-w-[120px] truncate">
-                              {review.hotels.name}
-                            </span>
+                            <span className="max-w-[120px] truncate">{review.hotels.name}</span>
                           </>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -284,7 +259,7 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
                     </TableCell>
                     <TableCell className="hidden max-w-[250px] md:table-cell">
                       <p className="truncate text-sm text-muted-foreground">
-                        {review.content || "—"}
+                        {review.content || '—'}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -297,36 +272,28 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
-                        {review.status !== "approved" && (
+                        {review.status !== 'approved' && (
                           <Button
                             size="sm"
                             variant="ghost"
                             className="h-8 text-green-600 hover:bg-green-50 hover:text-green-700"
-                            onClick={() =>
-                              handleUpdateStatus(review.id, "approved")
-                            }
+                            onClick={() => handleUpdateStatus(review.id, 'approved')}
                             disabled={isPending}
                           >
                             <CheckCircle className="h-4 w-4" />
-                            <span className="ml-1 hidden lg:inline">
-                              Approve
-                            </span>
+                            <span className="ml-1 hidden lg:inline">Approve</span>
                           </Button>
                         )}
-                        {review.status !== "rejected" && (
+                        {review.status !== 'rejected' && (
                           <Button
                             size="sm"
                             variant="ghost"
                             className="h-8 text-red-600 hover:bg-red-50 hover:text-red-700"
-                            onClick={() =>
-                              handleUpdateStatus(review.id, "rejected")
-                            }
+                            onClick={() => handleUpdateStatus(review.id, 'rejected')}
                             disabled={isPending}
                           >
                             <XCircle className="h-4 w-4" />
-                            <span className="ml-1 hidden lg:inline">
-                              Reject
-                            </span>
+                            <span className="ml-1 hidden lg:inline">Reject</span>
                           </Button>
                         )}
                         <AlertDialog>
@@ -344,9 +311,9 @@ export function ReviewsClient({ initialReviews, stats }: ReviewsClientProps) {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete review?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This will permanently delete the review by{" "}
-                                <strong>{review.customerName}</strong>. This
-                                action cannot be undone.
+                                This will permanently delete the review by{' '}
+                                <strong>{review.customerName}</strong>. This action cannot be
+                                undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

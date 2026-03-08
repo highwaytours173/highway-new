@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useForm, useFieldArray, useFormContext } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useForm, useFieldArray, useFormContext } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -15,71 +15,68 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Loader2, PlusCircle, Trash2, Map, Calendar, CalendarCheck, DollarSign, Image as ImageIcon, Settings, List, AlertCircle } from "lucide-react";
-import { TourAvailabilityManager } from "@/components/admin/tour-availability-manager";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import { Combobox } from "@/components/ui/combobox";
-import type { Tour } from "@/types";
+  ArrowLeft,
+  Loader2,
+  PlusCircle,
+  Trash2,
+  Map,
+  Calendar,
+  CalendarCheck,
+  DollarSign,
+  Image as ImageIcon,
+  Settings,
+  List,
+  AlertCircle,
+} from 'lucide-react';
+import { TourAvailabilityManager } from '@/components/admin/tour-availability-manager';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import { Combobox } from '@/components/ui/combobox';
+import type { Tour } from '@/types';
 
 const priceTierSchema = z.object({
-  minPeople: z.coerce.number().min(1, "Min people is required"),
+  minPeople: z.coerce.number().min(1, 'Min people is required'),
   maxPeople: z.coerce.number().nullable(),
-  pricePerAdult: z.coerce.number().min(0, "Price must be positive"),
-  pricePerChild: z.coerce.number().min(0, "Price must be positive"),
+  pricePerAdult: z.coerce.number().min(0, 'Price must be positive'),
+  pricePerChild: z.coerce.number().min(0, 'Price must be positive'),
 });
 
 const itineraryItemSchema = z.object({
   day: z.coerce.number().min(1),
-  activity: z.string().min(1, "Activity is required"),
+  activity: z.string().min(1, 'Activity is required'),
 });
 
 const packageSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Package name is required"),
+  name: z.string().min(1, 'Package name is required'),
   description: z.string().optional(),
-  priceTiers: z.array(priceTierSchema).min(1, "At least one price tier is required."),
+  priceTiers: z.array(priceTierSchema).min(1, 'At least one price tier is required.'),
 });
 
 export const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  name: z.string().min(2, 'Name must be at least 2 characters.'),
   slug: z
     .string()
-    .min(1, "Slug is required.")
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase with words separated by dashes.",
-    ),
-  destination: z.string().min(1, "Please select a destination."),
+    .min(1, 'Slug is required.')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with words separated by dashes.'),
+  destination: z.string().min(1, 'Please select a destination.'),
   type: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "You have to select at least one item.",
+    message: 'You have to select at least one item.',
   }),
-  duration: z.coerce.number().min(1, "Duration must be at least 1 day."),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters."),
-  images: z.array(z.any()).min(1, "At least one image is required."),
+  duration: z.coerce.number().min(1, 'Duration must be at least 1 day.'),
+  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  images: z.array(z.any()).min(1, 'At least one image is required.'),
   availability: z.boolean().default(true),
   rating: z.coerce.number().min(1).max(5),
   priceTiers: z.array(priceTierSchema).optional(),
@@ -99,21 +96,15 @@ export const formSchema = z.object({
 interface TourFormProps {
   initialData?: Tour;
   onSubmit: (values: z.infer<typeof formSchema>) => void | Promise<void>;
-  formType: "new" | "edit";
+  formType: 'new' | 'edit';
   categories?: string[];
   destinations?: string[];
 }
 
 // Sub-component for individual package editing
-function PackageEditor({
-  index,
-  remove,
-}: {
-  index: number;
-  remove: (index: number) => void;
-}) {
+function PackageEditor({ index, remove }: { index: number; remove: (index: number) => void }) {
   const { control } = useFormContext<z.infer<typeof formSchema>>();
-  
+
   const {
     fields: priceTierFields,
     append: appendPriceTier,
@@ -204,7 +195,7 @@ function PackageEditor({
                       placeholder="unlimited"
                       className="h-8"
                       {...field}
-                      value={field.value ?? ""}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -272,45 +263,45 @@ function PackageEditor({
   );
 }
 
-export function TourForm({ initialData, onSubmit, formType, categories = [], destinations = [] }: TourFormProps) {
+export function TourForm({
+  initialData,
+  onSubmit,
+  formType,
+  categories = [],
+  destinations = [],
+}: TourFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
           ...initialData,
-          highlights: initialData.highlights?.map((h) => ({ value: h })) ?? [
-            { value: "" },
-          ],
-          includes: initialData.includes?.map((i) => ({ value: i })) ?? [
-            { value: "" },
-          ],
-          excludes: initialData.excludes?.map((e) => ({ value: e })) ?? [
-            { value: "" },
-          ],
+          highlights: initialData.highlights?.map((h) => ({ value: h })) ?? [{ value: '' }],
+          includes: initialData.includes?.map((i) => ({ value: i })) ?? [{ value: '' }],
+          excludes: initialData.excludes?.map((e) => ({ value: e })) ?? [{ value: '' }],
           images: initialData.images || [], // Pass existing image URLs
           packages: initialData.packages || [],
           priceTiers: initialData.priceTiers || [],
         }
       : {
-          name: "",
-          slug: "",
+          name: '',
+          slug: '',
           destination: undefined,
           duration: 1,
-          description: "",
+          description: '',
           images: [],
           availability: true,
           rating: 4.5,
           priceTiers: [],
           packages: [],
-          itinerary: [{ day: 1, activity: "" }],
-          highlights: [{ value: "" }],
-          includes: [{ value: "" }],
-          excludes: [{ value: "" }],
-          durationText: "",
-          tourType: "",
-          availabilityDescription: "",
-          pickupAndDropoff: "",
-          cancellationPolicy: "",
+          itinerary: [{ day: 1, activity: '' }],
+          highlights: [{ value: '' }],
+          includes: [{ value: '' }],
+          excludes: [{ value: '' }],
+          durationText: '',
+          tourType: '',
+          availabilityDescription: '',
+          pickupAndDropoff: '',
+          cancellationPolicy: '',
           type: [],
         },
   });
@@ -321,7 +312,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     remove: removePackage,
   } = useFieldArray({
     control: form.control,
-    name: "packages",
+    name: 'packages',
   });
 
   const {
@@ -330,7 +321,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     remove: removeItinerary,
   } = useFieldArray({
     control: form.control,
-    name: "itinerary",
+    name: 'itinerary',
   });
 
   const {
@@ -339,7 +330,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     remove: removeHighlight,
   } = useFieldArray({
     control: form.control,
-    name: "highlights",
+    name: 'highlights',
   });
 
   const {
@@ -348,7 +339,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     remove: removeIncludes,
   } = useFieldArray({
     control: form.control,
-    name: "includes",
+    name: 'includes',
   });
 
   const {
@@ -357,17 +348,17 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     remove: removeExcludes,
   } = useFieldArray({
     control: form.control,
-    name: "excludes",
+    name: 'excludes',
   });
 
   const generateSlug = () => {
-    const name = form.getValues("name");
+    const name = form.getValues('name');
     if (name) {
       const slug = name
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      form.setValue("slug", slug, { shouldValidate: true });
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      form.setValue('slug', slug, { shouldValidate: true });
     }
   };
 
@@ -376,7 +367,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     if (!errors) return false;
 
     switch (tab) {
-      case "overview":
+      case 'overview':
         return !!(
           errors.name ||
           errors.slug ||
@@ -386,11 +377,11 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
           errors.durationText ||
           errors.description
         );
-      case "media":
+      case 'media':
         return !!errors.images;
-      case "itinerary":
+      case 'itinerary':
         return !!errors.itinerary;
-      case "details":
+      case 'details':
         return !!(
           errors.highlights ||
           errors.includes ||
@@ -399,9 +390,9 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
           errors.availabilityDescription ||
           errors.cancellationPolicy
         );
-      case "pricing":
+      case 'pricing':
         return !!(errors.packages || errors.priceTiers);
-      case "settings":
+      case 'settings':
         return !!(errors.availability || errors.rating || errors.tourType);
       default:
         return false;
@@ -410,14 +401,14 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
 
   const renderFieldArray = (
     title: string,
-    fields: Record<"id", string>[],
+    fields: Record<'id', string>[],
     remove: (index: number) => void,
     append: (value: { value: string }) => void,
-    fieldName: "highlights" | "includes" | "excludes",
+    fieldName: 'highlights' | 'includes' | 'excludes',
     placeholder?: string,
     className?: string
   ) => (
-    <Card className={`flex flex-col ${className || ""}`}>
+    <Card className={`flex flex-col ${className || ''}`}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-medium flex items-center gap-2">
           {title}
@@ -467,7 +458,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
           variant="secondary"
           size="sm"
           className="w-full mt-2"
-          onClick={() => append({ value: "" })}
+          onClick={() => append({ value: '' })}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Item
@@ -476,12 +467,15 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
     </Card>
   );
 
-  const categoriesOptions = categories.map(c => ({ value: c, label: c }));
+  const categoriesOptions = categories.map((c) => ({ value: c, label: c }));
   const destinationOptions = destinations;
 
-  const pageTitle = formType === "new" ? "Create Tour" : "Edit Tour";
-  const pageDescription = formType === "new" ? "Add a new tour package to your catalog." : "Modify existing tour details.";
-  const submitButtonText = formType === "new" ? "Create Tour" : "Save Changes";
+  const pageTitle = formType === 'new' ? 'Create Tour' : 'Edit Tour';
+  const pageDescription =
+    formType === 'new'
+      ? 'Add a new tour package to your catalog.'
+      : 'Modify existing tour details.';
+  const submitButtonText = formType === 'new' ? 'Create Tour' : 'Save Changes';
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -500,10 +494,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
           <Button variant="outline" onClick={() => form.reset()}>
             Discard
           </Button>
-          <Button 
-            onClick={form.handleSubmit(onSubmit)} 
-            disabled={form.formState.isSubmitting}
-          >
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -522,29 +513,41 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 h-auto">
               <TabsTrigger value="overview" className="flex gap-2 relative">
                 <Map className="h-4 w-4" /> Overview
-                {getTabHasError("overview") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('overview') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="media" className="flex gap-2 relative">
                 <ImageIcon className="h-4 w-4" /> Media
-                {getTabHasError("media") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('media') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="itinerary" className="flex gap-2 relative">
                 <Calendar className="h-4 w-4" /> Itinerary
-                {getTabHasError("itinerary") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('itinerary') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="details" className="flex gap-2 relative">
                 <List className="h-4 w-4" /> Details
-                {getTabHasError("details") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('details') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="pricing" className="flex gap-2 relative">
                 <DollarSign className="h-4 w-4" /> Pricing
-                {getTabHasError("pricing") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('pricing') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex gap-2 relative">
                 <Settings className="h-4 w-4" /> Settings
-                {getTabHasError("settings") && <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />}
+                {getTabHasError('settings') && (
+                  <AlertCircle className="h-3 w-3 text-destructive absolute top-1 right-1" />
+                )}
               </TabsTrigger>
-              {formType === "edit" && initialData?.id && (
+              {formType === 'edit' && initialData?.id && (
                 <TabsTrigger value="availability" className="flex gap-2 relative">
                   <CalendarCheck className="h-4 w-4" /> Availability
                 </TabsTrigger>
@@ -557,9 +560,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                 <Card>
                   <CardHeader>
                     <CardTitle>Basic Information</CardTitle>
-                    <CardDescription>
-                      The core details of your tour.
-                    </CardDescription>
+                    <CardDescription>The core details of your tour.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -597,9 +598,9 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                                   {...field}
                                 />
                               </FormControl>
-                              <Button 
-                                type="button" 
-                                variant="outline" 
+                              <Button
+                                type="button"
+                                variant="outline"
                                 onClick={generateSlug}
                                 className="shrink-0"
                               >
@@ -607,14 +608,14 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                               </Button>
                             </div>
                             <FormDescription>
-                              Unique URL identifier: /tours/<strong>{field.value || "..."}</strong>
+                              Unique URL identifier: /tours/<strong>{field.value || '...'}</strong>
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                    
+
                     <div className="grid sm:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
@@ -622,10 +623,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Destination</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select destination" />
@@ -649,7 +647,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="type"
@@ -670,7 +668,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-6">
-                       <FormField
+                      <FormField
                         control={form.control}
                         name="duration"
                         render={({ field }) => (
@@ -690,10 +688,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                           <FormItem>
                             <FormLabel>Duration Label</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="e.g., 3 Days / 2 Nights"
-                                {...field}
-                              />
+                              <Input placeholder="e.g., 3 Days / 2 Nights" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -739,10 +734,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <ImageUploader
-                              value={field.value}
-                              onChange={field.onChange}
-                            />
+                            <ImageUploader value={field.value} onChange={field.onChange} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -757,17 +749,12 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                 <Card>
                   <CardHeader>
                     <CardTitle>Daily Itinerary</CardTitle>
-                    <CardDescription>
-                      Outline the day-by-day plan for the tour.
-                    </CardDescription>
+                    <CardDescription>Outline the day-by-day plan for the tour.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-muted-foreground/20 before:to-transparent">
                       {itineraryFields.map((field, index) => (
-                        <div
-                          key={field.id}
-                          className="relative pl-12 group"
-                        >
+                        <div key={field.id} className="relative pl-12 group">
                           <div className="absolute left-0 top-2 flex h-12 w-12 items-center justify-center rounded-full border bg-background text-sm font-bold shadow-sm z-10">
                             D{index + 1}
                           </div>
@@ -815,7 +802,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                       onClick={() =>
                         appendItinerary({
                           day: itineraryFields.length + 1,
-                          activity: "",
+                          activity: '',
                         })
                       }
                       className="ml-12 w-[calc(100%-3rem)] border-dashed"
@@ -831,30 +818,30 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
               <TabsContent value="details" className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   {renderFieldArray(
-                    "Highlights",
+                    'Highlights',
                     highlightFields,
                     removeHighlight,
                     appendHighlight,
-                    "highlights",
-                    "e.g. Visit the Great Pyramid",
-                    "h-full"
+                    'highlights',
+                    'e.g. Visit the Great Pyramid',
+                    'h-full'
                   )}
                   <div className="space-y-6">
-                     {renderFieldArray(
+                    {renderFieldArray(
                       "What's Included",
                       includesFields,
                       removeIncludes,
                       appendIncludes,
-                      "includes",
-                      "e.g. Airport transfers"
+                      'includes',
+                      'e.g. Airport transfers'
                     )}
                     {renderFieldArray(
                       "What's Excluded",
                       excludesFields,
                       removeExcludes,
                       appendExcludes,
-                      "excludes",
-                      "e.g. International flights"
+                      'excludes',
+                      'e.g. International flights'
                     )}
                   </div>
                 </div>
@@ -871,10 +858,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                         <FormItem>
                           <FormLabel>Pickup & Drop-off</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="e.g., Hotel pickup included"
-                              {...field}
-                            />
+                            <Input placeholder="e.g., Hotel pickup included" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -887,10 +871,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                         <FormItem>
                           <FormLabel>Availability Note</FormLabel>
                           <FormControl>
-                            <Input
-                              placeholder="e.g., Daily departures"
-                              {...field}
-                            />
+                            <Input placeholder="e.g., Daily departures" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -923,18 +904,15 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                   <CardHeader>
                     <CardTitle className="text-xl">Packages & Pricing</CardTitle>
                     <CardDescription>
-                      Create different packages (e.g. Standard, Luxury) with their own pricing tiers.
+                      Create different packages (e.g. Standard, Luxury) with their own pricing
+                      tiers.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {packageFields.map((field, index) => (
-                      <PackageEditor
-                        key={field.id}
-                        index={index}
-                        remove={removePackage}
-                      />
+                      <PackageEditor key={field.id} index={index} remove={removePackage} />
                     ))}
-                    
+
                     <Button
                       type="button"
                       variant="outline"
@@ -942,8 +920,8 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                       onClick={() =>
                         appendPackage({
                           id: crypto.randomUUID(),
-                          name: "",
-                          description: "",
+                          name: '',
+                          description: '',
                           priceTiers: [
                             {
                               minPeople: 1,
@@ -963,13 +941,14 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
               </TabsContent>
 
               {/* AVAILABILITY TAB (edit mode only) */}
-              {formType === "edit" && initialData?.id && (
+              {formType === 'edit' && initialData?.id && (
                 <TabsContent value="availability">
                   <Card>
                     <CardHeader>
                       <CardTitle>Date Availability</CardTitle>
                       <CardDescription>
-                        Block specific dates or set capacity limits. Dates without rules have unlimited availability.
+                        Block specific dates or set capacity limits. Dates without rules have
+                        unlimited availability.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -984,9 +963,7 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                 <Card>
                   <CardHeader>
                     <CardTitle>Tour Settings</CardTitle>
-                    <CardDescription>
-                      Configuration for visibility and metadata.
-                    </CardDescription>
+                    <CardDescription>Configuration for visibility and metadata.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <FormField
@@ -1001,15 +978,12 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                             </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid sm:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
@@ -1027,22 +1001,17 @@ export function TourForm({ initialData, onSubmit, formType, categories = [], des
                           </FormItem>
                         )}
                       />
-                      
-                       <FormField
+
+                      <FormField
                         control={form.control}
                         name="tourType"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Tour Type Label</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="e.g., Private Guided"
-                                {...field}
-                              />
+                              <Input placeholder="e.g., Private Guided" {...field} />
                             </FormControl>
-                            <FormDescription>
-                              Displayed badge on tour cards.
-                            </FormDescription>
+                            <FormDescription>Displayed badge on tour cards.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

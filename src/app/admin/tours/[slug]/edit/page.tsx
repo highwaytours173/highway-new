@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
-import { getTourBySlug } from "@/lib/supabase/tours";
-import { TourEditClient } from "./tour-edit-client";
-import { getAgencySettings } from "@/lib/supabase/agency-content";
+import { notFound } from 'next/navigation';
+import { getTourBySlug } from '@/lib/supabase/tours';
+import { TourEditClient } from './tour-edit-client';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
 
 export default async function EditTourPage({
   params,
@@ -19,9 +19,8 @@ export default async function EditTourPage({
   }
 
   const categories = settings?.data?.tourCategories ?? [];
-  
+
   const destinations = settings?.data?.tourDestinations ?? [];
 
   return <TourEditClient tour={tour} categories={categories} destinations={destinations} />;
 }
-

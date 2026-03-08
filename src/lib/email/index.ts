@@ -11,7 +11,7 @@
  *  3. Built-in fallback "noreply@tixandtrips.com"
  */
 
-import { Resend } from "resend";
+import { Resend } from 'resend';
 
 export type SendEmailOptions = {
   to: string;
@@ -30,26 +30,24 @@ export type SendEmailOptions = {
 export async function sendEmail(opts: SendEmailOptions): Promise<{ ok: boolean; error?: string }> {
   const { to, subject, html, agencyEmailSettings } = opts;
 
-  const apiKey =
-    agencyEmailSettings?.resendApiKey?.trim() ||
-    process.env.RESEND_API_KEY?.trim();
+  const apiKey = agencyEmailSettings?.resendApiKey?.trim() || process.env.RESEND_API_KEY?.trim();
 
   if (!apiKey) {
     // No API key configured — silently skip rather than throwing
-    console.warn("[email] No Resend API key configured. Email not sent.");
-    return { ok: false, error: "No Resend API key configured" };
+    console.warn('[email] No Resend API key configured. Email not sent.');
+    return { ok: false, error: 'No Resend API key configured' };
   }
 
   const fromName =
     opts.fromName ||
     agencyEmailSettings?.fromName?.trim() ||
     process.env.RESEND_FROM_NAME?.trim() ||
-    "Booking Confirmation";
+    'Booking Confirmation';
 
   const fromEmail =
     agencyEmailSettings?.fromEmail?.trim() ||
     process.env.RESEND_FROM_EMAIL?.trim() ||
-    "noreply@tixandtrips.com";
+    'noreply@tixandtrips.com';
 
   const resend = new Resend(apiKey);
 
@@ -62,14 +60,14 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{ ok: boolean; 
     });
 
     if (error) {
-      console.error("[email] Resend error:", error);
+      console.error('[email] Resend error:', error);
       return { ok: false, error: error.message };
     }
 
     return { ok: true };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[email] Failed to send email:", message);
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[email] Failed to send email:', message);
     return { ok: false, error: message };
   }
 }

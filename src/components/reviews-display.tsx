@@ -1,5 +1,5 @@
-import { Star } from "lucide-react";
-import type { Review } from "@/types";
+import { Star } from 'lucide-react';
+import type { Review } from '@/types';
 
 interface ReviewsDisplayProps {
   reviews: Review[];
@@ -13,9 +13,7 @@ function StarRating({ rating }: { rating: number }) {
         <Star
           key={star}
           className={`h-4 w-4 ${
-            star <= rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-muted-foreground/30"
+            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'
           }`}
         />
       ))}
@@ -23,11 +21,10 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export function ReviewsDisplay({ reviews, title = "Customer Reviews" }: ReviewsDisplayProps) {
+export function ReviewsDisplay({ reviews, title = 'Customer Reviews' }: ReviewsDisplayProps) {
   if (reviews.length === 0) return null;
 
-  const averageRating =
-    reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
   return (
     <div className="space-y-6">
@@ -36,11 +33,9 @@ export function ReviewsDisplay({ reviews, title = "Customer Reviews" }: ReviewsD
         <h2 className="text-xl font-semibold">{title}</h2>
         <div className="flex items-center gap-2">
           <StarRating rating={Math.round(averageRating)} />
-          <span className="text-sm font-medium">
-            {averageRating.toFixed(1)}
-          </span>
+          <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
           <span className="text-sm text-muted-foreground">
-            ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+            ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
           </span>
         </div>
       </div>
@@ -48,10 +43,7 @@ export function ReviewsDisplay({ reviews, title = "Customer Reviews" }: ReviewsD
       {/* Review list */}
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="rounded-lg border bg-card p-4 shadow-sm"
-          >
+          <div key={review.id} className="rounded-lg border bg-card p-4 shadow-sm">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -61,10 +53,10 @@ export function ReviewsDisplay({ reviews, title = "Customer Reviews" }: ReviewsD
                   <div>
                     <p className="text-sm font-medium">{review.customerName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(review.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
+                      {new Date(review.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
                       })}
                     </p>
                   </div>
@@ -73,9 +65,7 @@ export function ReviewsDisplay({ reviews, title = "Customer Reviews" }: ReviewsD
               <StarRating rating={review.rating} />
             </div>
             {review.content && (
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {review.content}
-              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.content}</p>
             )}
           </div>
         ))}

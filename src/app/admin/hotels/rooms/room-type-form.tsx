@@ -1,74 +1,77 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import type { RoomType } from "@/types";
-import { X } from "lucide-react";
+import * as React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import type { RoomType } from '@/types';
+import { X } from 'lucide-react';
 
 const commonAmenities = [
-  "Free WiFi",
-  "Air conditioning",
-  "TV",
-  "Mini bar",
-  "Safe",
-  "Balcony",
-  "Sea view",
-  "City view",
-  "Soundproof",
-  "Workspace",
-  "Coffee machine",
-  "Bathtub",
-  "Shower",
-  "Hair dryer",
-  "Towels",
-  "Toiletries",
-  "Iron",
-  "Wardrobe",
-  "Crib available",
+  'Free WiFi',
+  'Air conditioning',
+  'TV',
+  'Mini bar',
+  'Safe',
+  'Balcony',
+  'Sea view',
+  'City view',
+  'Soundproof',
+  'Workspace',
+  'Coffee machine',
+  'Bathtub',
+  'Shower',
+  'Hair dryer',
+  'Towels',
+  'Toiletries',
+  'Iron',
+  'Wardrobe',
+  'Crib available',
 ];
 
 const commonServices = [
-  "Room service",
-  "Daily housekeeping",
-  "Laundry",
-  "Airport pickup",
-  "Breakfast",
-  "Late checkout",
-  "Extra bed",
-  "Baby cot",
+  'Room service',
+  'Daily housekeeping',
+  'Laundry',
+  'Airport pickup',
+  'Breakfast',
+  'Late checkout',
+  'Extra bed',
+  'Baby cot',
 ];
 
 const bedKeys = [
-  { key: "king", label: "King" },
-  { key: "queen", label: "Queen" },
-  { key: "double", label: "Double" },
-  { key: "twin", label: "Twin" },
-  { key: "single", label: "Single" },
-  { key: "sofa", label: "Sofa bed" },
-  { key: "bunk", label: "Bunk bed" },
+  { key: 'king', label: 'King' },
+  { key: 'queen', label: 'Queen' },
+  { key: 'double', label: 'Double' },
+  { key: 'twin', label: 'Twin' },
+  { key: 'single', label: 'Single' },
+  { key: 'sofa', label: 'Sofa bed' },
+  { key: 'bunk', label: 'Bunk bed' },
 ];
 
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map(String).map((v) => v.trim()).filter(Boolean);
+  return value
+    .map(String)
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 function coerceBeds(value: unknown): Record<string, number> {
-  if (!value || typeof value !== "object") return {};
+  if (!value || typeof value !== 'object') return {};
   const input = value as Record<string, unknown>;
   const result: Record<string, number> = {};
   for (const { key } of bedKeys) {
     const raw = input[key];
-    const num = typeof raw === "number" ? raw : Number(raw || 0);
+    const num = typeof raw === 'number' ? raw : Number(raw || 0);
     if (Number.isFinite(num) && num > 0) {
       result[key] = Math.floor(num);
     }
@@ -95,13 +98,13 @@ function TagListEditor(props: {
   suggestions?: string[];
   placeholder?: string;
 }) {
-  const [draft, setDraft] = React.useState("");
+  const [draft, setDraft] = React.useState('');
 
   const add = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
     props.onChange(uniq([...props.values, trimmed]));
-    setDraft("");
+    setDraft('');
   };
 
   return (
@@ -111,22 +114,17 @@ function TagListEditor(props: {
           <Label>{props.label}</Label>
           <Input
             value={draft}
-            placeholder={props.placeholder || "Type and press Enter"}
+            placeholder={props.placeholder || 'Type and press Enter'}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 e.preventDefault();
                 add(draft);
               }
             }}
           />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => add(draft)}
-          disabled={!draft.trim()}
-        >
+        <Button type="button" variant="outline" onClick={() => add(draft)} disabled={!draft.trim()}>
           Add
         </Button>
       </div>
@@ -134,13 +132,7 @@ function TagListEditor(props: {
       {props.suggestions && props.suggestions.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {props.suggestions.map((s) => (
-            <Button
-              key={s}
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => add(s)}
-            >
+            <Button key={s} type="button" size="sm" variant="outline" onClick={() => add(s)}>
               {s}
             </Button>
           ))}
@@ -171,7 +163,7 @@ function TagListEditor(props: {
 }
 
 export function RoomTypeForm(props: {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   backHref: string;
   action: (formData: FormData) => void | Promise<void>;
   initial?: RoomType | null;
@@ -181,21 +173,21 @@ export function RoomTypeForm(props: {
   const [services, setServices] = React.useState<string[]>(toStringArray(initial?.services));
   const [highlights, setHighlights] = React.useState<string[]>(toStringArray(initial?.highlights));
   const [imageUrls, setImageUrls] = React.useState<string[]>(
-    toStringArray(initial?.images).filter((u) => /^https?:\/\//i.test(u)),
+    toStringArray(initial?.images).filter((u) => /^https?:\/\//i.test(u))
   );
   const [existingImages, setExistingImages] = React.useState<string[]>(
-    toStringArray(initial?.images).filter((u) => /^https?:\/\//i.test(u)),
+    toStringArray(initial?.images).filter((u) => /^https?:\/\//i.test(u))
   );
   const [beds, setBeds] = React.useState<Record<string, number>>(coerceBeds(initial?.beds));
-  const [customAmenity, setCustomAmenity] = React.useState("");
-  const [customService, setCustomService] = React.useState("");
-  const [imageUrlDraft, setImageUrlDraft] = React.useState("");
+  const [customAmenity, setCustomAmenity] = React.useState('');
+  const [customService, setCustomService] = React.useState('');
+  const [imageUrlDraft, setImageUrlDraft] = React.useState('');
 
   const addCustom = (value: string, set: (v: string) => void, apply: (v: string) => void) => {
     const trimmed = value.trim();
     if (!trimmed) return;
     apply(trimmed);
-    set("");
+    set('');
   };
 
   return (
@@ -203,12 +195,12 @@ export function RoomTypeForm(props: {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">
-            {props.mode === "create" ? "Add Room Type" : "Edit Room Type"}
+            {props.mode === 'create' ? 'Add Room Type' : 'Edit Room Type'}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {props.mode === "create"
-              ? "Add details, pricing defaults, photos, and services."
-              : "Update details, pricing defaults, photos, and services."}
+            {props.mode === 'create'
+              ? 'Add details, pricing defaults, photos, and services.'
+              : 'Update details, pricing defaults, photos, and services.'}
           </p>
         </div>
         <Button asChild variant="outline">
@@ -217,7 +209,7 @@ export function RoomTypeForm(props: {
       </div>
 
       <form action={props.action} className="space-y-6">
-        {props.mode === "edit" ? (
+        {props.mode === 'edit' ? (
           <>
             {existingImages.map((url) => (
               <input key={url} type="hidden" name="existingImages" value={url} />
@@ -234,7 +226,7 @@ export function RoomTypeForm(props: {
         {highlights.map((h) => (
           <input key={h} type="hidden" name="highlights" value={h} />
         ))}
-        {props.mode === "create"
+        {props.mode === 'create'
           ? imageUrls.map((u) => <input key={u} type="hidden" name="imageUrls" value={u} />)
           : null}
 
@@ -263,7 +255,7 @@ export function RoomTypeForm(props: {
                     name="name"
                     placeholder="Deluxe Double"
                     required
-                    defaultValue={initial?.name || ""}
+                    defaultValue={initial?.name || ''}
                   />
                 </div>
 
@@ -273,7 +265,7 @@ export function RoomTypeForm(props: {
                     id="slug"
                     name="slug"
                     placeholder="deluxe-double"
-                    defaultValue={initial?.slug || ""}
+                    defaultValue={initial?.slug || ''}
                   />
                 </div>
 
@@ -283,7 +275,7 @@ export function RoomTypeForm(props: {
                     id="description"
                     name="description"
                     placeholder="Sea view, balcony, and premium bedding…"
-                    defaultValue={initial?.description || ""}
+                    defaultValue={initial?.description || ''}
                   />
                 </div>
 
@@ -298,7 +290,7 @@ export function RoomTypeForm(props: {
                       type="number"
                       min={0}
                       placeholder="28"
-                      defaultValue={initial?.sizeSqm ?? ""}
+                      defaultValue={initial?.sizeSqm ?? ''}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -307,7 +299,7 @@ export function RoomTypeForm(props: {
                       id="view"
                       name="view"
                       placeholder="Sea view"
-                      defaultValue={initial?.view ?? ""}
+                      defaultValue={initial?.view ?? ''}
                     />
                   </div>
                 </div>
@@ -321,7 +313,7 @@ export function RoomTypeForm(props: {
                       type="number"
                       min={0}
                       placeholder="1"
-                      defaultValue={initial?.bathrooms ?? ""}
+                      defaultValue={initial?.bathrooms ?? ''}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -332,7 +324,7 @@ export function RoomTypeForm(props: {
                       type="number"
                       min={0}
                       placeholder="3"
-                      defaultValue={initial?.floor ?? ""}
+                      defaultValue={initial?.floor ?? ''}
                     />
                   </div>
                 </div>
@@ -434,7 +426,9 @@ export function RoomTypeForm(props: {
                               if (e.target.checked) {
                                 setAmenities((prev) => uniq([...prev, a]));
                               } else {
-                                setAmenities((prev) => prev.filter((x) => x.toLowerCase() !== a.toLowerCase()));
+                                setAmenities((prev) =>
+                                  prev.filter((x) => x.toLowerCase() !== a.toLowerCase())
+                                );
                               }
                             }}
                             className="h-4 w-4"
@@ -454,9 +448,11 @@ export function RoomTypeForm(props: {
                         onChange={(e) => setCustomAmenity(e.target.value)}
                         placeholder="e.g., Private terrace"
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === 'Enter') {
                             e.preventDefault();
-                            addCustom(customAmenity, setCustomAmenity, (v) => setAmenities((p) => uniq([...p, v])));
+                            addCustom(customAmenity, setCustomAmenity, (v) =>
+                              setAmenities((p) => uniq([...p, v]))
+                            );
                           }
                         }}
                       />
@@ -464,7 +460,9 @@ export function RoomTypeForm(props: {
                         type="button"
                         variant="outline"
                         onClick={() =>
-                          addCustom(customAmenity, setCustomAmenity, (v) => setAmenities((p) => uniq([...p, v])))
+                          addCustom(customAmenity, setCustomAmenity, (v) =>
+                            setAmenities((p) => uniq([...p, v]))
+                          )
                         }
                         disabled={!customAmenity.trim()}
                       >
@@ -514,7 +512,9 @@ export function RoomTypeForm(props: {
                               if (e.target.checked) {
                                 setServices((prev) => uniq([...prev, s]));
                               } else {
-                                setServices((prev) => prev.filter((x) => x.toLowerCase() !== s.toLowerCase()));
+                                setServices((prev) =>
+                                  prev.filter((x) => x.toLowerCase() !== s.toLowerCase())
+                                );
                               }
                             }}
                             className="h-4 w-4"
@@ -534,9 +534,11 @@ export function RoomTypeForm(props: {
                         onChange={(e) => setCustomService(e.target.value)}
                         placeholder="e.g., In-room spa"
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === 'Enter') {
                             e.preventDefault();
-                            addCustom(customService, setCustomService, (v) => setServices((p) => uniq([...p, v])));
+                            addCustom(customService, setCustomService, (v) =>
+                              setServices((p) => uniq([...p, v]))
+                            );
                           }
                         }}
                       />
@@ -544,7 +546,9 @@ export function RoomTypeForm(props: {
                         type="button"
                         variant="outline"
                         onClick={() =>
-                          addCustom(customService, setCustomService, (v) => setServices((p) => uniq([...p, v])))
+                          addCustom(customService, setCustomService, (v) =>
+                            setServices((p) => uniq([...p, v]))
+                          )
                         }
                         disabled={!customService.trim()}
                       >
@@ -584,7 +588,7 @@ export function RoomTypeForm(props: {
                       min={0}
                       step="0.01"
                       placeholder="120"
-                      defaultValue={initial?.basePricePerNight ?? ""}
+                      defaultValue={initial?.basePricePerNight ?? ''}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -593,7 +597,7 @@ export function RoomTypeForm(props: {
                       id="currency"
                       name="currency"
                       placeholder="USD"
-                      defaultValue={initial?.currency ?? ""}
+                      defaultValue={initial?.currency ?? ''}
                     />
                   </div>
                 </div>
@@ -606,7 +610,7 @@ export function RoomTypeForm(props: {
                     type="number"
                     min={0}
                     placeholder="10"
-                    defaultValue={initial?.defaultUnits ?? ""}
+                    defaultValue={initial?.defaultUnits ?? ''}
                   />
                 </div>
 
@@ -674,7 +678,7 @@ export function RoomTypeForm(props: {
                     min={0}
                     step="0.01"
                     placeholder="20"
-                    defaultValue={initial?.extraBedFee ?? ""}
+                    defaultValue={initial?.extraBedFee ?? ''}
                   />
                 </div>
 
@@ -684,13 +688,13 @@ export function RoomTypeForm(props: {
                     id="cancellationPolicy"
                     name="cancellationPolicy"
                     placeholder="Free cancellation up to 24 hours before check-in…"
-                    defaultValue={initial?.cancellationPolicy ?? ""}
+                    defaultValue={initial?.cancellationPolicy ?? ''}
                   />
                 </div>
               </TabsContent>
 
               <TabsContent value="media" className="space-y-6">
-                {props.mode === "edit" && toStringArray(initial?.images).length > 0 ? (
+                {props.mode === 'edit' && toStringArray(initial?.images).length > 0 ? (
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm font-medium">Existing Images</p>
@@ -708,17 +712,21 @@ export function RoomTypeForm(props: {
                             </div>
                             <div className="mt-2 flex items-center justify-between gap-2">
                               <span className="truncate text-xs text-muted-foreground">
-                                {keep ? "Keeping" : "Removed"}
+                                {keep ? 'Keeping' : 'Removed'}
                               </span>
                               <Button
                                 type="button"
                                 size="sm"
-                                variant={keep ? "outline" : "default"}
+                                variant={keep ? 'outline' : 'default'}
                                 onClick={() => {
-                                  setExistingImages((prev) => (prev.includes(url) ? prev.filter((x) => x !== url) : uniq([...prev, url])));
+                                  setExistingImages((prev) =>
+                                    prev.includes(url)
+                                      ? prev.filter((x) => x !== url)
+                                      : uniq([...prev, url])
+                                  );
                                 }}
                               >
-                                {keep ? "Remove" : "Undo"}
+                                {keep ? 'Remove' : 'Undo'}
                               </Button>
                             </div>
                           </div>
@@ -736,7 +744,7 @@ export function RoomTypeForm(props: {
                   </p>
                 </div>
 
-                {props.mode === "create" ? (
+                {props.mode === 'create' ? (
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm font-medium">Or add image URLs</p>
@@ -757,7 +765,7 @@ export function RoomTypeForm(props: {
                           const url = imageUrlDraft.trim();
                           if (!/^https?:\/\//i.test(url)) return;
                           setImageUrls((prev) => uniq([...prev, url]));
-                          setImageUrlDraft("");
+                          setImageUrlDraft('');
                         }}
                       >
                         Add
@@ -776,7 +784,9 @@ export function RoomTypeForm(props: {
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setImageUrls((prev) => prev.filter((x) => x !== url))}
+                                onClick={() =>
+                                  setImageUrls((prev) => prev.filter((x) => x !== url))
+                                }
                               >
                                 Remove
                               </Button>
@@ -796,7 +806,7 @@ export function RoomTypeForm(props: {
           <Button asChild type="button" variant="outline">
             <Link href={props.backHref}>Cancel</Link>
           </Button>
-          <Button type="submit">{props.mode === "create" ? "Create Room" : "Save Changes"}</Button>
+          <Button type="submit">{props.mode === 'create' ? 'Create Room' : 'Save Changes'}</Button>
         </div>
       </form>
     </div>

@@ -1,6 +1,6 @@
-import React, { Suspense } from "react";
-import { getTours } from "@/lib/supabase/tours";
-import { TourCard } from "@/components/tour-card";
+import React, { Suspense } from 'react';
+import { getTours } from '@/lib/supabase/tours';
+import { TourCard } from '@/components/tour-card';
 
 export default async function SearchResultsPage({
   searchParams,
@@ -20,16 +20,14 @@ async function SearchResultsContent({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const query = (resolvedSearchParams.q as string) || "";
-  const destination = (resolvedSearchParams.destination as string) || "";
-  const type = (resolvedSearchParams.type as string) || "";
+  const query = (resolvedSearchParams.q as string) || '';
+  const destination = (resolvedSearchParams.destination as string) || '';
+  const type = (resolvedSearchParams.type as string) || '';
 
   const tours = await getTours();
 
   const filteredTours = tours.filter((tour) => {
-    const matchesQuery = query
-      ? tour.name?.toLowerCase().includes(query.toLowerCase())
-      : true;
+    const matchesQuery = query ? tour.name?.toLowerCase().includes(query.toLowerCase()) : true;
     const matchesDestination = destination
       ? tour.destination?.toLowerCase() === destination.toLowerCase()
       : true;

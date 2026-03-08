@@ -1,18 +1,12 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Compass,
-  Headphones,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Compass, Headphones, ShieldCheck, Sparkles, Users } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 interface AboutClientProps {
   agencyName: string;
@@ -53,23 +47,21 @@ export function AboutClient({
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit">
-                {t("about.badge")}
+                {t('about.badge')}
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                {t("about.badge")} {agencyName}
+                {t('about.badge')} {agencyName}
               </h1>
               {tagline ? (
-                <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                  {tagline}
-                </p>
+                <p className="max-w-2xl text-base text-muted-foreground md:text-lg">{tagline}</p>
               ) : null}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/tours">{t("about.exploreTours")}</Link>
+                <Link href="/tours">{t('about.exploreTours')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/contact">{t("about.contactUs")}</Link>
+                <Link href="/contact">{t('about.contactUs')}</Link>
               </Button>
             </div>
           </div>
@@ -80,18 +72,16 @@ export function AboutClient({
         <Card className="rounded-3xl">
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("about.ourStory")}
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">{t('about.ourStory')}</p>
               <h2 className="font-headline text-2xl font-semibold tracking-tight md:text-3xl">
-                {t("about.storyHeading")}
+                {t('about.storyHeading')}
               </h2>
             </div>
             <div className="prose prose-neutral max-w-none dark:prose-invert">
               {aboutParagraphs.length > 0 ? (
                 aboutParagraphs.map((p, idx) => <p key={idx}>{p}</p>)
               ) : (
-                <p>{t("about.noContent")}</p>
+                <p>{t('about.noContent')}</p>
               )}
             </div>
           </CardContent>
@@ -110,29 +100,27 @@ export function AboutClient({
           </div>
           <CardContent className="relative flex h-full flex-col justify-end gap-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-white/80">
-                {t("about.whatYouGet")}
-              </p>
+              <p className="text-sm font-medium text-white/80">{t('about.whatYouGet')}</p>
               <p className="text-2xl font-semibold tracking-tight text-white">
-                {t("about.experience")}
+                {t('about.experience')}
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm text-white/80">{t("about.localExpertise")}</p>
-                <p className="text-base font-semibold text-white">{t("about.trustedGuides")}</p>
+                <p className="text-sm text-white/80">{t('about.localExpertise')}</p>
+                <p className="text-base font-semibold text-white">{t('about.trustedGuides')}</p>
               </div>
               <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm text-white/80">{t("about.flexiblePlans")}</p>
-                <p className="text-base font-semibold text-white">{t("about.builtAroundYou")}</p>
+                <p className="text-sm text-white/80">{t('about.flexiblePlans')}</p>
+                <p className="text-base font-semibold text-white">{t('about.builtAroundYou')}</p>
               </div>
               <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm text-white/80">{t("about.transparentPricing")}</p>
-                <p className="text-base font-semibold text-white">{t("about.noSurprises")}</p>
+                <p className="text-sm text-white/80">{t('about.transparentPricing')}</p>
+                <p className="text-base font-semibold text-white">{t('about.noSurprises')}</p>
               </div>
               <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm text-white/80">{t("about.support")}</p>
-                <p className="text-base font-semibold text-white">{t("about.supportHours")}</p>
+                <p className="text-sm text-white/80">{t('about.support')}</p>
+                <p className="text-base font-semibold text-white">{t('about.supportHours')}</p>
               </div>
             </div>
           </CardContent>
@@ -146,8 +134,8 @@ export function AboutClient({
               <Compass className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("about.curatedItineraries")}</p>
-              <p className="text-sm text-muted-foreground">{t("about.curatedDesc")}</p>
+              <p className="text-base font-semibold">{t('about.curatedItineraries')}</p>
+              <p className="text-sm text-muted-foreground">{t('about.curatedDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -157,8 +145,8 @@ export function AboutClient({
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("about.reliableLogistics")}</p>
-              <p className="text-sm text-muted-foreground">{t("about.logisticsDesc")}</p>
+              <p className="text-base font-semibold">{t('about.reliableLogistics')}</p>
+              <p className="text-sm text-muted-foreground">{t('about.logisticsDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -168,8 +156,8 @@ export function AboutClient({
               <Users className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("about.humanFirst")}</p>
-              <p className="text-sm text-muted-foreground">{t("about.humanFirstDesc")}</p>
+              <p className="text-base font-semibold">{t('about.humanFirst')}</p>
+              <p className="text-sm text-muted-foreground">{t('about.humanFirstDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -179,28 +167,26 @@ export function AboutClient({
         <Card className="rounded-3xl lg:col-span-3">
           <CardContent className="space-y-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("about.howWeWork")}
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">{t('about.howWeWork')}</p>
               <h2 className="font-headline text-2xl font-semibold tracking-tight md:text-3xl">
-                {t("about.simpleHeading")}
+                {t('about.simpleHeading')}
               </h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border bg-background/60 p-4">
-                <p className="text-sm font-medium text-muted-foreground">{t("about.step1Label")}</p>
-                <p className="mt-1 text-base font-semibold">{t("about.step1Label")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{t("about.step1Desc")}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('about.step1Label')}</p>
+                <p className="mt-1 text-base font-semibold">{t('about.step1Label')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('about.step1Desc')}</p>
               </div>
               <div className="rounded-2xl border bg-background/60 p-4">
-                <p className="text-sm font-medium text-muted-foreground">{t("about.step2Label")}</p>
-                <p className="mt-1 text-base font-semibold">{t("about.step2Label")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{t("about.step2Desc")}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('about.step2Label')}</p>
+                <p className="mt-1 text-base font-semibold">{t('about.step2Label')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('about.step2Desc')}</p>
               </div>
               <div className="rounded-2xl border bg-background/60 p-4">
-                <p className="text-sm font-medium text-muted-foreground">{t("about.step3Label")}</p>
-                <p className="mt-1 text-base font-semibold">{t("about.step3Label")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{t("about.step3Desc")}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('about.step3Label')}</p>
+                <p className="mt-1 text-base font-semibold">{t('about.step3Label')}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t('about.step3Desc')}</p>
               </div>
             </div>
           </CardContent>
@@ -213,8 +199,8 @@ export function AboutClient({
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="space-y-1">
-                <p className="text-base font-semibold">{t("about.easyTrips")}</p>
-                <p className="text-sm text-muted-foreground">{t("about.easyTripsDesc")}</p>
+                <p className="text-base font-semibold">{t('about.easyTrips')}</p>
+                <p className="text-sm text-muted-foreground">{t('about.easyTripsDesc')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -222,18 +208,18 @@ export function AboutClient({
                 <Headphones className="h-5 w-5" />
               </div>
               <div className="space-y-1">
-                <p className="text-base font-semibold">{t("about.supportShows")}</p>
-                <p className="text-sm text-muted-foreground">{t("about.supportShowsDesc")}</p>
+                <p className="text-base font-semibold">{t('about.supportShows')}</p>
+                <p className="text-sm text-muted-foreground">{t('about.supportShowsDesc')}</p>
               </div>
             </div>
             <div className="rounded-2xl bg-muted/40 p-4">
-              <p className="text-sm text-muted-foreground">{t("about.readyToPlan")}</p>
+              <p className="text-sm text-muted-foreground">{t('about.readyToPlan')}</p>
               <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                 <Button asChild className="w-full sm:w-auto">
-                  <Link href="/tours">{t("about.browseToursBtn")}</Link>
+                  <Link href="/tours">{t('about.browseToursBtn')}</Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full sm:w-auto">
-                  <Link href="/contact">{t("about.getQuote")}</Link>
+                  <Link href="/contact">{t('about.getQuote')}</Link>
                 </Button>
               </div>
             </div>

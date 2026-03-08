@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useFieldArray, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -15,7 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Card,
   CardContent,
@@ -23,42 +23,42 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import type { UpsellItem, Tour } from "@/types";
-import { useEffect, useState } from "react";
-import { getToursSelect } from "@/lib/supabase/tours-client";
-import { Combobox } from "@/components/ui/combobox";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import type { UpsellItem, Tour } from '@/types';
+import { useEffect, useState } from 'react';
+import { getToursSelect } from '@/lib/supabase/tours-client';
+import { Combobox } from '@/components/ui/combobox';
 
 const variantSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "Variant name is required"),
-  price: z.coerce.number().min(0, "Price must be positive."),
+  name: z.string().min(1, 'Variant name is required'),
+  price: z.coerce.number().min(0, 'Price must be positive.'),
 });
 
 const targetingSchema = z.object({
-  match: z.enum(["any", "all"]).default("any"),
+  match: z.enum(['any', 'all']).default('any'),
   destinations: z.array(z.string()).default([]),
   tourIds: z.array(z.string()).default([]),
 });
 
 export const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  name: z.string().min(2, 'Name must be at least 2 characters.'),
   description: z.string().optional(),
-  price: z.coerce.number().min(0, "Price must be positive."),
+  price: z.coerce.number().min(0, 'Price must be positive.'),
   variants: z.array(variantSchema).optional(),
   targeting: targetingSchema.optional(),
-  type: z.enum(["service", "tour_addon"], {
-    errorMap: () => ({ message: "Please select a type." }),
+  type: z.enum(['service', 'tour_addon'], {
+    errorMap: () => ({ message: 'Please select a type.' }),
   }),
   relatedTourId: z.string().nullable().optional(),
   images: z.array(z.any()).optional(), // For image upload
@@ -68,15 +68,11 @@ export const formSchema = z.object({
 interface UpsellItemFormProps {
   initialData?: UpsellItem;
   onSubmit: (values: z.infer<typeof formSchema>) => Promise<void> | void;
-  formType: "new" | "edit";
+  formType: 'new' | 'edit';
 }
 
-export function UpsellItemForm({
-  initialData,
-  onSubmit,
-  formType,
-}: UpsellItemFormProps) {
-  const [tours, setTours] = useState<Array<Pick<Tour, "id" | "name" | "destination">>>([]);
+export function UpsellItemForm({ initialData, onSubmit, formType }: UpsellItemFormProps) {
+  const [tours, setTours] = useState<Array<Pick<Tour, 'id' | 'name' | 'destination'>>>([]);
 
   useEffect(() => {
     const fetchTours = async () => {
@@ -84,7 +80,7 @@ export function UpsellItemForm({
         const fetchedTours = await getToursSelect();
         setTours(fetchedTours);
       } catch (e) {
-        console.error("Failed to fetch tours for select:", e);
+        console.error('Failed to fetch tours for select:', e);
         setTours([]);
       }
     };
@@ -98,16 +94,16 @@ export function UpsellItemForm({
           ...initialData,
           relatedTourId: initialData.relatedTourId || null,
           variants: initialData.variants ?? [],
-          targeting: initialData.targeting ?? { match: "any", destinations: [], tourIds: [] },
+          targeting: initialData.targeting ?? { match: 'any', destinations: [], tourIds: [] },
           images: initialData.imageUrl ? [initialData.imageUrl] : [], // Pre-populate if image exists
         }
       : {
-          name: "",
-          description: "",
+          name: '',
+          description: '',
           price: 0,
           variants: [],
-          targeting: { match: "any", destinations: [], tourIds: [] },
-          type: "service",
+          targeting: { match: 'any', destinations: [], tourIds: [] },
+          type: 'service',
           relatedTourId: null,
           images: [],
           isActive: true,
@@ -116,25 +112,22 @@ export function UpsellItemForm({
 
   const variantsFieldArray = useFieldArray({
     control: form.control,
-    name: "variants",
-    keyName: "fieldId",
+    name: 'variants',
+    keyName: 'fieldId',
   });
 
   const destinationOptions = Array.from(
-    new Set(tours.map((tour) => tour.destination).filter((v) => v && v.length > 0)),
+    new Set(tours.map((tour) => tour.destination).filter((v) => v && v.length > 0))
   )
     .sort((a, b) => a.localeCompare(b))
     .map((destination) => ({ value: destination, label: destination }));
 
   const tourOptions = tours.map((tour) => ({ value: tour.id, label: tour.name }));
 
-  const pageTitle =
-    formType === "new" ? "Create New Upsell Item" : "Edit Upsell Item";
+  const pageTitle = formType === 'new' ? 'Create New Upsell Item' : 'Edit Upsell Item';
   const pageDescription =
-    formType === "new"
-      ? "Define a new service or tour add-on."
-      : `Editing: "${initialData?.name}"`;
-  const submitButtonText = formType === "new" ? "Create Item" : "Save Changes";
+    formType === 'new' ? 'Define a new service or tour add-on.' : `Editing: "${initialData?.name}"`;
+  const submitButtonText = formType === 'new' ? 'Create Item' : 'Save Changes';
 
   return (
     <div className="space-y-6">
@@ -155,9 +148,7 @@ export function UpsellItemForm({
           <Card>
             <CardHeader>
               <CardTitle>Item Details</CardTitle>
-              <CardDescription>
-                Provide information about the upsell item.
-              </CardDescription>
+              <CardDescription>Provide information about the upsell item.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
               <FormField
@@ -206,9 +197,7 @@ export function UpsellItemForm({
               <Card>
                 <CardHeader>
                   <CardTitle>Pricing rules / variants</CardTitle>
-                  <CardDescription>
-                    Add optional variants with their own prices.
-                  </CardDescription>
+                  <CardDescription>Add optional variants with their own prices.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {variantsFieldArray.fields.length === 0 ? (
@@ -265,7 +254,7 @@ export function UpsellItemForm({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => variantsFieldArray.append({ name: "", price: 0 })}
+                    onClick={() => variantsFieldArray.append({ name: '', price: 0 })}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add variant
@@ -278,10 +267,7 @@ export function UpsellItemForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select item type" />
@@ -303,10 +289,8 @@ export function UpsellItemForm({
                   <FormItem>
                     <FormLabel>Related Tour (Optional)</FormLabel>
                     <Select
-                      value={field.value ?? "__none__"}
-                      onValueChange={(value) =>
-                        field.onChange(value === "__none__" ? null : value)
-                      }
+                      value={field.value ?? '__none__'}
+                      onValueChange={(value) => field.onChange(value === '__none__' ? null : value)}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -323,8 +307,7 @@ export function UpsellItemForm({
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Link this upsell item to a specific tour if it&apos;s an
-                      add-on.
+                      Link this upsell item to a specific tour if it&apos;s an add-on.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -333,9 +316,7 @@ export function UpsellItemForm({
               <Card>
                 <CardHeader>
                   <CardTitle>Upsell targeting &amp; rules</CardTitle>
-                  <CardDescription>
-                    Control where this upsell appears in the cart.
-                  </CardDescription>
+                  <CardDescription>Control where this upsell appears in the cart.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-6">
                   <FormField
@@ -402,9 +383,7 @@ export function UpsellItemForm({
               <Card>
                 <CardHeader>
                   <CardTitle>Item Image</CardTitle>
-                  <CardDescription>
-                    Upload an image for the upsell item.
-                  </CardDescription>
+                  <CardDescription>Upload an image for the upsell item.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FormField
@@ -413,10 +392,7 @@ export function UpsellItemForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <ImageUploader
-                            value={field.value || []}
-                            onChange={field.onChange}
-                          />
+                          <ImageUploader value={field.value || []} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -431,15 +407,10 @@ export function UpsellItemForm({
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
                       <FormLabel>Active</FormLabel>
-                      <FormDescription>
-                        Is this upsell item currently available?
-                      </FormDescription>
+                      <FormDescription>Is this upsell item currently available?</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

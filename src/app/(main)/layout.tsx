@@ -1,10 +1,10 @@
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { getAgencySettings } from "@/lib/supabase/agency-content";
-import { WhatsAppChatButton } from "@/components/whatsapp-chat-button";
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { WhatsAppChatButton } from '@/components/whatsapp-chat-button';
 
 function hexToHsl(hex: string) {
-  let c = hex.substring(1).split("");
+  let c = hex.substring(1).split('');
   if (c.length === 3) {
     c = [c[0], c[0], c[1], c[1], c[2], c[2]];
   }
@@ -56,12 +56,14 @@ export default async function MainLayout({
     <div className="flex flex-col min-h-screen">
       <style>{`
         :root {
-          ${primaryHsl ? `--primary: ${primaryHsl};` : ""}
-          ${fontFamily ? `--font-playfair: ${fontFamily}, serif;` : ""}
+          ${primaryHsl ? `--primary: ${primaryHsl};` : ''}
+          ${fontFamily ? `--font-playfair: ${fontFamily}, serif;` : ''}
         }
       `}</style>
       <Header />
-      <main className="flex-grow container mx-auto px-4 pt-[84px] md:pt-[134px] pb-8">{children}</main>
+      <main className="flex-grow container mx-auto px-4 pt-[84px] md:pt-[134px] pb-8">
+        {children}
+      </main>
       <Footer />
       {phoneNumber && <WhatsAppChatButton phone={phoneNumber} />}
     </div>

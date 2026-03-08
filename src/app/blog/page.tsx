@@ -1,29 +1,29 @@
-import Link from "next/link";
-import Image from "next/image";
-import { getPosts } from "@/lib/supabase/blog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ArrowRight, Calendar, Clock, Search, User } from "lucide-react";
-import { getAgencySettings, getPageMetadata } from "@/lib/supabase/agency-content";
-import type { Metadata } from "next";
+import Link from 'next/link';
+import Image from 'next/image';
+import { getPosts } from '@/lib/supabase/blog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, Calendar, Clock, Search, User } from 'lucide-react';
+import { getAgencySettings, getPageMetadata } from '@/lib/supabase/agency-content';
+import type { Metadata } from 'next';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata("blog", {
-    title: "Blog",
-    description: "Travel ideas, guides, and tips.",
+  return getPageMetadata('blog', {
+    title: 'Blog',
+    description: 'Travel ideas, guides, and tips.',
   });
 }
 
 function stripText(value: string) {
-  return value.replace(/\s+/g, " ").trim();
+  return value.replace(/\s+/g, ' ').trim();
 }
 
 function estimateReadingMinutes(text: string) {
-  const words = stripText(text).split(" ").filter(Boolean).length;
+  const words = stripText(text).split(' ').filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
 
@@ -39,18 +39,17 @@ export default async function BlogListPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const q = typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q : "";
-  const tag = typeof resolvedSearchParams?.tag === "string" ? resolvedSearchParams.tag : "";
+  const q = typeof resolvedSearchParams?.q === 'string' ? resolvedSearchParams.q : '';
+  const tag = typeof resolvedSearchParams?.tag === 'string' ? resolvedSearchParams.tag : '';
 
   let heroImageUrl =
-    "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=2400&q=70";
+    'https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?auto=format&fit=crop&w=2400&q=70';
   try {
     const settings = await getAgencySettings();
     heroImageUrl = settings?.data?.images?.blogHeroUrl || heroImageUrl;
-  } catch {
-  }
+  } catch {}
 
-  const posts = (await getPosts()).filter((p) => p.status === "Published");
+  const posts = (await getPosts()).filter((p) => p.status === 'Published');
 
   const query = q.trim().toLowerCase();
   const selectedTag = tag.trim();
@@ -60,14 +59,13 @@ export default async function BlogListPage({
       p.title.toLowerCase().includes(query) ||
       p.content.toLowerCase().includes(query) ||
       p.author.toLowerCase().includes(query);
-    const matchesTag =
-      selectedTag.length === 0 || (p.tags ?? []).includes(selectedTag);
+    const matchesTag = selectedTag.length === 0 || (p.tags ?? []).includes(selectedTag);
     return matchesQuery && matchesTag;
   });
 
-  const tags = Array.from(
-    new Set(posts.flatMap((p) => p.tags ?? []).filter(Boolean)),
-  ).sort((a, b) => a.localeCompare(b));
+  const tags = Array.from(new Set(posts.flatMap((p) => p.tags ?? []).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b)
+  );
 
   const featured = filteredPosts.find((p) => !!p.featuredImage) ?? filteredPosts[0] ?? null;
   const rest = featured ? filteredPosts.filter((p) => p.slug !== featured.slug) : filteredPosts;
@@ -126,9 +124,9 @@ export default async function BlogListPage({
       </section>
 
       <section className="flex flex-wrap items-center gap-2">
-        <Link href={q ? `/blog?q=${encodeURIComponent(q)}` : "/blog"}>
+        <Link href={q ? `/blog?q=${encodeURIComponent(q)}` : '/blog'}>
           <Badge
-            variant={selectedTag.length === 0 ? "default" : "secondary"}
+            variant={selectedTag.length === 0 ? 'default' : 'secondary'}
             className="cursor-pointer"
           >
             All
@@ -137,16 +135,13 @@ export default async function BlogListPage({
         {tags.slice(0, 12).map((t) => {
           const href = `/blog?${new URLSearchParams(
             Object.entries({ q: q || undefined, tag: t }).filter(
-              ([, v]) => v != null && v !== "",
-            ) as Array<[string, string]>,
+              ([, v]) => v != null && v !== ''
+            ) as Array<[string, string]>
           ).toString()}`;
           const isSelected = selectedTag === t;
           return (
             <Link key={t} href={href}>
-              <Badge
-                variant={isSelected ? "default" : "secondary"}
-                className="cursor-pointer"
-              >
+              <Badge variant={isSelected ? 'default' : 'secondary'} className="cursor-pointer">
                 {t}
               </Badge>
             </Link>
@@ -165,11 +160,7 @@ export default async function BlogListPage({
               <Button asChild className="w-full sm:w-auto">
                 <Link href="/blog">Clear filters</Link>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
+              <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link href="/tours">Browse Tours</Link>
               </Button>
             </div>
@@ -272,9 +263,7 @@ export default async function BlogListPage({
                         {post.title}
                       </Link>
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {getExcerpt(post.content, 140)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{getExcerpt(post.content, 140)}</p>
                   </div>
                   <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-2">

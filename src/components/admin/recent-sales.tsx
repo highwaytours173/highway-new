@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type RecentItem = {
   user: string;
@@ -18,9 +18,9 @@ export function RecentSales({ items }: { items: RecentItem[] }) {
             ) : null}
             <AvatarFallback>
               {booking.user
-                .split(" ")
+                .split(' ')
                 .map((n) => n[0])
-                .join("")
+                .join('')
                 .substring(0, 2)}
             </AvatarFallback>
           </Avatar>

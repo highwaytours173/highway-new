@@ -1,8 +1,8 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import * as LucideIcons from "lucide-react";
-import type { HotelFeaturesSection as HotelFeaturesSectionType } from "@/types";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import * as LucideIcons from 'lucide-react';
+import type { HotelFeaturesSection as HotelFeaturesSectionType } from '@/types';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -28,7 +28,7 @@ export function HotelFeaturesSection({ data, className }: HotelFeaturesSectionPr
   if (!data?.features?.length) return null;
 
   return (
-    <section className={cn("py-16 md:py-24 bg-secondary/10", className)}>
+    <section className={cn('py-16 md:py-24 bg-secondary/10', className)}>
       <div className="container mx-auto px-4">
         <motion.div
           initial="hidden"
@@ -37,8 +37,11 @@ export function HotelFeaturesSection({ data, className }: HotelFeaturesSectionPr
           variants={staggerContainer}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-headline font-bold mb-4">
-            {data.title || "Our Amenities"}
+          <motion.h2
+            variants={fadeInUp}
+            className="text-3xl md:text-4xl font-headline font-bold mb-4"
+          >
+            {data.title || 'Our Amenities'}
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-muted-foreground text-lg">
             {data.subtitle}
@@ -56,7 +59,7 @@ export function HotelFeaturesSection({ data, className }: HotelFeaturesSectionPr
             // Dynamically get icon component
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const IconComponent = (LucideIcons as any)[feature.icon] || LucideIcons.Star;
-            
+
             return (
               <motion.div
                 key={index}

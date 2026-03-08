@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import type { UpsellItem } from "@/types";
-import Image from "next/image";
-import Link from "next/link";
-import { useCart } from "@/hooks/use-cart";
-import { useCurrency } from "@/hooks/use-currency";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, PlusCircle, ShoppingBag } from "lucide-react";
+import * as React from 'react';
+import type { UpsellItem } from '@/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useCart } from '@/hooks/use-cart';
+import { useCurrency } from '@/hooks/use-currency';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { ArrowLeft, PlusCircle, ShoppingBag } from 'lucide-react';
 
 function formatUsd(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(value);
 }
@@ -36,9 +36,9 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
 
   const displayPrice = selectedVariant?.price ?? service.price ?? 0;
   const isInCart = cartItems.some((c) => {
-    if (c.productType !== "upsell") return false;
+    if (c.productType !== 'upsell') return false;
     if (c.product.id !== service.id) return false;
-    return (c.packageId ?? "base") === (selectedVariantKey ?? "base");
+    return (c.packageId ?? 'base') === (selectedVariantKey ?? 'base');
   });
 
   const canAdd = service.isActive && !isInCart;
@@ -87,12 +87,10 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
 
         <CardContent className="space-y-6 p-6 md:p-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-              {service.name}
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{service.name}</h1>
             <p className="text-sm text-muted-foreground md:text-base">
               {service.description ||
-                "Add this service to make your trip smoother and more comfortable."}
+                'Add this service to make your trip smoother and more comfortable.'}
             </p>
           </div>
 
@@ -100,7 +98,7 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
             <div className="space-y-2">
               <p className="text-sm font-medium">Choose a variant</p>
               <select
-                value={selectedVariantKey ?? ""}
+                value={selectedVariantKey ?? ''}
                 onChange={(e) => setSelectedVariantKey(e.target.value)}
                 className="h-11 w-full rounded-md border bg-background px-3 text-sm"
               >
@@ -119,23 +117,23 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <Button
               type="button"
-              className={cn("w-full")}
+              className={cn('w-full')}
               disabled={!canAdd}
               onClick={() =>
                 addToCart(
                   service,
-                  "upsell",
+                  'upsell',
                   undefined,
                   undefined,
                   undefined,
                   1,
                   selectedVariantKey,
-                  selectedVariant?.name,
+                  selectedVariant?.name
                 )
               }
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              {isInCart ? "In cart" : "Add to cart"}
+              {isInCart ? 'In cart' : 'Add to cart'}
             </Button>
 
             {isInCart ? (

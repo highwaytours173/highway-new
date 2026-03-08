@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getPublicHotelBySlug, getPublicRoomTypesByHotelId } from "@/lib/supabase/hotels";
-import { getCurrentAgency } from "@/lib/supabase/agencies";
-import { getApprovedReviewsForHotel } from "@/lib/supabase/reviews";
-import { ReviewForm } from "@/components/review-form";
-import { ReviewsDisplay } from "@/components/reviews-display";
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { getPublicHotelBySlug, getPublicRoomTypesByHotelId } from '@/lib/supabase/hotels';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
+import { getApprovedReviewsForHotel } from '@/lib/supabase/reviews';
+import { ReviewForm } from '@/components/review-form';
+import { ReviewsDisplay } from '@/components/reviews-display';
 
 interface HotelDetailsPageProps {
   params: Promise<{
@@ -36,7 +36,7 @@ export default async function HotelDetailsPage({ params }: HotelDetailsPageProps
         </Link>
         <h1 className="mt-3 text-3xl font-semibold">{hotel.name}</h1>
         <p className="mt-2 text-muted-foreground">
-          {hotel.city || hotel.country || hotel.address || ""}
+          {hotel.city || hotel.country || hotel.address || ''}
         </p>
         {hotel.description ? (
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
@@ -58,13 +58,12 @@ export default async function HotelDetailsPage({ params }: HotelDetailsPageProps
                 <div className="space-y-1">
                   <p className="text-lg font-medium">{room.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    Max {room.maxAdults} adults{room.maxChildren ? `, ${room.maxChildren} children` : ""}
+                    Max {room.maxAdults} adults
+                    {room.maxChildren ? `, ${room.maxChildren} children` : ''}
                   </p>
                 </div>
                 {room.description ? (
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {room.description}
-                  </p>
+                  <p className="mt-3 text-sm text-muted-foreground">{room.description}</p>
                 ) : null}
               </div>
             ))}
@@ -76,14 +75,9 @@ export default async function HotelDetailsPage({ params }: HotelDetailsPageProps
       {reviewsEnabled && (
         <div className="mt-10 space-y-8">
           <ReviewsDisplay reviews={reviews} title={`Reviews for ${hotel.name}`} />
-          <ReviewForm
-            agencyId={agency?.id || ""}
-            hotelId={hotel.id}
-            itemName={hotel.name}
-          />
+          <ReviewForm agencyId={agency?.id || ''} hotelId={hotel.id} itemName={hotel.name} />
         </div>
       )}
     </div>
   );
 }
-

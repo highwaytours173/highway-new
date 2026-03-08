@@ -1,14 +1,8 @@
-import { getBookingById } from "@/lib/supabase/bookings";
-import { notFound } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { getBookingById } from '@/lib/supabase/bookings';
+import { notFound } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   ArrowLeft,
   Calendar,
@@ -20,11 +14,11 @@ import {
   Phone,
   Globe,
   Download,
-} from "lucide-react";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { BookingStatusActions } from "@/components/admin/booking-status-actions";
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { BookingStatusActions } from '@/components/admin/booking-status-actions';
 
 interface BookingDetailsPageProps {
   params: Promise<{
@@ -32,9 +26,7 @@ interface BookingDetailsPageProps {
   }>;
 }
 
-export default async function BookingDetailsPage({
-  params,
-}: BookingDetailsPageProps) {
+export default async function BookingDetailsPage({ params }: BookingDetailsPageProps) {
   const { id } = await params;
   const booking = await getBookingById(id);
 
@@ -53,9 +45,7 @@ export default async function BookingDetailsPage({
         </Button>
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Booking Details</h2>
-          <p className="text-muted-foreground">
-            Details for booking ID: {booking.id}
-          </p>
+          <p className="text-muted-foreground">Details for booking ID: {booking.id}</p>
         </div>
       </div>
 
@@ -88,25 +78,23 @@ export default async function BookingDetailsPage({
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-primary" />
               <p className="text-muted-foreground">
-                Booked on: {format(new Date(booking.bookingDate), "PPP")}
+                Booked on: {format(new Date(booking.bookingDate), 'PPP')}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <Tag className="h-5 w-5 text-primary" />
               <Badge
                 variant={
-                  booking.status === "Confirmed"
-                    ? "default"
-                    : booking.status === "Pending"
-                      ? "secondary"
-                      : "destructive"
+                  booking.status === 'Confirmed'
+                    ? 'default'
+                    : booking.status === 'Pending'
+                      ? 'secondary'
+                      : 'destructive'
                 }
                 className={cn(
-                  booking.status === "Confirmed" &&
-                    "bg-green-100 text-green-800",
-                  booking.status === "Pending" &&
-                    "bg-yellow-100 text-yellow-800",
-                  booking.status === "Cancelled" && "bg-red-100 text-red-800",
+                  booking.status === 'Confirmed' && 'bg-green-100 text-green-800',
+                  booking.status === 'Pending' && 'bg-yellow-100 text-yellow-800',
+                  booking.status === 'Cancelled' && 'bg-red-100 text-red-800'
                 )}
               >
                 {booking.status}
@@ -123,9 +111,9 @@ export default async function BookingDetailsPage({
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total Price:</span>
               <span className="text-xl font-bold text-primary">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "USD",
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
                 }).format(booking.totalPrice)}
               </span>
             </div>
@@ -166,31 +154,21 @@ export default async function BookingDetailsPage({
                       {item.tours.name}
                     </Link>
                   ) : item.upsellItemId && item.upsellItems ? (
-                    <p className="text-lg font-semibold">
-                      {item.upsellItems.name}
-                    </p>
+                    <p className="text-lg font-semibold">{item.upsellItems.name}</p>
                   ) : (
                     <p className="text-lg font-semibold">Unknown Item</p>
                   )}
                   {item.tourId && (
-                    <p className="text-muted-foreground text-sm">
-                      Tour ID: {item.tourId}
-                    </p>
+                    <p className="text-muted-foreground text-sm">Tour ID: {item.tourId}</p>
                   )}
                   {item.packageName && (
                     <div className="mt-1">
                       <p className="text-muted-foreground text-sm font-medium text-primary/80">
                         Package: {item.packageName}
                       </p>
-                      {item.tours?.packages?.find(
-                        (p) => p.id === item.packageId,
-                      )?.description && (
+                      {item.tours?.packages?.find((p) => p.id === item.packageId)?.description && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {
-                            item.tours.packages.find(
-                              (p) => p.id === item.packageId,
-                            )?.description
-                          }
+                          {item.tours.packages.find((p) => p.id === item.packageId)?.description}
                         </p>
                       )}
                     </div>
@@ -202,7 +180,7 @@ export default async function BookingDetailsPage({
                   )}
                   {item.itemDate && (
                     <p className="text-muted-foreground text-sm">
-                      Date: {format(new Date(item.itemDate), "PPP")}
+                      Date: {format(new Date(item.itemDate), 'PPP')}
                     </p>
                   )}
                 </div>
@@ -218,9 +196,9 @@ export default async function BookingDetailsPage({
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
                       }).format(item.price)}
                     </span>
                   </div>

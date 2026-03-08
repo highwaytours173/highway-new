@@ -1,6 +1,6 @@
-import { getCustomerById } from "@/lib/supabase/customers";
-import { notFound } from "next/navigation";
-import { CustomerDetailsClient } from "./customer-details-client";
+import { getCustomerById } from '@/lib/supabase/customers';
+import { notFound } from 'next/navigation';
+import { CustomerDetailsClient } from './customer-details-client';
 
 interface PageProps {
   params: Promise<{ id: string }>;

@@ -1,10 +1,10 @@
-import Link from "next/link";
-import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { getHotels, getRoomTypesByHotelId } from "@/lib/supabase/hotels";
-import { PlusCircle } from "lucide-react";
+import Link from 'next/link';
+import Image from 'next/image';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { getHotels, getRoomTypesByHotelId } from '@/lib/supabase/hotels';
+import { PlusCircle } from 'lucide-react';
 
 export default async function AdminHotelRoomsPage() {
   const hotels = await getHotels();
@@ -17,9 +17,7 @@ export default async function AdminHotelRoomsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Room Types</h1>
-          <p className="text-sm text-muted-foreground">
-            Create and manage your hotel room types.
-          </p>
+          <p className="text-sm text-muted-foreground">Create and manage your hotel room types.</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
@@ -58,21 +56,24 @@ export default async function AdminHotelRoomsPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {roomTypes.map((room) => (
-                <div
-                  key={room.id}
-                  className="flex gap-4 rounded-lg border p-4"
-                >
+                <div key={room.id} className="flex gap-4 rounded-lg border p-4">
                   <div className="relative hidden aspect-[4/3] w-36 overflow-hidden rounded-md bg-muted sm:block">
                     {room.images?.[0] ? (
-                      <Image src={room.images[0]} alt="" fill className="object-cover" sizes="180px" />
+                      <Image
+                        src={room.images[0]}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="180px"
+                      />
                     ) : null}
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate font-medium">{room.name}</p>
-                      <Badge variant={room.isActive ? "default" : "secondary"}>
-                        {room.isActive ? "Active" : "Inactive"}
+                      <Badge variant={room.isActive ? 'default' : 'secondary'}>
+                        {room.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                       {room.view ? (
                         <Badge variant="outline" className="truncate">
@@ -83,14 +84,15 @@ export default async function AdminHotelRoomsPage() {
 
                     <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
                       <span>
-                        Max {room.maxAdults} adults{room.maxChildren ? `, ${room.maxChildren} children` : ""}
+                        Max {room.maxAdults} adults
+                        {room.maxChildren ? `, ${room.maxChildren} children` : ''}
                       </span>
                       {room.sizeSqm != null ? <span>{room.sizeSqm} sqm</span> : null}
                       {room.bathrooms != null ? <span>{room.bathrooms} bath</span> : null}
                       {room.basePricePerNight != null ? (
                         <span>
                           {room.basePricePerNight}
-                          {room.currency ? ` ${room.currency}` : ""}
+                          {room.currency ? ` ${room.currency}` : ''}
                           /night
                         </span>
                       ) : null}

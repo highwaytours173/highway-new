@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -13,7 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Card,
   CardContent,
@@ -21,26 +21,26 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/card';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import { Textarea } from '@/components/ui/textarea';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Loader2, Sparkles } from "lucide-react";
+} from '@/components/ui/accordion';
+import { Loader2, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -48,7 +48,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   getAgencySettings,
   updateAgencySettings,
@@ -57,30 +57,28 @@ import {
   type DestinationFallbackImage,
   PageSeoSettings,
   SiteSeoSettings,
-} from "@/lib/supabase/agency-content";
-import { useToast } from "@/hooks/use-toast";
-import { generateSeoAssistAction, type SeoAssistResult } from "@/app/actions";
+} from '@/lib/supabase/agency-content';
+import { useToast } from '@/hooks/use-toast';
+import { generateSeoAssistAction, type SeoAssistResult } from '@/app/actions';
 
 const formSchema = z
   .object({
-    agencyName: z.string().min(1, "Agency name is required."),
-    phoneNumber: z.string().min(10, "A valid phone number is required."),
-    contactEmail: z.string().email("Invalid email address."),
-    address: z.string().min(1, "Address is required."),
+    agencyName: z.string().min(1, 'Agency name is required.'),
+    phoneNumber: z.string().min(10, 'A valid phone number is required.'),
+    contactEmail: z.string().email('Invalid email address.'),
+    address: z.string().min(1, 'Address is required.'),
     logo: z.array(z.any()).optional(),
     favicon: z.array(z.any()).optional(),
     tagline: z.string().optional(),
     navLinks: z
       .array(
         z.object({
-          label: z.string().min(1, "Label is required"),
-          href: z.string().min(1, "Href is required"),
-        }),
+          label: z.string().min(1, 'Label is required'),
+          href: z.string().min(1, 'Href is required'),
+        })
       )
       .optional(),
-    aboutUs: z
-      .string()
-      .min(10, "About us description should be at least 10 characters."),
+    aboutUs: z.string().min(10, 'About us description should be at least 10 characters.'),
     images: z
       .object({
         aboutHeroUrl: z.array(z.any()).optional(),
@@ -94,50 +92,104 @@ const formSchema = z
         destinationFallbackImages: z
           .array(
             z.object({
-              destination: z.string().min(1, "Destination is required"),
+              destination: z.string().min(1, 'Destination is required'),
               imageUrl: z.array(z.any()).optional(),
-            }),
+            })
           )
           .optional(),
       })
       .optional(),
     socialMedia: z.object({
-      facebook: z.string().url().or(z.literal("")),
-      twitter: z.string().url().or(z.literal("")),
-      instagram: z.string().url().or(z.literal("")),
-      linkedin: z.string().url().or(z.literal("")),
+      facebook: z.string().url().or(z.literal('')),
+      twitter: z.string().url().or(z.literal('')),
+      instagram: z.string().url().or(z.literal('')),
+      linkedin: z.string().url().or(z.literal('')),
     }),
     paymentMethods: z
       .object({
         cash: z.boolean(),
         online: z.boolean(),
-        defaultMethod: z.enum(["cash", "online"]),
+        defaultMethod: z.enum(['cash', 'online']),
       })
-      .default({ cash: true, online: true, defaultMethod: "online" }),
-    theme: z.object({
-      primaryColor: z.string().optional(),
-      fontFamily: z.string().optional(),
-    }).optional(),
-    seo: z.object({
-      site: z.object({
-        siteName: z.string().optional(),
-        defaultTitle: z.string().optional(),
-        titleTemplate: z.string().optional(),
-        description: z.string().optional(),
-        keywords: z.string().optional(),
-        ogImageUrl: z.string().url().or(z.literal("")).optional(),
-        twitterImageUrl: z.string().url().or(z.literal("")).optional(),
-        faviconUrl: z.string().url().or(z.literal("")).optional(),
-      }).optional(),
-      home: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      about: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      contact: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      tours: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      services: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      blog: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      destination: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-      tailorMade: z.object({ title: z.string().optional(), description: z.string().optional(), keywords: z.string().optional() }).optional(),
-    }).optional(),
+      .default({ cash: true, online: true, defaultMethod: 'online' }),
+    theme: z
+      .object({
+        primaryColor: z.string().optional(),
+        fontFamily: z.string().optional(),
+      })
+      .optional(),
+    seo: z
+      .object({
+        site: z
+          .object({
+            siteName: z.string().optional(),
+            defaultTitle: z.string().optional(),
+            titleTemplate: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+            ogImageUrl: z.string().url().or(z.literal('')).optional(),
+            twitterImageUrl: z.string().url().or(z.literal('')).optional(),
+            faviconUrl: z.string().url().or(z.literal('')).optional(),
+          })
+          .optional(),
+        home: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        about: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        contact: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        tours: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        services: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        blog: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        destination: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+        tailorMade: z
+          .object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            keywords: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
     currentPassword: z.string().optional(),
     newPassword: z.string().optional(),
     confirmPassword: z.string().optional(),
@@ -149,41 +201,37 @@ const formSchema = z
       })
       .default({ tours: true, hotels: true, blog: true }),
     singleHotelMode: z.boolean().default(false),
-    emailSettings: z.object({
-      resendApiKey: z.string().optional(),
-      fromName: z.string().optional(),
-      fromEmail: z.string().optional(),
-      notifyAdminOnBooking: z.boolean().default(true),
-    }).optional(),
+    emailSettings: z
+      .object({
+        resendApiKey: z.string().optional(),
+        fromName: z.string().optional(),
+        fromEmail: z.string().optional(),
+        notifyAdminOnBooking: z.boolean().default(true),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.paymentMethods.cash && !data.paymentMethods.online) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Enable at least one payment method.",
-        path: ["paymentMethods", "cash"],
+        message: 'Enable at least one payment method.',
+        path: ['paymentMethods', 'cash'],
       });
     }
 
-    if (
-      data.paymentMethods.defaultMethod === "cash" &&
-      !data.paymentMethods.cash
-    ) {
+    if (data.paymentMethods.defaultMethod === 'cash' && !data.paymentMethods.cash) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Default method must be enabled.",
-        path: ["paymentMethods", "defaultMethod"],
+        message: 'Default method must be enabled.',
+        path: ['paymentMethods', 'defaultMethod'],
       });
     }
 
-    if (
-      data.paymentMethods.defaultMethod === "online" &&
-      !data.paymentMethods.online
-    ) {
+    if (data.paymentMethods.defaultMethod === 'online' && !data.paymentMethods.online) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Default method must be enabled.",
-        path: ["paymentMethods", "defaultMethod"],
+        message: 'Default method must be enabled.',
+        path: ['paymentMethods', 'defaultMethod'],
       });
     }
   })
@@ -195,13 +243,13 @@ const formSchema = z
       return true;
     },
     {
-      message: "Current password is required to set a new one.",
-      path: ["currentPassword"],
-    },
+      message: 'Current password is required to set a new one.',
+      path: ['currentPassword'],
+    }
   )
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "New passwords do not match.",
-    path: ["confirmPassword"],
+    message: 'New passwords do not match.',
+    path: ['confirmPassword'],
   });
 
 export default function SettingsPage() {
@@ -211,23 +259,23 @@ export default function SettingsPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      agencyName: "",
-      phoneNumber: "",
-      contactEmail: "",
-      address: "",
+      agencyName: '',
+      phoneNumber: '',
+      contactEmail: '',
+      address: '',
       logo: [],
       favicon: [],
-      tagline: "",
+      tagline: '',
       navLinks: [
-        { label: "Home", href: "/" },
-        { label: "About Us", href: "/about" },
-        { label: "Destination", href: "/destination" },
-        { label: "Tour", href: "/tours" },
-        { label: "Services", href: "/services" },
-        { label: "Blog", href: "/blog" },
-        { label: "Contact", href: "/contact" },
+        { label: 'Home', href: '/' },
+        { label: 'About Us', href: '/about' },
+        { label: 'Destination', href: '/destination' },
+        { label: 'Tour', href: '/tours' },
+        { label: 'Services', href: '/services' },
+        { label: 'Blog', href: '/blog' },
+        { label: 'Contact', href: '/contact' },
       ],
-      aboutUs: "",
+      aboutUs: '',
       images: {
         aboutHeroUrl: [],
         aboutSideImageUrl: [],
@@ -240,22 +288,22 @@ export default function SettingsPage() {
         destinationFallbackImages: [],
       },
       socialMedia: {
-        facebook: "",
-        twitter: "",
-        instagram: "",
-        linkedin: "",
+        facebook: '',
+        twitter: '',
+        instagram: '',
+        linkedin: '',
       },
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
       paymentMethods: {
         cash: true,
         online: true,
-        defaultMethod: "online",
+        defaultMethod: 'online',
       },
       theme: {
-        primaryColor: "#0f172a",
-        fontFamily: "Inter",
+        primaryColor: '#0f172a',
+        fontFamily: 'Inter',
       },
       seo: {},
       modules: {
@@ -265,17 +313,21 @@ export default function SettingsPage() {
       },
       singleHotelMode: false,
       emailSettings: {
-        resendApiKey: "",
-        fromName: "",
-        fromEmail: "",
+        resendApiKey: '',
+        fromName: '',
+        fromEmail: '',
         notifyAdminOnBooking: true,
       },
     },
   });
 
-  const { fields: navLinkFields, append, remove } = useFieldArray({
+  const {
+    fields: navLinkFields,
+    append,
+    remove,
+  } = useFieldArray({
     control: form.control,
-    name: "navLinks",
+    name: 'navLinks',
   });
 
   const {
@@ -284,7 +336,7 @@ export default function SettingsPage() {
     remove: removeDestinationFallback,
   } = useFieldArray({
     control: form.control,
-    name: "images.destinationFallbackImages" as never,
+    name: 'images.destinationFallbackImages' as never,
   });
 
   useEffect(() => {
@@ -298,44 +350,36 @@ export default function SettingsPage() {
         const images: AgencyImageSettings = settingsData.images ?? {};
         setExistingLogoUrl(data.logo_url ?? null);
         const destinationFallbackImages: DestinationFallbackImage[] = Array.isArray(
-          images.destinationFallbackImages,
+          images.destinationFallbackImages
         )
           ? images.destinationFallbackImages
           : [];
         form.reset({
-          agencyName: settingsData.agencyName ?? "",
-          phoneNumber: settingsData.phoneNumber ?? "",
-          contactEmail: settingsData.contactEmail ?? "",
-          address: settingsData.address ?? "",
+          agencyName: settingsData.agencyName ?? '',
+          phoneNumber: settingsData.phoneNumber ?? '',
+          contactEmail: settingsData.contactEmail ?? '',
+          address: settingsData.address ?? '',
           logo: [],
           favicon: data.favicon_url ? [data.favicon_url] : [],
-          tagline: settingsData.tagline ?? "",
+          tagline: settingsData.tagline ?? '',
           navLinks: settingsData.navLinks ?? [
-            { label: "Home", href: "/" },
-            { label: "About Us", href: "/about" },
-            { label: "Destination", href: "/destination" },
-            { label: "Tour", href: "/tours" },
-            { label: "Services", href: "/services" },
-            { label: "Blog", href: "/blog" },
-            { label: "Contact", href: "/contact" },
+            { label: 'Home', href: '/' },
+            { label: 'About Us', href: '/about' },
+            { label: 'Destination', href: '/destination' },
+            { label: 'Tour', href: '/tours' },
+            { label: 'Services', href: '/services' },
+            { label: 'Blog', href: '/blog' },
+            { label: 'Contact', href: '/contact' },
           ],
-          aboutUs: settingsData.aboutUs ?? "",
+          aboutUs: settingsData.aboutUs ?? '',
           images: {
             aboutHeroUrl: images.aboutHeroUrl ? [images.aboutHeroUrl] : [],
-            aboutSideImageUrl: images.aboutSideImageUrl
-              ? [images.aboutSideImageUrl]
-              : [],
+            aboutSideImageUrl: images.aboutSideImageUrl ? [images.aboutSideImageUrl] : [],
             contactHeroUrl: images.contactHeroUrl ? [images.contactHeroUrl] : [],
-            contactCardImageUrl: images.contactCardImageUrl
-              ? [images.contactCardImageUrl]
-              : [],
-            servicesHeroUrl: images.servicesHeroUrl
-              ? [images.servicesHeroUrl]
-              : [],
+            contactCardImageUrl: images.contactCardImageUrl ? [images.contactCardImageUrl] : [],
+            servicesHeroUrl: images.servicesHeroUrl ? [images.servicesHeroUrl] : [],
             blogHeroUrl: images.blogHeroUrl ? [images.blogHeroUrl] : [],
-            destinationHeroUrl: images.destinationHeroUrl
-              ? [images.destinationHeroUrl]
-              : [],
+            destinationHeroUrl: images.destinationHeroUrl ? [images.destinationHeroUrl] : [],
             upsellHeroUrl: images.upsellHeroUrl ? [images.upsellHeroUrl] : [],
             destinationFallbackImages: destinationFallbackImages.map((entry) => ({
               destination: entry.destination,
@@ -343,24 +387,23 @@ export default function SettingsPage() {
             })),
           },
           socialMedia: settingsData.socialMedia ?? {
-            facebook: "",
-            twitter: "",
-            instagram: "",
-            linkedin: "",
+            facebook: '',
+            twitter: '',
+            instagram: '',
+            linkedin: '',
           },
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
           paymentMethods: {
             cash: paymentMethods.cash ?? true,
             online: paymentMethods.online ?? true,
             defaultMethod:
-              paymentMethods.defaultMethod ??
-              (paymentMethods.online === false ? "cash" : "online"),
+              paymentMethods.defaultMethod ?? (paymentMethods.online === false ? 'cash' : 'online'),
           },
           theme: {
-            primaryColor: settingsData.theme?.primaryColor ?? "#0f172a",
-            fontFamily: settingsData.theme?.fontFamily ?? "Inter",
+            primaryColor: settingsData.theme?.primaryColor ?? '#0f172a',
+            fontFamily: settingsData.theme?.fontFamily ?? 'Inter',
           },
           seo: settingsData.seo ?? {},
           modules: settingsData.modules ?? {
@@ -370,9 +413,9 @@ export default function SettingsPage() {
           },
           singleHotelMode: settingsData.singleHotelMode ?? false,
           emailSettings: {
-            resendApiKey: settingsData.emailSettings?.resendApiKey ?? "",
-            fromName: settingsData.emailSettings?.fromName ?? "",
-            fromEmail: settingsData.emailSettings?.fromEmail ?? "",
+            resendApiKey: settingsData.emailSettings?.resendApiKey ?? '',
+            fromName: settingsData.emailSettings?.fromName ?? '',
+            fromEmail: settingsData.emailSettings?.fromEmail ?? '',
             notifyAdminOnBooking: settingsData.emailSettings?.notifyAdminOnBooking ?? true,
           },
         });
@@ -383,13 +426,13 @@ export default function SettingsPage() {
   }, []);
 
   type FormValues = z.infer<typeof formSchema>;
-  type FormSeo = FormValues["seo"];
-  type FormSiteSeo = NonNullable<NonNullable<FormSeo>["site"]>;
+  type FormSeo = FormValues['seo'];
+  type FormSiteSeo = NonNullable<NonNullable<FormSeo>['site']>;
   type FormPageSeo = PageSeoSettings;
 
   const mergeSiteSeo = (
     base: SiteSeoSettings | undefined,
-    incoming: FormSiteSeo | undefined,
+    incoming: FormSiteSeo | undefined
   ): SiteSeoSettings | undefined => {
     if (!base && !incoming) return undefined;
     return { ...(base ?? {}), ...(incoming ?? {}) };
@@ -397,16 +440,16 @@ export default function SettingsPage() {
 
   const mergePageSeo = (
     base: FormPageSeo | undefined,
-    incoming: FormPageSeo | undefined,
+    incoming: FormPageSeo | undefined
   ): PageSeoSettings | undefined => {
     if (!base && !incoming) return undefined;
     return { ...(base ?? {}), ...(incoming ?? {}) };
   };
 
   const mergeSeo = (
-    base: AgencySettingsData["seo"] | undefined,
-    incoming: FormSeo | undefined,
-  ): AgencySettingsData["seo"] | undefined => {
+    base: AgencySettingsData['seo'] | undefined,
+    incoming: FormSeo | undefined
+  ): AgencySettingsData['seo'] | undefined => {
     if (!base && !incoming) return undefined;
 
     const b = base ?? {};
@@ -426,20 +469,20 @@ export default function SettingsPage() {
   };
 
   type SeoScope =
-    | "site"
-    | "home"
-    | "about"
-    | "contact"
-    | "tours"
-    | "services"
-    | "destination"
-    | "tailorMade"
-    | "blog";
-  type AiFieldKey = "title" | "description" | "keywords";
+    | 'site'
+    | 'home'
+    | 'about'
+    | 'contact'
+    | 'tours'
+    | 'services'
+    | 'destination'
+    | 'tailorMade'
+    | 'blog';
+  type AiFieldKey = 'title' | 'description' | 'keywords';
   type AiTarget =
-    | { kind: "single"; scope: SeoScope; fieldPath: string; fieldKey: AiFieldKey }
+    | { kind: 'single'; scope: SeoScope; fieldPath: string; fieldKey: AiFieldKey }
     | {
-        kind: "group";
+        kind: 'group';
         scope: SeoScope;
         titlePath: string;
         descriptionPath: string;
@@ -448,28 +491,28 @@ export default function SettingsPage() {
 
   const [aiOpen, setAiOpen] = useState(false);
   const [aiTarget, setAiTarget] = useState<AiTarget | null>(null);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiPrompt, setAiPrompt] = useState('');
   const [aiResult, setAiResult] = useState<SeoAssistResult | null>(null);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const handleAiOpenChange = (open: boolean) => {
     setAiOpen(open);
     if (!open) {
       setAiTarget(null);
-      setAiPrompt("");
+      setAiPrompt('');
       setAiResult(null);
     }
   };
 
-  const openAiForSingle = (target: Omit<Extract<AiTarget, { kind: "single" }>, "kind">) => {
-    setAiTarget({ kind: "single", ...target });
-    setAiPrompt("");
+  const openAiForSingle = (target: Omit<Extract<AiTarget, { kind: 'single' }>, 'kind'>) => {
+    setAiTarget({ kind: 'single', ...target });
+    setAiPrompt('');
     setAiResult(null);
     setAiOpen(true);
   };
 
-  const openAiForGroup = (target: Omit<Extract<AiTarget, { kind: "group" }>, "kind">) => {
-    setAiTarget({ kind: "group", ...target });
-    setAiPrompt("");
+  const openAiForGroup = (target: Omit<Extract<AiTarget, { kind: 'group' }>, 'kind'>) => {
+    setAiTarget({ kind: 'group', ...target });
+    setAiPrompt('');
     setAiResult(null);
     setAiOpen(true);
   };
@@ -481,11 +524,11 @@ export default function SettingsPage() {
     const setStringValue = (path: string, value: string) => {
       form.setValue(path as never, value as never, opts);
     };
-    if (aiTarget.kind === "single") {
+    if (aiTarget.kind === 'single') {
       const value =
-        aiTarget.fieldKey === "title"
+        aiTarget.fieldKey === 'title'
           ? aiResult.title
-          : aiTarget.fieldKey === "description"
+          : aiTarget.fieldKey === 'description'
             ? aiResult.description
             : aiResult.keywords;
       setStringValue(aiTarget.fieldPath, value);
@@ -506,41 +549,44 @@ export default function SettingsPage() {
 
     setIsAiGenerating(true);
     try {
-      const agencyName = form.getValues("agencyName");
-      const siteName = form.getValues("seo.site.siteName" as never) as unknown as string | undefined;
+      const agencyName = form.getValues('agencyName');
+      const siteName = form.getValues('seo.site.siteName' as never) as unknown as
+        | string
+        | undefined;
 
       const existingTitle =
-        aiTarget.kind === "single"
+        aiTarget.kind === 'single'
           ? (form.getValues(aiTarget.fieldPath as never) as unknown as string | undefined)
           : (form.getValues(aiTarget.titlePath as never) as unknown as string | undefined);
       const existingDescription =
-        aiTarget.kind === "single" && aiTarget.fieldKey !== "description"
+        aiTarget.kind === 'single' && aiTarget.fieldKey !== 'description'
           ? undefined
-          : aiTarget.kind === "single"
+          : aiTarget.kind === 'single'
             ? (form.getValues(aiTarget.fieldPath as never) as unknown as string | undefined)
             : (form.getValues(aiTarget.descriptionPath as never) as unknown as string | undefined);
       const existingKeywords =
-        aiTarget.kind === "single" && aiTarget.fieldKey !== "keywords"
+        aiTarget.kind === 'single' && aiTarget.fieldKey !== 'keywords'
           ? undefined
-          : aiTarget.kind === "single"
+          : aiTarget.kind === 'single'
             ? (form.getValues(aiTarget.fieldPath as never) as unknown as string | undefined)
             : (form.getValues(aiTarget.keywordsPath as never) as unknown as string | undefined);
 
       const result = await generateSeoAssistAction({
         prompt,
         scope: aiTarget.scope,
-        agencyName: typeof agencyName === "string" ? agencyName : undefined,
-        siteName: typeof siteName === "string" ? siteName : undefined,
-        existingTitle: typeof existingTitle === "string" ? existingTitle : undefined,
-        existingDescription: typeof existingDescription === "string" ? existingDescription : undefined,
-        existingKeywords: typeof existingKeywords === "string" ? existingKeywords : undefined,
+        agencyName: typeof agencyName === 'string' ? agencyName : undefined,
+        siteName: typeof siteName === 'string' ? siteName : undefined,
+        existingTitle: typeof existingTitle === 'string' ? existingTitle : undefined,
+        existingDescription:
+          typeof existingDescription === 'string' ? existingDescription : undefined,
+        existingKeywords: typeof existingKeywords === 'string' ? existingKeywords : undefined,
       });
 
       if (!result.success || !result.data) {
         toast({
-          title: "AI generation failed",
-          description: result.message ?? "Please try again.",
-          variant: "destructive",
+          title: 'AI generation failed',
+          description: result.message ?? 'Please try again.',
+          variant: 'destructive',
         });
         return;
       }
@@ -548,9 +594,9 @@ export default function SettingsPage() {
       setAiResult(result.data);
     } catch (error) {
       toast({
-        title: "AI generation failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
+        title: 'AI generation failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsAiGenerating(false);
@@ -565,18 +611,14 @@ export default function SettingsPage() {
     try {
       const logoFile = values.logo && values.logo[0];
       if (logoFile && logoFile instanceof File) {
-        const ext = logoFile.name.split(".").pop() || "png";
+        const ext = logoFile.name.split('.').pop() || 'png';
         const path = `logos/agency-logo-${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("cms")
-          .upload(path, logoFile, {
-            contentType: logoFile.type || "image/png",
-            upsert: true,
-          });
+        const { error: uploadError } = await supabase.storage.from('cms').upload(path, logoFile, {
+          contentType: logoFile.type || 'image/png',
+          upsert: true,
+        });
         if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
-            .from("cms")
-            .getPublicUrl(path);
+          const { data: publicUrlData } = supabase.storage.from('cms').getPublicUrl(path);
           logoUrl = publicUrlData.publicUrl;
         }
       }
@@ -586,12 +628,12 @@ export default function SettingsPage() {
 
     let faviconUrl: string | null = null;
     const faviconInputUrl =
-      typeof values.seo?.site?.faviconUrl === "string" ? values.seo.site.faviconUrl.trim() : "";
+      typeof values.seo?.site?.faviconUrl === 'string' ? values.seo.site.faviconUrl.trim() : '';
     if (faviconInputUrl) {
       faviconUrl = faviconInputUrl;
     } else {
       const first = values.favicon?.[0];
-      if (typeof first === "string" && first.trim()) {
+      if (typeof first === 'string' && first.trim()) {
         faviconUrl = first.trim();
       }
     }
@@ -599,47 +641,40 @@ export default function SettingsPage() {
     try {
       const faviconFile = values.favicon?.[0];
       if (faviconFile && faviconFile instanceof File) {
-        const ext = faviconFile.name.split(".").pop() || "png";
+        const ext = faviconFile.name.split('.').pop() || 'png';
         const path = `favicons/agency-favicon-${Date.now()}.${ext}`;
         const { error: uploadError } = await supabase.storage
-          .from("cms")
+          .from('cms')
           .upload(path, faviconFile, {
-            contentType: faviconFile.type || "image/png",
+            contentType: faviconFile.type || 'image/png',
             upsert: true,
           });
         if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
-            .from("cms")
-            .getPublicUrl(path);
+          const { data: publicUrlData } = supabase.storage.from('cms').getPublicUrl(path);
           faviconUrl = publicUrlData.publicUrl;
         }
       }
-    } catch {
-    }
+    } catch {}
 
     const uploadSingleImage = async (
       value: unknown[] | undefined,
       pathPrefix: string,
-      fallbackUrl?: string,
+      fallbackUrl?: string
     ): Promise<string | undefined> => {
       const first = value?.[0];
       if (!first) return fallbackUrl;
-      if (typeof first === "string") return first;
+      if (typeof first === 'string') return first;
       if (!(first instanceof File)) return fallbackUrl;
 
-      const ext = first.name.split(".").pop() || "png";
+      const ext = first.name.split('.').pop() || 'png';
       const path = `page-images/${pathPrefix}-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("cms")
-        .upload(path, first, {
-          contentType: first.type || "image/png",
-          upsert: true,
-        });
+      const { error: uploadError } = await supabase.storage.from('cms').upload(path, first, {
+        contentType: first.type || 'image/png',
+        upsert: true,
+      });
 
       if (uploadError) return fallbackUrl;
-      const { data: publicUrlData } = supabase.storage
-        .from("cms")
-        .getPublicUrl(path);
+      const { data: publicUrlData } = supabase.storage.from('cms').getPublicUrl(path);
       return publicUrlData.publicUrl;
     };
 
@@ -647,76 +682,72 @@ export default function SettingsPage() {
       value
         .trim()
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
 
     const imagesPayload = values.images
       ? {
           aboutHeroUrl: await uploadSingleImage(
             values.images.aboutHeroUrl,
-            "about-hero",
-            loadedSettingsData?.images?.aboutHeroUrl,
+            'about-hero',
+            loadedSettingsData?.images?.aboutHeroUrl
           ),
           aboutSideImageUrl: await uploadSingleImage(
             values.images.aboutSideImageUrl,
-            "about-side",
-            loadedSettingsData?.images?.aboutSideImageUrl,
+            'about-side',
+            loadedSettingsData?.images?.aboutSideImageUrl
           ),
           contactHeroUrl: await uploadSingleImage(
             values.images.contactHeroUrl,
-            "contact-hero",
-            loadedSettingsData?.images?.contactHeroUrl,
+            'contact-hero',
+            loadedSettingsData?.images?.contactHeroUrl
           ),
           contactCardImageUrl: await uploadSingleImage(
             values.images.contactCardImageUrl,
-            "contact-card",
-            loadedSettingsData?.images?.contactCardImageUrl,
+            'contact-card',
+            loadedSettingsData?.images?.contactCardImageUrl
           ),
           servicesHeroUrl: await uploadSingleImage(
             values.images.servicesHeroUrl,
-            "services-hero",
-            loadedSettingsData?.images?.servicesHeroUrl,
+            'services-hero',
+            loadedSettingsData?.images?.servicesHeroUrl
           ),
           blogHeroUrl: await uploadSingleImage(
             values.images.blogHeroUrl,
-            "blog-hero",
-            loadedSettingsData?.images?.blogHeroUrl,
+            'blog-hero',
+            loadedSettingsData?.images?.blogHeroUrl
           ),
           destinationHeroUrl: await uploadSingleImage(
             values.images.destinationHeroUrl,
-            "destination-hero",
-            loadedSettingsData?.images?.destinationHeroUrl,
+            'destination-hero',
+            loadedSettingsData?.images?.destinationHeroUrl
           ),
           upsellHeroUrl: await uploadSingleImage(
             values.images.upsellHeroUrl,
-            "upsell-hero",
-            loadedSettingsData?.images?.upsellHeroUrl,
+            'upsell-hero',
+            loadedSettingsData?.images?.upsellHeroUrl
           ),
           destinationFallbackImages: Array.isArray(values.images.destinationFallbackImages)
             ? (
                 await Promise.all(
                   values.images.destinationFallbackImages.map(async (entry) => {
                     const destination =
-                      typeof entry?.destination === "string" ? entry.destination.trim() : "";
+                      typeof entry?.destination === 'string' ? entry.destination.trim() : '';
                     if (!destination) return null;
-                    const existingEntry = loadedSettingsData?.images?.destinationFallbackImages?.find(
-                      (e) => e.destination === destination,
-                    );
+                    const existingEntry =
+                      loadedSettingsData?.images?.destinationFallbackImages?.find(
+                        (e) => e.destination === destination
+                      );
                     const url = await uploadSingleImage(
                       entry.imageUrl,
-                      `destination-fallback-${slugify(destination) || "destination"}`,
-                      existingEntry?.imageUrl,
+                      `destination-fallback-${slugify(destination) || 'destination'}`,
+                      existingEntry?.imageUrl
                     );
                     if (!url) return null;
                     return { destination, imageUrl: url };
-                  }),
+                  })
                 )
-              ).filter(
-                (
-                  value,
-                ): value is DestinationFallbackImage =>
-                  value !== null,
-              )
+              ).filter((value): value is DestinationFallbackImage => value !== null)
             : undefined,
         }
       : undefined;
@@ -726,7 +757,7 @@ export default function SettingsPage() {
       phoneNumber: values.phoneNumber,
       contactEmail: values.contactEmail,
       address: values.address,
-      tagline: values.tagline ?? "",
+      tagline: values.tagline ?? '',
       navLinks: values.navLinks ?? [],
       aboutUs: values.aboutUs,
       images: imagesPayload,
@@ -749,14 +780,14 @@ export default function SettingsPage() {
     try {
       await updateAgencySettings(nextSettingsData, logoUrl, faviconUrl);
       toast({
-        title: "Settings saved",
-        description: "Your changes have been applied successfully.",
+        title: 'Settings saved',
+        description: 'Your changes have been applied successfully.',
       });
     } catch (error) {
       toast({
-        title: "Failed to save settings",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
+        title: 'Failed to save settings',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
       });
     }
   }
@@ -767,9 +798,7 @@ export default function SettingsPage() {
         <DialogContent className="sm:max-w-[720px]">
           <DialogHeader>
             <DialogTitle>
-              {aiTarget?.kind === "group"
-                ? "AI Fill SEO"
-                : "AI Suggest Content"}
+              {aiTarget?.kind === 'group' ? 'AI Fill SEO' : 'AI Suggest Content'}
             </DialogTitle>
             <DialogDescription>
               Describe what you want to write and apply the suggested text.
@@ -827,11 +856,7 @@ export default function SettingsPage() {
                 </>
               )}
             </Button>
-            <Button
-              type="button"
-              onClick={applyAiResult}
-              disabled={isAiGenerating || !aiResult}
-            >
+            <Button type="button" onClick={applyAiResult} disabled={isAiGenerating || !aiResult}>
               Apply
             </Button>
           </DialogFooter>
@@ -849,17 +874,13 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Business Configuration</CardTitle>
-              <CardDescription>
-                Configure the features and mode of your website.
-              </CardDescription>
+              <CardDescription>Configure the features and mode of your website.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Enable Tours</FormLabel>
-                  <FormDescription>
-                    Enable tour management, listings, and bookings.
-                  </FormDescription>
+                  <FormDescription>Enable tour management, listings, and bookings.</FormDescription>
                 </div>
                 <FormField
                   control={form.control}
@@ -867,10 +888,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -889,10 +907,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -902,8 +917,8 @@ export default function SettingsPage() {
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Single Hotel Mode</FormLabel>
                   <FormDescription>
-                    Enable if this website represents a single hotel property.
-                    Disabling this creates a directory/OTA style site.
+                    Enable if this website represents a single hotel property. Disabling this
+                    creates a directory/OTA style site.
                   </FormDescription>
                 </div>
                 <FormField
@@ -912,10 +927,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -924,9 +936,7 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
                   <FormLabel className="text-base">Enable Blog</FormLabel>
-                  <FormDescription>
-                    Enable blog posts and news section.
-                  </FormDescription>
+                  <FormDescription>Enable blog posts and news section.</FormDescription>
                 </div>
                 <FormField
                   control={form.control}
@@ -934,10 +944,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -951,9 +958,14 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Email Notifications</CardTitle>
               <CardDescription>
-                Configure Resend to automatically send booking confirmations to customers and alerts to your team.
-                Get your free API key at{" "}
-                <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">
+                Configure Resend to automatically send booking confirmations to customers and alerts
+                to your team. Get your free API key at{' '}
+                <a
+                  href="https://resend.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline underline-offset-4"
+                >
                   resend.com
                 </a>
                 . Leave blank to disable emails.
@@ -968,9 +980,15 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Sender Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Tix & Trips Egypt" {...field} value={field.value ?? ""} />
+                        <Input
+                          placeholder="Tix & Trips Egypt"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
-                      <FormDescription>Displayed in the &quot;From&quot; field of every email.</FormDescription>
+                      <FormDescription>
+                        Displayed in the &quot;From&quot; field of every email.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -982,9 +1000,16 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Sender Email</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="bookings@yourdomain.com" {...field} value={field.value ?? ""} />
+                        <Input
+                          type="email"
+                          placeholder="bookings@yourdomain.com"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
-                      <FormDescription>Must be a verified domain in your Resend account.</FormDescription>
+                      <FormDescription>
+                        Must be a verified domain in your Resend account.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1001,11 +1026,12 @@ export default function SettingsPage() {
                         type="password"
                         placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
                         {...field}
-                        value={field.value ?? ""}
+                        value={field.value ?? ''}
                       />
                     </FormControl>
                     <FormDescription>
-                      Your secret API key from the Resend dashboard. Stored securely — never exposed to the public.
+                      Your secret API key from the Resend dashboard. Stored securely — never exposed
+                      to the public.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -1024,10 +1050,7 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Switch
-                          checked={field.value ?? true}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value ?? true} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -1039,9 +1062,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
-              <CardDescription>
-                Update your tour agency&apos;s public information.
-              </CardDescription>
+              <CardDescription>Update your tour agency&apos;s public information.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -1078,11 +1099,7 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Contact Email</FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="contact@you.com"
-                          {...field}
-                        />
+                        <Input type="email" placeholder="contact@you.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1112,10 +1129,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Agency Logo</FormLabel>
                     <FormControl>
-                      <ImageUploader
-                        value={field.value || []}
-                        onChange={field.onChange}
-                      />
+                      <ImageUploader value={field.value || []} onChange={field.onChange} />
                     </FormControl>
                     <FormDescription>
                       Upload your company logo. PNG or JPG recommended.
@@ -1174,7 +1188,7 @@ export default function SettingsPage() {
               )}
             </CardContent>
             <CardFooter>
-              <Button type="button" onClick={() => append({ label: "New Link", href: "/" })}>
+              <Button type="button" onClick={() => append({ label: 'New Link', href: '/' })}>
                 Add Link
               </Button>
             </CardFooter>
@@ -1184,8 +1198,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>About & Address</CardTitle>
               <CardDescription>
-                Information that may appear on your website&apos;s footer or contact
-                page.
+                Information that may appear on your website&apos;s footer or contact page.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -1196,10 +1209,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Agency Address</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="123 Main St, Anytown, USA"
-                        {...field}
-                      />
+                      <Input placeholder="123 Main St, Anytown, USA" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1236,7 +1246,7 @@ export default function SettingsPage() {
               <div className="grid gap-6 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name={"images.aboutHeroUrl" as never}
+                  name={'images.aboutHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>About Page Hero Image</FormLabel>
@@ -1249,7 +1259,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.aboutSideImageUrl" as never}
+                  name={'images.aboutSideImageUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>About Page Side Image</FormLabel>
@@ -1262,7 +1272,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.contactHeroUrl" as never}
+                  name={'images.contactHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Contact Page Hero Image</FormLabel>
@@ -1275,7 +1285,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.contactCardImageUrl" as never}
+                  name={'images.contactCardImageUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Contact Page Card Image</FormLabel>
@@ -1288,7 +1298,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.servicesHeroUrl" as never}
+                  name={'images.servicesHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Services Page Hero Image</FormLabel>
@@ -1301,7 +1311,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.blogHeroUrl" as never}
+                  name={'images.blogHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Blog Page Hero Image</FormLabel>
@@ -1314,7 +1324,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.destinationHeroUrl" as never}
+                  name={'images.destinationHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Destination Page Hero Image</FormLabel>
@@ -1327,7 +1337,7 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name={"images.upsellHeroUrl" as never}
+                  name={'images.upsellHeroUrl' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Upsell Items Page Hero Image</FormLabel>
@@ -1372,7 +1382,10 @@ export default function SettingsPage() {
                             <FormItem>
                               <FormLabel>Image</FormLabel>
                               <FormControl>
-                                <ImageUploader value={field.value || []} onChange={field.onChange} />
+                                <ImageUploader
+                                  value={field.value || []}
+                                  onChange={field.onChange}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1394,7 +1407,7 @@ export default function SettingsPage() {
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    appendDestinationFallback({ destination: "", imageUrl: [] } as never)
+                    appendDestinationFallback({ destination: '', imageUrl: [] } as never)
                   }
                 >
                   Add Destination Image
@@ -1406,9 +1419,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Social Media</CardTitle>
-              <CardDescription>
-                Links to your agency&apos;s social media profiles.
-              </CardDescription>
+              <CardDescription>Links to your agency&apos;s social media profiles.</CardDescription>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-6">
               <FormField
@@ -1418,10 +1429,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Facebook</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://facebook.com/your-page"
-                        {...field}
-                      />
+                      <Input placeholder="https://facebook.com/your-page" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1434,10 +1442,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Twitter / X</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://twitter.com/your-handle"
-                        {...field}
-                      />
+                      <Input placeholder="https://twitter.com/your-handle" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1450,10 +1455,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Instagram</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://instagram.com/your-profile"
-                        {...field}
-                      />
+                      <Input placeholder="https://instagram.com/your-profile" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1466,10 +1468,7 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>LinkedIn</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="https://linkedin.com/company/your-company"
-                        {...field}
-                      />
+                      <Input placeholder="https://linkedin.com/company/your-company" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1481,9 +1480,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Theme Customization</CardTitle>
-              <CardDescription>
-                Customize the look and feel of your website.
-              </CardDescription>
+              <CardDescription>Customize the look and feel of your website.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -1500,11 +1497,7 @@ export default function SettingsPage() {
                           className="w-12 h-12 p-1 rounded-md cursor-pointer"
                         />
                       </FormControl>
-                      <Input
-                        {...field}
-                        placeholder="#0f172a"
-                        className="max-w-[120px]"
-                      />
+                      <Input {...field} placeholder="#0f172a" className="max-w-[120px]" />
                     </div>
                     <FormDescription>
                       The main color used for buttons, links, and highlights.
@@ -1533,9 +1526,7 @@ export default function SettingsPage() {
                         <SelectItem value="Lato">Lato (Friendly)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
-                      The font used for headings and body text.
-                    </FormDescription>
+                    <FormDescription>The font used for headings and body text.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1554,7 +1545,7 @@ export default function SettingsPage() {
               <div className="space-y-4 pb-6">
                 <FormField
                   control={form.control}
-                  name={"seo.site.siteName" as never}
+                  name={'seo.site.siteName' as never}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Site Name</FormLabel>
@@ -1569,7 +1560,7 @@ export default function SettingsPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name={"seo.site.defaultTitle" as never}
+                    name={'seo.site.defaultTitle' as never}
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex items-center justify-between gap-2">
@@ -1581,9 +1572,9 @@ export default function SettingsPage() {
                             className="h-8 w-8"
                             onClick={() =>
                               openAiForSingle({
-                                scope: "site",
-                                fieldPath: "seo.site.defaultTitle",
-                                fieldKey: "title",
+                                scope: 'site',
+                                fieldPath: 'seo.site.defaultTitle',
+                                fieldKey: 'title',
                               })
                             }
                             aria-label="Generate default title"
@@ -1601,7 +1592,7 @@ export default function SettingsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name={"seo.site.titleTemplate" as never}
+                    name={'seo.site.titleTemplate' as never}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Title Template</FormLabel>
@@ -1616,7 +1607,7 @@ export default function SettingsPage() {
 
                 <FormField
                   control={form.control}
-                  name={"seo.site.description" as never}
+                  name={'seo.site.description' as never}
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between gap-2">
@@ -1628,9 +1619,9 @@ export default function SettingsPage() {
                           className="h-8 w-8"
                           onClick={() =>
                             openAiForSingle({
-                              scope: "site",
-                              fieldPath: "seo.site.description",
-                              fieldKey: "description",
+                              scope: 'site',
+                              fieldPath: 'seo.site.description',
+                              fieldKey: 'description',
                             })
                           }
                           aria-label="Generate site description"
@@ -1649,7 +1640,7 @@ export default function SettingsPage() {
 
                 <FormField
                   control={form.control}
-                  name={"seo.site.keywords" as never}
+                  name={'seo.site.keywords' as never}
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between gap-2">
@@ -1661,9 +1652,9 @@ export default function SettingsPage() {
                           className="h-8 w-8"
                           onClick={() =>
                             openAiForSingle({
-                              scope: "site",
-                              fieldPath: "seo.site.keywords",
-                              fieldKey: "keywords",
+                              scope: 'site',
+                              fieldPath: 'seo.site.keywords',
+                              fieldKey: 'keywords',
                             })
                           }
                           aria-label="Generate default keywords"
@@ -1683,7 +1674,7 @@ export default function SettingsPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
-                    name={"seo.site.ogImageUrl" as never}
+                    name={'seo.site.ogImageUrl' as never}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>OpenGraph Image URL</FormLabel>
@@ -1696,7 +1687,7 @@ export default function SettingsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name={"seo.site.twitterImageUrl" as never}
+                    name={'seo.site.twitterImageUrl' as never}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Twitter Image URL</FormLabel>
@@ -1709,7 +1700,7 @@ export default function SettingsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name={"favicon" as never}
+                    name={'favicon' as never}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Favicon</FormLabel>
@@ -1722,7 +1713,7 @@ export default function SettingsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name={"seo.site.faviconUrl" as never}
+                    name={'seo.site.faviconUrl' as never}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Favicon URL</FormLabel>
@@ -1738,14 +1729,14 @@ export default function SettingsPage() {
 
               <Accordion type="single" collapsible className="w-full">
                 {[
-                  { key: "home", label: "Home" },
-                  { key: "about", label: "About" },
-                  { key: "contact", label: "Contact" },
-                  { key: "tours", label: "Tours" },
-                  { key: "services", label: "Services" },
-                  { key: "destination", label: "Destination" },
-                  { key: "tailorMade", label: "Tailor Made" },
-                  { key: "blog", label: "Blog" },
+                  { key: 'home', label: 'Home' },
+                  { key: 'about', label: 'About' },
+                  { key: 'contact', label: 'Contact' },
+                  { key: 'tours', label: 'Tours' },
+                  { key: 'services', label: 'Services' },
+                  { key: 'destination', label: 'Destination' },
+                  { key: 'tailorMade', label: 'Tailor Made' },
+                  { key: 'blog', label: 'Blog' },
                 ].map((page) => (
                   <AccordionItem key={page.key} value={page.key}>
                     <AccordionTrigger>{page.label} Page</AccordionTrigger>
@@ -1785,7 +1776,7 @@ export default function SettingsPage() {
                                   openAiForSingle({
                                     scope: page.key as SeoScope,
                                     fieldPath: `seo.${page.key}.title`,
-                                    fieldKey: "title",
+                                    fieldKey: 'title',
                                   })
                                 }
                                 aria-label={`Generate meta title for ${page.label}`}
@@ -1818,7 +1809,7 @@ export default function SettingsPage() {
                                   openAiForSingle({
                                     scope: page.key as SeoScope,
                                     fieldPath: `seo.${page.key}.description`,
-                                    fieldKey: "description",
+                                    fieldKey: 'description',
                                   })
                                 }
                                 aria-label={`Generate meta description for ${page.label}`}
@@ -1828,7 +1819,10 @@ export default function SettingsPage() {
                               </Button>
                             </div>
                             <FormControl>
-                              <Textarea placeholder={`Description for ${page.label} page`} {...field} />
+                              <Textarea
+                                placeholder={`Description for ${page.label} page`}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1851,7 +1845,7 @@ export default function SettingsPage() {
                                   openAiForSingle({
                                     scope: page.key as SeoScope,
                                     fieldPath: `seo.${page.key}.keywords`,
-                                    fieldKey: "keywords",
+                                    fieldKey: 'keywords',
                                   })
                                 }
                                 aria-label={`Generate keywords for ${page.label}`}
@@ -1877,9 +1871,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>
-                Control which payment options appear at checkout.
-              </CardDescription>
+              <CardDescription>Control which payment options appear at checkout.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -1896,21 +1888,10 @@ export default function SettingsPage() {
                         checked={field.value}
                         onCheckedChange={(checked) => {
                           field.onChange(checked);
-                          const isOnlineEnabled = form.getValues(
-                            "paymentMethods.online",
-                          );
-                          const currentDefault = form.getValues(
-                            "paymentMethods.defaultMethod",
-                          );
-                          if (
-                            currentDefault === "cash" &&
-                            !checked &&
-                            isOnlineEnabled
-                          ) {
-                            form.setValue(
-                              "paymentMethods.defaultMethod",
-                              "online",
-                            );
+                          const isOnlineEnabled = form.getValues('paymentMethods.online');
+                          const currentDefault = form.getValues('paymentMethods.defaultMethod');
+                          if (currentDefault === 'cash' && !checked && isOnlineEnabled) {
+                            form.setValue('paymentMethods.defaultMethod', 'online');
                           }
                         }}
                       />
@@ -1927,30 +1908,17 @@ export default function SettingsPage() {
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">Online (Kashier)</FormLabel>
-                      <FormDescription>
-                        Pay online to confirm immediately.
-                      </FormDescription>
+                      <FormDescription>Pay online to confirm immediately.</FormDescription>
                     </div>
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={(checked) => {
                           field.onChange(checked);
-                          const isCashEnabled = form.getValues(
-                            "paymentMethods.cash",
-                          );
-                          const currentDefault = form.getValues(
-                            "paymentMethods.defaultMethod",
-                          );
-                          if (
-                            currentDefault === "online" &&
-                            !checked &&
-                            isCashEnabled
-                          ) {
-                            form.setValue(
-                              "paymentMethods.defaultMethod",
-                              "cash",
-                            );
+                          const isCashEnabled = form.getValues('paymentMethods.cash');
+                          const currentDefault = form.getValues('paymentMethods.defaultMethod');
+                          if (currentDefault === 'online' && !checked && isCashEnabled) {
+                            form.setValue('paymentMethods.defaultMethod', 'cash');
                           }
                         }}
                       />
@@ -1963,8 +1931,8 @@ export default function SettingsPage() {
                 control={form.control}
                 name="paymentMethods.defaultMethod"
                 render={({ field }) => {
-                  const cashEnabled = form.watch("paymentMethods.cash");
-                  const onlineEnabled = form.watch("paymentMethods.online");
+                  const cashEnabled = form.watch('paymentMethods.cash');
+                  const onlineEnabled = form.watch('paymentMethods.online');
 
                   return (
                     <FormItem>
@@ -2043,18 +2011,14 @@ export default function SettingsPage() {
           </Card>
 
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={form.formState.isSubmitting}
-            >
+            <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (
-                "Save Changes"
+                'Save Changes'
               )}
             </Button>
           </div>

@@ -8,6 +8,7 @@
 - Admin: `/admin/*` with a sidebar whose items can be toggled via `settings.modules`
 
 This plan adds a Hotels module in a way that supports:
+
 - Tour agency only
 - Hotel only
 - Tour agency + hotel
@@ -30,11 +31,13 @@ This plan adds a Hotels module in a way that supports:
 ### Module Flags
 
 Extend the existing `settings.modules` concept to support:
+
 - `tours`: boolean
 - `hotels`: boolean
 - (existing) `blog`, `upsell`, `contact`
 
 Rules:
+
 - If `tours=false`, hide Tours-related public nav items and admin sidebar items, and remove tours sections from the home page.
 - If `hotels=false`, hide Hotels-related nav items and admin sidebar items, and remove hotels sections from the home page.
 - If both are true, show both and make the home page a combined “Travel + Stay” experience.
@@ -43,6 +46,7 @@ Rules:
 
 Use the existing “settings-driven navLinks” as the primary source of truth.
 If navLinks aren’t configured, fall back to defaults that are generated from module flags:
+
 - Tours-only: Home, Destination, Tours, Services, Blog, Contact
 - Hotels-only: Home, Rooms, Availability/Offers, Blog (optional), Contact
 - Both: Home, Tours, Hotels, Services, Blog, Contact
@@ -52,6 +56,7 @@ If navLinks aren’t configured, fall back to defaults that are generated from m
 ### Routes
 
 Add public routes under `src/app/(main)`:
+
 - `/hotels` (or `/stay`): hotel landing + highlights + search
 - `/hotels/[slug]`: hotel details with rooms and booking widget
 - Optional: `/rooms` if you want a direct rooms browsing page for hotels-only tenants
@@ -60,10 +65,12 @@ Add public routes under `src/app/(main)`:
 
 Home is already CMS-driven (`homeContent`) and has visibility flags.
 Extend home content with hotel sections and keep it modular:
+
 - `visibility.hotelsHero` / `visibility.featuredRooms` / `visibility.hotelAmenities`
 - `hotels.featuredRoomTypeIds` or `hotels.featuredRoomsCount`
 
 Behavior by mode:
+
 - Tours-only: existing home sections unchanged
 - Hotels-only: show hotel hero + featured rooms + amenities + reviews; hide tours-specific sections
 - Both: keep the hero/search capable of switching between “Tours” and “Rooms”
@@ -71,6 +78,7 @@ Behavior by mode:
 ### UX Flow (Hotels)
 
 MVP booking flow:
+
 - User selects date range + guests on hotel details page
 - System shows available room types with price per night (or total)
 - User picks a room type and quantity (usually 1)
@@ -81,6 +89,7 @@ MVP booking flow:
 ### Sidebar / IA
 
 Add an “Hotels” group or items inside “Management/Content”:
+
 - Hotels
   - Hotel Profile (name, address, images, policies, check-in/out times)
   - Room Types (create/edit room types, images, capacity, amenities)
@@ -88,6 +97,7 @@ Add an “Hotels” group or items inside “Management/Content”:
   - Hotel Bookings (list + booking details)
 
 Recommended admin routes (App Router):
+
 - `/admin/hotels` (overview + profile)
 - `/admin/hotels/rooms` (room types list)
 - `/admin/hotels/rooms/[id]/edit`
@@ -115,7 +125,8 @@ The current app already uses Supabase tables for tours/posts/bookings. For hotel
 
 ### Core Tables
 
-1) `hotels`
+1. `hotels`
+
 - `id` (uuid, pk)
 - `agency_id` (uuid, fk to agencies/tenants table)
 - `slug` (text, unique per tenant)
@@ -125,7 +136,8 @@ The current app already uses Supabase tables for tours/posts/bookings. For hotel
 - `images` (text[] or jsonb)
 - `is_active` (boolean)
 
-2) `room_types`
+2. `room_types`
+
 - `id` (uuid, pk)
 - `hotel_id` (uuid, fk)
 - `slug` (text)
@@ -136,14 +148,16 @@ The current app already uses Supabase tables for tours/posts/bookings. For hotel
 - `images` (text[] or jsonb)
 - `is_active` (boolean)
 
-3) `room_rate_plans` (optional for MVP; can be deferred)
+3. `room_rate_plans` (optional for MVP; can be deferred)
+
 - `id`, `room_type_id`
 - `name` (e.g., “Refundable”, “Non-refundable”)
 - `cancellation_policy` (jsonb)
 - `is_active`
 
-4) `room_inventory`
-This is the key for availability + pricing. One row per date per room type (or per date range using generated rows).
+4. `room_inventory`
+   This is the key for availability + pricing. One row per date per room type (or per date range using generated rows).
+
 - `id` (uuid, pk)
 - `room_type_id` (uuid, fk)
 - `date` (date)
@@ -153,7 +167,8 @@ This is the key for availability + pricing. One row per date per room type (or p
 - `min_nights` (int, nullable)
 - `stop_sell` (boolean, default false)
 
-5) `hotel_bookings`
+5. `hotel_bookings`
+
 - `id` (uuid, pk)
 - `agency_id` (uuid)
 - `hotel_id` (uuid)
@@ -178,19 +193,22 @@ This is the key for availability + pricing. One row per date per room type (or p
 ### Holds (Optional, but Recommended)
 
 Add `hotel_booking_holds`:
+
 - `room_type_id`, `check_in`, `check_out`, `units`, `expires_at`
-Then compute effective availability = inventory - confirmed bookings - active holds.
+  Then compute effective availability = inventory - confirmed bookings - active holds.
 
 ## Cart + Checkout Integration
 
 ### Cart Item Types
 
 Your current cart is tours-oriented. Evolve it to support multiple item types:
+
 - `tour` item (existing)
 - `hotel` item (new)
 - `upsell` item (existing)
 
 For hotel items, store:
+
 - `hotelId`, `roomTypeId`
 - `checkIn`, `checkOut`
 - `guests`
@@ -200,6 +218,7 @@ For hotel items, store:
 ### Quoting
 
 Price should be recalculated server-side at checkout time to prevent stale pricing:
+
 - compute total nights
 - sum `price_per_night` from `room_inventory` rows
 - apply promos if enabled
@@ -209,6 +228,7 @@ Price should be recalculated server-side at checkout time to prevent stale prici
 
 Reuse your existing payment provider integration patterns (Kashier webhook exists).
 MVP flow:
+
 - user pays
 - webhook confirms payment
 - booking status changes to confirmed
@@ -222,6 +242,7 @@ MVP flow:
 ## Permissions & Security (Supabase RLS)
 
 Recommended MVP security boundaries:
+
 - Public: read-only access to `hotels`, `room_types`, and only “future” `room_inventory` that’s needed for pricing display
 - Admin: tenant-scoped full CRUD via RLS policies and authenticated user checks
 - Webhook/system: service-role used only server-side for booking confirmation and inventory updates
@@ -300,4 +321,3 @@ Recommended MVP security boundaries:
   - `src/app/(main)/checkout/*`
 - Supabase data access:
   - `src/lib/supabase/*`
-

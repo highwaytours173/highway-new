@@ -69,7 +69,7 @@ export type RoomInventory = {
   updatedAt: string;
 };
 
-export type HotelBookingStatus = "pending" | "paid" | "confirmed" | "cancelled";
+export type HotelBookingStatus = 'pending' | 'paid' | 'confirmed' | 'cancelled';
 
 export type HotelBooking = {
   id: string;

@@ -1,13 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, ArrowRight } from "lucide-react";
-import { Logo } from "@/components/logo";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/use-language";
-import { getAgencySettings } from "@/lib/supabase/agency-content";
+import React from 'react';
+import Link from 'next/link';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  ArrowRight,
+} from 'lucide-react';
+import { Logo } from '@/components/logo';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/hooks/use-language';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
 
 type SettingsData = {
   agencyName?: string;
@@ -26,29 +35,27 @@ type SettingsData = {
 };
 
 function normalizeNavHref(href: string | undefined | null) {
-  const raw = String(href || "").trim();
-  if (!raw) return "/";
+  const raw = String(href || '').trim();
+  if (!raw) return '/';
 
   const lower = raw.toLowerCase();
-  const withoutTrailingSlash =
-    raw.length > 1 && raw.endsWith("/") ? raw.slice(0, -1) : raw;
+  const withoutTrailingSlash = raw.length > 1 && raw.endsWith('/') ? raw.slice(0, -1) : raw;
 
-  if (lower === "/#about" || lower === "#about" || lower === "about")
-    return "/about";
-  if (lower === "/#services" || lower === "#services" || lower === "services")
-    return "/services";
-  if (lower === "/#contact" || lower === "#contact" || lower === "contact")
-    return "/contact";
-  if (lower === "/#tours" || lower === "#tours" || lower === "tours")
-    return "/tours";
+  if (lower === '/#about' || lower === '#about' || lower === 'about') return '/about';
+  if (lower === '/#services' || lower === '#services' || lower === 'services') return '/services';
+  if (lower === '/#contact' || lower === '#contact' || lower === 'contact') return '/contact';
+  if (lower === '/#tours' || lower === '#tours' || lower === 'tours') return '/tours';
 
-  if (withoutTrailingSlash.startsWith("#")) return `/${withoutTrailingSlash}`;
+  if (withoutTrailingSlash.startsWith('#')) return `/${withoutTrailingSlash}`;
   return withoutTrailingSlash;
 }
 
 export function Footer() {
   const { t } = useLanguage();
-  const [settings, setSettings] = React.useState<{ data: SettingsData; logo_url?: string | null } | null>(null);
+  const [settings, setSettings] = React.useState<{
+    data: SettingsData;
+    logo_url?: string | null;
+  } | null>(null);
 
   React.useEffect(() => {
     const loadSettings = async () => {
@@ -63,11 +70,11 @@ export function Footer() {
     loadSettings();
   }, []);
 
-  const agencyName = settings?.data?.agencyName || "Travel Agency";
-  const tagline = settings?.data?.tagline || "";
-  const contactEmail = settings?.data?.contactEmail || "";
-  const phoneNumber = settings?.data?.phoneNumber || "";
-  const address = settings?.data?.address || "";
+  const agencyName = settings?.data?.agencyName || 'Travel Agency';
+  const tagline = settings?.data?.tagline || '';
+  const contactEmail = settings?.data?.contactEmail || '';
+  const phoneNumber = settings?.data?.phoneNumber || '';
+  const address = settings?.data?.address || '';
 
   return (
     <footer className="bg-[#181E29] text-gray-300">
@@ -82,32 +89,54 @@ export function Footer() {
                 {tagline ? <p className="text-xs text-gray-400">{tagline}</p> : null}
               </div>
             </Link>
-            <h3 className="font-headline font-semibold text-white">{t("footer.subscribeNewsletter")}</h3>
-            <p className="text-sm">{t("footer.subscribeDesc")}</p>
+            <h3 className="font-headline font-semibold text-white">
+              {t('footer.subscribeNewsletter')}
+            </h3>
+            <p className="text-sm">{t('footer.subscribeDesc')}</p>
             <form className="space-y-3">
-              <Input type="email" placeholder={t("footer.emailPlaceholder")} className="bg-white text-gray-900 border-0 rounded-lg" />
+              <Input
+                type="email"
+                placeholder={t('footer.emailPlaceholder')}
+                className="bg-white text-gray-900 border-0 rounded-lg"
+              />
               <Button type="submit" className="w-full rounded-lg">
-                {t("footer.subscribeBtn")} <ArrowRight className="ml-2 h-4 w-4" />
+                {t('footer.subscribeBtn')} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </form>
             <div className="flex space-x-3 pt-2">
               {settings?.data?.socialMedia?.facebook ? (
-                <a href={settings.data.socialMedia.facebook} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Facebook">
+                <a
+                  href={settings.data.socialMedia.facebook}
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  aria-label="Facebook"
+                >
                   <Facebook className="h-5 w-5" />
                 </a>
               ) : null}
               {settings?.data?.socialMedia?.twitter ? (
-                <a href={settings.data.socialMedia.twitter} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Twitter">
+                <a
+                  href={settings.data.socialMedia.twitter}
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  aria-label="Twitter"
+                >
                   <Twitter className="h-5 w-5" />
                 </a>
               ) : null}
               {settings?.data?.socialMedia?.linkedin ? (
-                <a href={settings.data.socialMedia.linkedin} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="LinkedIn">
+                <a
+                  href={settings.data.socialMedia.linkedin}
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  aria-label="LinkedIn"
+                >
                   <Linkedin className="h-5 w-5" />
                 </a>
               ) : null}
               {settings?.data?.socialMedia?.instagram ? (
-                <a href={settings.data.socialMedia.instagram} className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors" aria-label="Instagram">
+                <a
+                  href={settings.data.socialMedia.instagram}
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  aria-label="Instagram"
+                >
                   <Instagram className="h-5 w-5" />
                 </a>
               ) : null}
@@ -116,21 +145,48 @@ export function Footer() {
 
           {/* Column 2: Quick Links (from settings if available) */}
           <div>
-            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">{t("footer.quickLinks")}</h3>
+            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">
+              {t('footer.quickLinks')}
+            </h3>
             <ul className="space-y-3">
               {settings?.data?.navLinks && settings.data.navLinks.length > 0 ? (
                 settings.data.navLinks.slice(0, 6).map((l) => (
                   <li key={`${l.label}-${l.href}`}>
-                    <Link href={normalizeNavHref(l.href)} className="hover:text-primary transition-colors">{l.label}</Link>
+                    <Link
+                      href={normalizeNavHref(l.href)}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {l.label}
+                    </Link>
                   </li>
                 ))
               ) : (
                 <>
-                  <li><Link href="/" className="hover:text-primary transition-colors">{t("nav.home")}</Link></li>
-                  <li><Link href="/about" className="hover:text-primary transition-colors">{t("nav.about")}</Link></li>
-                  <li><Link href="/blog" className="hover:text-primary transition-colors">{t("nav.blog")}</Link></li>
-                  <li><Link href="/services" className="hover:text-primary transition-colors">{t("nav.services")}</Link></li>
-                  <li><Link href="/tours" className="hover:text-primary transition-colors">{t("nav.tours")}</Link></li>
+                  <li>
+                    <Link href="/" className="hover:text-primary transition-colors">
+                      {t('nav.home')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/about" className="hover:text-primary transition-colors">
+                      {t('nav.about')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/blog" className="hover:text-primary transition-colors">
+                      {t('nav.blog')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/services" className="hover:text-primary transition-colors">
+                      {t('nav.services')}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/tours" className="hover:text-primary transition-colors">
+                      {t('nav.tours')}
+                    </Link>
+                  </li>
                 </>
               )}
             </ul>
@@ -138,18 +194,23 @@ export function Footer() {
 
           {/* Column 3: Services */}
           <div>
-            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">{t("footer.services")}</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              {t("footer.exploreServices")}
-            </p>
-            <Link href="/services" className="inline-flex items-center gap-2 hover:text-primary transition-colors">
-              {t("footer.viewServices")} <ArrowRight className="h-4 w-4" />
+            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">
+              {t('footer.services')}
+            </h3>
+            <p className="text-sm text-gray-400 mb-4">{t('footer.exploreServices')}</p>
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 hover:text-primary transition-colors"
+            >
+              {t('footer.viewServices')} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {/* Column 4: Contact Us */}
           <div>
-            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">{t("footer.contact")}</h3>
+            <h3 className="font-headline font-semibold text-white mb-6 relative after:content-[''] after:absolute after:left-0 after:-bottom-2 after:w-10 after:h-0.5 after:bg-primary">
+              {t('footer.contact')}
+            </h3>
             <ul className="space-y-4">
               {address ? (
                 <li className="flex items-start gap-3">
@@ -183,11 +244,19 @@ export function Footer() {
       </div>
       <div className="border-t border-gray-700">
         <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center text-sm">
-          <p>&copy; {new Date().getFullYear()} {agencyName}. {t("footer.rights")}</p>
+          <p>
+            &copy; {new Date().getFullYear()} {agencyName}. {t('footer.rights')}
+          </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-primary">{t("footer.terms")}</a>
-            <a href="#" className="hover:text-primary">{t("footer.privacy")}</a>
-            <a href="#" className="hover:text-primary">{t("footer.environmental")}</a>
+            <a href="#" className="hover:text-primary">
+              {t('footer.terms')}
+            </a>
+            <a href="#" className="hover:text-primary">
+              {t('footer.privacy')}
+            </a>
+            <a href="#" className="hover:text-primary">
+              {t('footer.environmental')}
+            </a>
           </div>
         </div>
       </div>

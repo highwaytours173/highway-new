@@ -1,7 +1,6 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Customer } from "@/types";
-import { Users, UserCheck, UserPlus, DollarSign } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Customer } from '@/types';
+import { Users, UserCheck, UserPlus, DollarSign } from 'lucide-react';
 
 interface CustomerStatsProps {
   customers: Customer[];
@@ -9,17 +8,17 @@ interface CustomerStatsProps {
 
 export function CustomerStats({ customers }: CustomerStatsProps) {
   const totalCustomers = customers.length;
-  const activeCustomers = customers.filter((c) => c.status === "active").length;
-  
+  const activeCustomers = customers.filter((c) => c.status === 'active').length;
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const newCustomers = customers.filter((c) => new Date(c.createdAt) >= startOfMonth).length;
-  
+
   const totalRevenue = customers.reduce((acc, c) => acc + (c.totalSpent || 0), 0);
 
-  const formattedRevenue = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  const formattedRevenue = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(totalRevenue);
 
@@ -32,9 +31,7 @@ export function CustomerStats({ customers }: CustomerStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalCustomers}</div>
-          <p className="text-xs text-muted-foreground">
-            Total registered customers
-          </p>
+          <p className="text-xs text-muted-foreground">Total registered customers</p>
         </CardContent>
       </Card>
       <Card>
@@ -44,9 +41,7 @@ export function CustomerStats({ customers }: CustomerStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{activeCustomers}</div>
-          <p className="text-xs text-muted-foreground">
-            Customers with active status
-          </p>
+          <p className="text-xs text-muted-foreground">Customers with active status</p>
         </CardContent>
       </Card>
       <Card>
@@ -56,9 +51,7 @@ export function CustomerStats({ customers }: CustomerStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{newCustomers}</div>
-          <p className="text-xs text-muted-foreground">
-            Joined since start of month
-          </p>
+          <p className="text-xs text-muted-foreground">Joined since start of month</p>
         </CardContent>
       </Card>
       <Card>
@@ -68,9 +61,7 @@ export function CustomerStats({ customers }: CustomerStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formattedRevenue}</div>
-          <p className="text-xs text-muted-foreground">
-            Lifetime value from all customers
-          </p>
+          <p className="text-xs text-muted-foreground">Lifetime value from all customers</p>
         </CardContent>
       </Card>
     </div>

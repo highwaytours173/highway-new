@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 const PERIODS = [
-  { label: "7 days", value: "7" },
-  { label: "30 days", value: "30" },
-  { label: "90 days", value: "90" },
-  { label: "All time", value: "all" },
+  { label: '7 days', value: '7' },
+  { label: '30 days', value: '30' },
+  { label: '90 days', value: '90' },
+  { label: 'All time', value: 'all' },
 ];
 
 export function PeriodSelector({ currentPeriod }: { currentPeriod: string }) {
@@ -17,13 +17,13 @@ export function PeriodSelector({ currentPeriod }: { currentPeriod: string }) {
 
   const handleSelect = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value === "30") {
-      params.delete("period"); // 30d is the default
+    if (value === '30') {
+      params.delete('period'); // 30d is the default
     } else {
-      params.set("period", value);
+      params.set('period', value);
     }
     const query = params.toString();
-    router.push(`${pathname}${query ? `?${query}` : ""}`);
+    router.push(`${pathname}${query ? `?${query}` : ''}`);
   };
 
   return (
@@ -31,7 +31,7 @@ export function PeriodSelector({ currentPeriod }: { currentPeriod: string }) {
       {PERIODS.map((p) => (
         <Button
           key={p.value}
-          variant={currentPeriod === p.value ? "default" : "ghost"}
+          variant={currentPeriod === p.value ? 'default' : 'ghost'}
           size="sm"
           className="rounded-none border-r last:border-r-0 h-9 px-3 text-xs"
           onClick={() => handleSelect(p.value)}

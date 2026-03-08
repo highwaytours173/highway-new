@@ -1,20 +1,18 @@
-import type { MetadataRoute } from "next";
-import { getCurrentAgency } from "@/lib/supabase/agencies";
-import { getTours } from "@/lib/supabase/tours";
-import { getPublicHotels } from "@/lib/supabase/hotels";
-import { getPosts } from "@/lib/supabase/blog";
+import type { MetadataRoute } from 'next';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
+import { getTours } from '@/lib/supabase/tours';
+import { getPublicHotels } from '@/lib/supabase/hotels';
+import { getPosts } from '@/lib/supabase/blog';
 
 function toBaseUrl(agency: Awaited<ReturnType<typeof getCurrentAgency>>): string {
   const raw =
-    agency?.domain?.trim() ||
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "http://localhost:3000";
+    agency?.domain?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000';
 
   try {
-    const url = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
     return url.origin;
   } catch {
-    return "http://localhost:3000";
+    return 'http://localhost:3000';
   }
 }
 
@@ -27,9 +25,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static pages always present
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1.0 },
-    { url: `${base}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${base}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${base}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ];
 
   // Tours
@@ -38,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     staticRoutes.push({
       url: `${base}/tours`,
       lastModified: now,
-      changeFrequency: "daily",
+      changeFrequency: 'daily',
       priority: 0.9,
     });
 
@@ -48,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .map((tour) => ({
         url: `${base}/tours/${tour.slug}`,
         lastModified: now,
-        changeFrequency: "weekly" as const,
+        changeFrequency: 'weekly' as const,
         priority: 0.8,
       }));
   }
@@ -59,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     staticRoutes.push({
       url: `${base}/hotels`,
       lastModified: now,
-      changeFrequency: "daily",
+      changeFrequency: 'daily',
       priority: 0.9,
     });
 
@@ -69,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .map((hotel) => ({
         url: `${base}/hotels/${hotel.slug}`,
         lastModified: now,
-        changeFrequency: "weekly" as const,
+        changeFrequency: 'weekly' as const,
         priority: 0.7,
       }));
   }
@@ -80,17 +78,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     staticRoutes.push({
       url: `${base}/blog`,
       lastModified: now,
-      changeFrequency: "daily",
+      changeFrequency: 'daily',
       priority: 0.8,
     });
 
     const posts = await getPosts().catch(() => []);
     blogRoutes = posts
-      .filter((p) => p.slug && p.status === "Published")
+      .filter((p) => p.slug && p.status === 'Published')
       .map((post) => ({
         url: `${base}/blog/${post.slug}`,
         lastModified: post.updatedAt ?? post.createdAt ?? now,
-        changeFrequency: "monthly" as const,
+        changeFrequency: 'monthly' as const,
         priority: 0.6,
       }));
   }

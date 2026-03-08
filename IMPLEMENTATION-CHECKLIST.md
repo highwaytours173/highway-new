@@ -1,6 +1,7 @@
 ﻿# Implementation Checklist
+
 **App: Tix & Trips Egypt — Multi-Tenant SaaS Platform**
-*Started: March 3, 2026*
+_Started: March 3, 2026_
 
 ---
 
@@ -162,18 +163,18 @@
 
 ## Progress Summary
 
-| Group | Name | Tasks Done |
-|---|---|---|
-| 1 | Quick Wins | 8 / 8 ✅ |
-| 2 | Email Notifications | 5 / 5 ✅ |
-| 3 | Customer Reviews | 5 / 5 ✅ |
-| 4 | PDF Voucher | 4 / 4 ✅ |
-| 5 | Tour Availability Calendar | 5 / 5 ✅ |
-| 6 | Dashboard Improvements | 5 / 5 ✅ |
-| 7 | Onboarding Flow | 3 / 3 ✅ |
-| 8 | Security Fixes | 1 / 1 ✅ |
-| 13 | Translations | 1 / 1 ✅ |
-| **TOTAL** | | **37 tasks completed** |
+| Group     | Name                       | Tasks Done             |
+| --------- | -------------------------- | ---------------------- |
+| 1         | Quick Wins                 | 8 / 8 ✅               |
+| 2         | Email Notifications        | 5 / 5 ✅               |
+| 3         | Customer Reviews           | 5 / 5 ✅               |
+| 4         | PDF Voucher                | 4 / 4 ✅               |
+| 5         | Tour Availability Calendar | 5 / 5 ✅               |
+| 6         | Dashboard Improvements     | 5 / 5 ✅               |
+| 7         | Onboarding Flow            | 3 / 3 ✅               |
+| 8         | Security Fixes             | 1 / 1 ✅               |
+| 13        | Translations               | 1 / 1 ✅               |
+| **TOTAL** |                            | **37 tasks completed** |
 
 ---
 
@@ -197,7 +198,7 @@
   - ✅ Position: after Hotel Story section
 
 - [x] **H1.2 — "Starting From" price in the hero**
-  - ✅ Below the hero headline: *"Rooms from $X / night"* using cheapest active room price
+  - ✅ Below the hero headline: _"Rooms from $X / night"_ using cheapest active room price
   - ✅ Pulls from the hotel's cheapest room type price via `useMemo`
   - ✅ Subtle white/70 text with bold price highlight
 
@@ -301,13 +302,13 @@
   - Show reviewer name, star rating, a quote snippet, and their country flag
   - Admin can pin specific reviews to always appear
 
-- [ ] **H3.7 — Seasonal packages / offers section**
+- [x] **H3.7 — Seasonal packages / offers section**
   - Admin creates time-limited packages: "Summer Escape — 3 nights + breakfast + airport transfer — $X"
   - Shown as visually prominent cards on the home page with a countdown timer
   - Packages link to a pre-filled checkout (room + upsell items bundled)
   - Extremely effective for revenue during shoulder season
 
-- [ ] **H3.8 — "Nearby Attractions" section**
+- [x] **H3.8 — "Nearby Attractions" section**
   - A list of nearby landmarks with distance: "Pyramids of Giza — 12 km", "Cairo Airport — 25 km"
   - Admin enters these manually in settings
   - Guests research location before booking — this answers that question on the home page itself
@@ -742,22 +743,22 @@
 
 ---
 
-| Priority | Task | Why |
-|---|---|---|
-| 🔴 Do first | B2.1 Rich text WYSIWYG editor | Textarea is unusable for real clients |
-| 🔴 Do first | B1.2 Post categories / tags | Structure — everything else builds on it |
-| 🔴 Do first | B2.3 Post preview | Clients need to see before publishing |
-| 🟠 High value | B1.1 Featured post hero | Makes the blog look like a real magazine |
-| 🟠 High value | B1.5 Related posts | Keeps readers on site longer |
-| 🟠 High value | B1.6 Social share buttons | WhatsApp sharing is huge in MENA |
-| 🟠 High value | B2.7 SEO preview card | Non-technical clients can't visualize SEO |
-| 🟠 High value | B2.10 AI improvements | More control = better content quality |
-| 🟡 Nice to have | B1.8 Email capture widget | Builds a subscriber list from blog readers |
-| 🟡 Nice to have | B1.4 Author bio | Credibility signal |
-| 🟡 Nice to have | B3.1 View counter | Know what performs |
-| 🟡 Nice to have | B2.2 Post scheduling | Content calendar planning |
-| 🔵 Future | B1.7 Table of contents | Only needed for very long guides |
-| 🔵 Future | B3.4 Internal link suggestions | Advanced SEO, complex to build |
+| Priority        | Task                           | Why                                        |
+| --------------- | ------------------------------ | ------------------------------------------ |
+| 🔴 Do first     | B2.1 Rich text WYSIWYG editor  | Textarea is unusable for real clients      |
+| 🔴 Do first     | B1.2 Post categories / tags    | Structure — everything else builds on it   |
+| 🔴 Do first     | B2.3 Post preview              | Clients need to see before publishing      |
+| 🟠 High value   | B1.1 Featured post hero        | Makes the blog look like a real magazine   |
+| 🟠 High value   | B1.5 Related posts             | Keeps readers on site longer               |
+| 🟠 High value   | B1.6 Social share buttons      | WhatsApp sharing is huge in MENA           |
+| 🟠 High value   | B2.7 SEO preview card          | Non-technical clients can't visualize SEO  |
+| 🟠 High value   | B2.10 AI improvements          | More control = better content quality      |
+| 🟡 Nice to have | B1.8 Email capture widget      | Builds a subscriber list from blog readers |
+| 🟡 Nice to have | B1.4 Author bio                | Credibility signal                         |
+| 🟡 Nice to have | B3.1 View counter              | Know what performs                         |
+| 🟡 Nice to have | B2.2 Post scheduling           | Content calendar planning                  |
+| 🔵 Future       | B1.7 Table of contents         | Only needed for very long guides           |
+| 🔵 Future       | B3.4 Internal link suggestions | Advanced SEO, complex to build             |
 
 ---
 
@@ -914,58 +915,58 @@
 
 ## 💡 Services & Upsell Prioritization Guide
 
-| Priority | Task | Why |
-|---|---|---|
-| 🔴 Do first | SV2.1 Category field on items | Unlocks all category-based UI |
-| 🔴 Do first | SV1.1 Category layout on services page | Makes the page actually usable |
-| 🔴 Do first | SV1.3 Add to Cart from services page | Critical conversion gap — guests can't add from there now |
-| 🟠 High value | SV3.1 Services section on home page | Most guests never visit /services — bring it to them |
-| 🟠 High value | SV3.2 Upsell in checkout sidebar | Highest-intent moment for add-ons |
-| 🟠 High value | SV2.6 Performance stats per item | Know what sells before investing time in new items |
-| 🟠 High value | SV1.2 Service detail modal | Guests need details before buying |
-| 🟠 High value | SV2.4 Inclusions & exclusions fields | Reduces support questions, increases trust |
-| 🟡 Nice to have | SV1.6 Bundle / package deals | Higher average order value |
-| 🟡 Nice to have | SV2.5 Stock tracking | Urgency + prevents overbooking services |
-| 🟡 Nice to have | SV4.1 Upsell revenue dashboard card | Visibility into add-on revenue |
-| 🟡 Nice to have | SV2.10 Targeting improvements | Better relevance = higher conversion |
-| 🔵 Future | SV4.3 Cart abandonment tracking | Advanced analytics |
-| 🔵 Future | SV1.8 Frequently bought together | Amazon-style cross-sell |
+| Priority        | Task                                   | Why                                                       |
+| --------------- | -------------------------------------- | --------------------------------------------------------- |
+| 🔴 Do first     | SV2.1 Category field on items          | Unlocks all category-based UI                             |
+| 🔴 Do first     | SV1.1 Category layout on services page | Makes the page actually usable                            |
+| 🔴 Do first     | SV1.3 Add to Cart from services page   | Critical conversion gap — guests can't add from there now |
+| 🟠 High value   | SV3.1 Services section on home page    | Most guests never visit /services — bring it to them      |
+| 🟠 High value   | SV3.2 Upsell in checkout sidebar       | Highest-intent moment for add-ons                         |
+| 🟠 High value   | SV2.6 Performance stats per item       | Know what sells before investing time in new items        |
+| 🟠 High value   | SV1.2 Service detail modal             | Guests need details before buying                         |
+| 🟠 High value   | SV2.4 Inclusions & exclusions fields   | Reduces support questions, increases trust                |
+| 🟡 Nice to have | SV1.6 Bundle / package deals           | Higher average order value                                |
+| 🟡 Nice to have | SV2.5 Stock tracking                   | Urgency + prevents overbooking services                   |
+| 🟡 Nice to have | SV4.1 Upsell revenue dashboard card    | Visibility into add-on revenue                            |
+| 🟡 Nice to have | SV2.10 Targeting improvements          | Better relevance = higher conversion                      |
+| 🔵 Future       | SV4.3 Cart abandonment tracking        | Advanced analytics                                        |
+| 🔵 Future       | SV1.8 Frequently bought together       | Amazon-style cross-sell                                   |
 
 ---
 
 ## 💡 Super Admin Prioritization Guide
 
-| Priority | Task | Why |
-|---|---|---|
-| 🔴 Do first | S1.1 Dashboard KPI cards | You need a home screen, not just a list |
-| 🔴 Do first | S2.1 Agency detail page | No drill-down exists today — critical gap |
-| 🔴 Do first | S3.1 Billing fields in DB | Foundation for all billing features |
-| 🔴 Do first | S3.2 Plan/billing status in list | Which clients have paid? You can't see this now |
-| 🟠 High value | S2.3 Agency internal notes | Basic CRM for client conversations |
-| 🟠 High value | S3.4 Manual payment recording | Track revenue before Stripe is built |
-| 🟠 High value | S4.4 In-app notifications to agencies | Push important messages to clients |
-| 🟠 High value | S1.2 Agency health status | Spot churning clients early |
-| 🟡 Nice to have | S5.1 Platform activity feed | Visibility into what's happening |
-| 🟡 Nice to have | S6.1 MRR tracker | Know your own SaaS revenue |
-| 🟡 Nice to have | S4.2 Broadcast email to agencies | Better than the banner for important news |
-| 🔵 Future | S7.1 2FA for super admin | Security hardening |
-| 🔵 Future | S6.4 Platform growth chart | After you have enough clients |
+| Priority        | Task                                  | Why                                             |
+| --------------- | ------------------------------------- | ----------------------------------------------- |
+| 🔴 Do first     | S1.1 Dashboard KPI cards              | You need a home screen, not just a list         |
+| 🔴 Do first     | S2.1 Agency detail page               | No drill-down exists today — critical gap       |
+| 🔴 Do first     | S3.1 Billing fields in DB             | Foundation for all billing features             |
+| 🔴 Do first     | S3.2 Plan/billing status in list      | Which clients have paid? You can't see this now |
+| 🟠 High value   | S2.3 Agency internal notes            | Basic CRM for client conversations              |
+| 🟠 High value   | S3.4 Manual payment recording         | Track revenue before Stripe is built            |
+| 🟠 High value   | S4.4 In-app notifications to agencies | Push important messages to clients              |
+| 🟠 High value   | S1.2 Agency health status             | Spot churning clients early                     |
+| 🟡 Nice to have | S5.1 Platform activity feed           | Visibility into what's happening                |
+| 🟡 Nice to have | S6.1 MRR tracker                      | Know your own SaaS revenue                      |
+| 🟡 Nice to have | S4.2 Broadcast email to agencies      | Better than the banner for important news       |
+| 🔵 Future       | S7.1 2FA for super admin              | Security hardening                              |
+| 🔵 Future       | S6.4 Platform growth chart            | After you have enough clients                   |
 
 ---
 
 ## 💡 Prioritization Guide (Single Hotel)
 
-| Priority | Task | Why |
-|---|---|---|
-| 🔴 Do first | H1.1 Rooms on home page | Core missing feature |
-| 🔴 Do first | H1.3 Hero availability widget | Converts visitors instantly |
-| 🔴 Do first | H2.2 Scroll-aware header | Makes site feel premium, 30 min effort |
-| 🟠 High value | H2.4 Amenities section | Guests check this before every booking |
-| 🟠 High value | H2.5 Photo gallery | Visual trust — critical for hotels |
-| 🟠 High value | H3.2 Special occasion checkout | Huge guest satisfaction, near-zero effort |
-| 🟠 High value | H3.3 Add-ons at hotel checkout | Direct revenue increase |
-| 🟡 Nice to have | H3.1 Room comparison | Differentiator vs competitors |
-| 🟡 Nice to have | H3.7 Seasonal packages | Revenue in slow season |
-| 🟡 Nice to have | H2.7 Map section | Answers a guest's key question |
-| 🔵 Future | H3.8 Nearby attractions | SEO + trust content |
-| 🔵 Future | H2.8 Instagram grid | Authenticity / social proof |
+| Priority        | Task                           | Why                                       |
+| --------------- | ------------------------------ | ----------------------------------------- |
+| 🔴 Do first     | H1.1 Rooms on home page        | Core missing feature                      |
+| 🔴 Do first     | H1.3 Hero availability widget  | Converts visitors instantly               |
+| 🔴 Do first     | H2.2 Scroll-aware header       | Makes site feel premium, 30 min effort    |
+| 🟠 High value   | H2.4 Amenities section         | Guests check this before every booking    |
+| 🟠 High value   | H2.5 Photo gallery             | Visual trust — critical for hotels        |
+| 🟠 High value   | H3.2 Special occasion checkout | Huge guest satisfaction, near-zero effort |
+| 🟠 High value   | H3.3 Add-ons at hotel checkout | Direct revenue increase                   |
+| 🟡 Nice to have | H3.1 Room comparison           | Differentiator vs competitors             |
+| 🟡 Nice to have | H3.7 Seasonal packages         | Revenue in slow season                    |
+| 🟡 Nice to have | H2.7 Map section               | Answers a guest's key question            |
+| 🔵 Future       | H3.8 Nearby attractions        | SEO + trust content                       |
+| 🔵 Future       | H2.8 Instagram grid            | Authenticity / social proof               |

@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { HotelCardSkeleton } from "@/components/hotel-card-skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
+import { HotelCardSkeleton } from '@/components/hotel-card-skeleton';
 
 export default function HotelsLoading() {
   return (

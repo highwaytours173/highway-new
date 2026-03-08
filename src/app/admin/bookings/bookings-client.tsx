@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { Booking } from "@/types";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
-import { updateBookingStatus, deleteBooking } from "@/lib/supabase/bookings";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Clock, CheckCircle, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import type { Booking } from '@/types';
+import { columns } from './columns';
+import { DataTable } from './data-table';
+import { updateBookingStatus, deleteBooking } from '@/lib/supabase/bookings';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, Clock, CheckCircle, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface BookingsClientProps {
   initialBookings: Booking[];
@@ -16,14 +16,9 @@ interface BookingsClientProps {
 export function BookingsClient({ initialBookings }: BookingsClientProps) {
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
 
-  const handleUpdateStatus = async (
-    bookingId: string,
-    status: Booking["status"],
-  ) => {
+  const handleUpdateStatus = async (bookingId: string, status: Booking['status']) => {
     await updateBookingStatus(bookingId, status);
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status } : b)),
-    );
+    setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status } : b)));
   };
 
   const handleDeleteBooking = async (bookingId: string) => {
@@ -32,13 +27,13 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
   };
 
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0);
-  const pendingBookings = bookings.filter((b) => b.status === "Pending").length;
-  const confirmedBookings = bookings.filter((b) => b.status === "Confirmed").length;
+  const pendingBookings = bookings.filter((b) => b.status === 'Pending').length;
+  const confirmedBookings = bookings.filter((b) => b.status === 'Confirmed').length;
 
   const handleExport = () => {
-    const headers = ["ID", "Customer Name", "Email", "Date", "Status", "Total Price"];
+    const headers = ['ID', 'Customer Name', 'Email', 'Date', 'Status', 'Total Price'];
     const csvContent = [
-      headers.join(","),
+      headers.join(','),
       ...bookings.map((b) =>
         [
           b.id,
@@ -47,15 +42,15 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           new Date(b.bookingDate).toLocaleDateString(),
           b.status,
           b.totalPrice,
-        ].join(","),
+        ].join(',')
       ),
-    ].join("\n");
+    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `bookings-${new Date().toISOString().split('T')[0]}.csv`);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bookings-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -70,12 +65,8 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${totalRevenue.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              From {bookings.length} bookings
-            </p>
+            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">From {bookings.length} bookings</p>
           </CardContent>
         </Card>
         <Card>
@@ -85,9 +76,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingBookings}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting confirmation
-            </p>
+            <p className="text-xs text-muted-foreground">Awaiting confirmation</p>
           </CardContent>
         </Card>
         <Card>
@@ -97,9 +86,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{confirmedBookings}</div>
-            <p className="text-xs text-muted-foreground">
-              Ready for departure
-            </p>
+            <p className="text-xs text-muted-foreground">Ready for departure</p>
           </CardContent>
         </Card>
       </div>

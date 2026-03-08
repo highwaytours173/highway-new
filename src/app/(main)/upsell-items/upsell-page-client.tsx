@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Car, Luggage, PhoneCall } from "lucide-react";
-import { ServicesClient } from "../services/services-client";
-import { useLanguage } from "@/hooks/use-language";
-import type { UpsellItem } from "@/types";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Car, Luggage, PhoneCall } from 'lucide-react';
+import { ServicesClient } from '../services/services-client';
+import { useLanguage } from '@/hooks/use-language';
+import type { UpsellItem } from '@/types';
 
 interface UpsellPageClientProps {
   items: UpsellItem[];
@@ -35,21 +35,21 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit">
-                {t("upsell.badge")}
+                {t('upsell.badge')}
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                {t("upsell.title")}
+                {t('upsell.title')}
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                {t("upsell.subtitle")}
+                {t('upsell.subtitle')}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/cart">{t("upsell.viewCart")}</Link>
+                <Link href="/cart">{t('upsell.viewCart')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/tours">{t("upsell.browseTours")}</Link>
+                <Link href="/tours">{t('upsell.browseTours')}</Link>
               </Button>
             </div>
           </div>
@@ -63,8 +63,8 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
               <Luggage className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("upsell.airportTransfer")}</p>
-              <p className="text-sm text-muted-foreground">{t("upsell.airportTransferDesc")}</p>
+              <p className="text-base font-semibold">{t('upsell.airportTransfer')}</p>
+              <p className="text-sm text-muted-foreground">{t('upsell.airportTransferDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -74,8 +74,8 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
               <PhoneCall className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("upsell.simCards")}</p>
-              <p className="text-sm text-muted-foreground">{t("upsell.simCardsDesc")}</p>
+              <p className="text-base font-semibold">{t('upsell.simCards')}</p>
+              <p className="text-sm text-muted-foreground">{t('upsell.simCardsDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -85,8 +85,8 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
               <Car className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("upsell.privateCar")}</p>
-              <p className="text-sm text-muted-foreground">{t("upsell.privateCarDesc")}</p>
+              <p className="text-base font-semibold">{t('upsell.privateCar')}</p>
+              <p className="text-sm text-muted-foreground">{t('upsell.privateCarDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -95,17 +95,19 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
       {items.length === 0 ? (
         <Card className="rounded-3xl">
           <CardContent className="space-y-3">
-            <p className="text-lg font-semibold">{t("upsell.noExtras")}</p>
-            <p className="text-sm text-muted-foreground">{t("upsell.noExtrasDesc")}</p>
+            <p className="text-lg font-semibold">{t('upsell.noExtras')}</p>
+            <p className="text-sm text-muted-foreground">{t('upsell.noExtrasDesc')}</p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild className="w-full sm:w-auto">
-                <Link href="/contact?service=SIM%20Card">{t("upsell.requestSim")}</Link>
+                <Link href="/contact?service=SIM%20Card">{t('upsell.requestSim')}</Link>
               </Button>
               <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/contact?service=Airport%20Transfer">{t("upsell.requestTransfer")}</Link>
+                <Link href="/contact?service=Airport%20Transfer">
+                  {t('upsell.requestTransfer')}
+                </Link>
               </Button>
               <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/contact?service=Private%20Driver">{t("upsell.requestDriver")}</Link>
+                <Link href="/contact?service=Private%20Driver">{t('upsell.requestDriver')}</Link>
               </Button>
             </div>
           </CardContent>
@@ -114,10 +116,10 @@ export function UpsellPageClient({ items, heroImageUrl }: UpsellPageClientProps)
         <ServicesClient
           services={items}
           showTypeFilter
-          badgeLabel={t("upsell.badge")}
-          title={t("upsell.pickWhat")}
-          description={t("upsell.filterDesc")}
-          searchPlaceholder={t("upsell.searchPlaceholder")}
+          badgeLabel={t('upsell.badge')}
+          title={t('upsell.pickWhat')}
+          description={t('upsell.filterDesc')}
+          searchPlaceholder={t('upsell.searchPlaceholder')}
         />
       )}
     </div>

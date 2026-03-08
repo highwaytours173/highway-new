@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import type { Tour } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import type { ColumnDef } from '@tanstack/react-table';
+import type { Tour } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +12,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ArrowUp, ArrowDown, ChevronsUpDown, MapPin, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { deleteTour } from "@/lib/supabase/tours";
-import { useTransition } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, ArrowUp, ArrowDown, ChevronsUpDown, MapPin, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { deleteTour } from '@/lib/supabase/tours';
+import { useTransition } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 const TourActions = ({ tour }: { tour: Tour }) => {
   const [isPending, startTransition] = useTransition();
@@ -27,27 +27,27 @@ const TourActions = ({ tour }: { tour: Tour }) => {
   const router = useRouter();
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this tour? This action cannot be undone.")) {
+    if (confirm('Are you sure you want to delete this tour? This action cannot be undone.')) {
       startTransition(async () => {
         try {
           await deleteTour(tour.id);
           router.refresh();
           toast({
-            title: "Tour deleted",
-            description: "The tour has been successfully deleted.",
+            title: 'Tour deleted',
+            description: 'The tour has been successfully deleted.',
           });
         } catch (error) {
-          console.error("Failed to delete tour:", error);
+          console.error('Failed to delete tour:', error);
           const message =
             error instanceof Error
               ? error.message
-              : typeof error === "string"
+              : typeof error === 'string'
                 ? error
-                : "Failed to delete tour.";
+                : 'Failed to delete tour.';
           toast({
-            title: "Error",
+            title: 'Error',
             description: message,
-            variant: "destructive",
+            variant: 'destructive',
           });
         }
       });
@@ -73,9 +73,7 @@ const TourActions = ({ tour }: { tour: Tour }) => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(tour.slug)}
-        >
+        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(tour.slug)}>
           Copy Slug
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -83,7 +81,7 @@ const TourActions = ({ tour }: { tour: Tour }) => {
           disabled={isPending}
           className="text-destructive focus:text-destructive focus:bg-destructive/10"
         >
-          {isPending ? "Deleting..." : "Delete Tour"}
+          {isPending ? 'Deleting...' : 'Delete Tour'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -92,12 +90,11 @@ const TourActions = ({ tour }: { tour: Tour }) => {
 
 export const columns: ColumnDef<Tour>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -114,18 +111,18 @@ export const columns: ColumnDef<Tour>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           className="-ml-4 h-8 data-[state=open]:bg-accent"
         >
           <span>Name</span>
-          {column.getIsSorted() === "desc" ? (
+          {column.getIsSorted() === 'desc' ? (
             <ArrowDown className="ml-2 h-4 w-4" />
-          ) : column.getIsSorted() === "asc" ? (
+          ) : column.getIsSorted() === 'asc' ? (
             <ArrowUp className="ml-2 h-4 w-4" />
           ) : (
             <ChevronsUpDown className="ml-2 h-4 w-4" />
@@ -141,9 +138,9 @@ export const columns: ColumnDef<Tour>[] = [
             href={`/tours/${tour.slug}`}
             target="_blank"
             className="font-medium text-foreground hover:underline hover:text-primary transition-colors truncate max-w-[200px] sm:max-w-[300px]"
-            title={row.getValue("name")}
+            title={row.getValue('name')}
           >
-            {row.getValue("name")}
+            {row.getValue('name')}
           </Link>
           <span className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">
             {tour.slug}
@@ -153,20 +150,20 @@ export const columns: ColumnDef<Tour>[] = [
     },
   },
   {
-    accessorKey: "destination",
-    header: "Destination",
+    accessorKey: 'destination',
+    header: 'Destination',
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <MapPin className="h-4 w-4 text-muted-foreground" />
-        <span className="truncate">{row.getValue("destination")}</span>
+        <span className="truncate">{row.getValue('destination')}</span>
       </div>
     ),
   },
   {
-    accessorKey: "type",
-    header: "Categories",
+    accessorKey: 'type',
+    header: 'Categories',
     cell: ({ row }) => {
-      const categories = row.getValue("type") as string[];
+      const categories = row.getValue('type') as string[];
       const displayLimit = 2;
       const displayed = categories.slice(0, displayLimit);
       const remaining = categories.length - displayLimit;
@@ -179,7 +176,10 @@ export const columns: ColumnDef<Tour>[] = [
             </Badge>
           ))}
           {remaining > 0 && (
-            <Badge variant="outline" className="rounded-sm font-normal text-xs text-muted-foreground">
+            <Badge
+              variant="outline"
+              className="rounded-sm font-normal text-xs text-muted-foreground"
+            >
               +{remaining}
             </Badge>
           )}
@@ -188,24 +188,24 @@ export const columns: ColumnDef<Tour>[] = [
     },
   },
   {
-    accessorKey: "duration",
-    header: "Duration",
+    accessorKey: 'duration',
+    header: 'Duration',
     cell: ({ row }) => (
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <Clock className="h-4 w-4" />
-        <span>{row.getValue("duration")} days</span>
+        <span>{row.getValue('duration')} days</span>
       </div>
     ),
   },
   {
-    accessorKey: "priceTiers",
+    accessorKey: 'priceTiers',
     header: () => <div className="text-right">Starting Price</div>,
     cell: ({ row }) => {
-      const priceTiers = row.getValue("priceTiers") as Tour["priceTiers"];
+      const priceTiers = row.getValue('priceTiers') as Tour['priceTiers'];
       const startingPrice = priceTiers[0]?.pricePerAdult;
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
         maximumFractionDigits: 0,
       }).format(startingPrice);
 
@@ -213,24 +213,26 @@ export const columns: ColumnDef<Tour>[] = [
     },
   },
   {
-    accessorKey: "availability",
-    header: "Status",
+    accessorKey: 'availability',
+    header: 'Status',
     cell: ({ row }) => {
-      const isAvailable = row.getValue("availability");
+      const isAvailable = row.getValue('availability');
       return (
-        <div className={cn(
-          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          isAvailable 
-            ? "border-transparent bg-green-500/15 text-green-700 hover:bg-green-500/25" 
-            : "border-transparent bg-destructive/15 text-destructive hover:bg-destructive/25"
-        )}>
-          {isAvailable ? "Active" : "Draft"}
+        <div
+          className={cn(
+            'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+            isAvailable
+              ? 'border-transparent bg-green-500/15 text-green-700 hover:bg-green-500/25'
+              : 'border-transparent bg-destructive/15 text-destructive hover:bg-destructive/25'
+          )}
+        >
+          {isAvailable ? 'Active' : 'Draft'}
         </div>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const tour = row.original;
       return <TourActions tour={tour} />;

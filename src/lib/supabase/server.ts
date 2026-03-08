@@ -1,6 +1,6 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -24,7 +24,7 @@ export async function createClient() {
         },
         remove(name: string, options: CookieOptions) {
           try {
-            cookieStore.set({ name, value: "", ...options });
+            cookieStore.set({ name, value: '', ...options });
           } catch {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
@@ -32,7 +32,7 @@ export async function createClient() {
           }
         },
       },
-    },
+    }
   );
 }
 
@@ -41,7 +41,7 @@ export function createServiceRoleClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY configuration.");
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY configuration.');
   }
 
   return createSupabaseClient(url, serviceRoleKey, {
@@ -52,4 +52,3 @@ export function createServiceRoleClient() {
     },
   });
 }
-

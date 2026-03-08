@@ -1,30 +1,33 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
-import type { Booking, CartItem, Tour, UpsellItem, PriceTier } from "@/types";
-import { revalidatePath } from "next/cache";
-import { toCamelCase } from "@/lib/utils";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import { validatePromoCode } from "@/lib/supabase/promo-codes";
-import { checkTourDateAvailability, decrementAvailableSpots } from "@/lib/supabase/tour-availability";
-import { sendEmail } from "@/lib/email";
-import { renderBookingConfirmationEmail } from "@/lib/email/templates/booking-confirmation";
-import { renderBookingNotificationEmail } from "@/lib/email/templates/booking-notification";
-import { renderBookingStatusChangeEmail } from "@/lib/email/templates/booking-status-change";
-import { getAgencySettings } from "@/lib/supabase/agency-content";
+import { createClient } from '@/lib/supabase/server';
+import type { Booking, CartItem, Tour, UpsellItem, PriceTier } from '@/types';
+import { revalidatePath } from 'next/cache';
+import { toCamelCase } from '@/lib/utils';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import { validatePromoCode } from '@/lib/supabase/promo-codes';
+import {
+  checkTourDateAvailability,
+  decrementAvailableSpots,
+} from '@/lib/supabase/tour-availability';
+import { sendEmail } from '@/lib/email';
+import { renderBookingConfirmationEmail } from '@/lib/email/templates/booking-confirmation';
+import { renderBookingNotificationEmail } from '@/lib/email/templates/booking-notification';
+import { renderBookingStatusChangeEmail } from '@/lib/email/templates/booking-status-change';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
 
 export async function getBookings(): Promise<Booking[]> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("bookings")
-    .select("*, booking_items(*, tours(name, slug), upsell_items(name, price))")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
+    .from('bookings')
+    .select('*, booking_items(*, tours(name, slug), upsell_items(name, price))')
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("Error fetching bookings:", error);
+    console.error('Error fetching bookings:', error);
     return [];
   }
   return data.map(toCamelCase) as Booking[];
@@ -35,10 +38,10 @@ export async function getBookingById(id: string): Promise<Booking | null> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("bookings")
-    .select("*, booking_items(*, tours(name, slug, packages), upsell_items(name, price))")
-    .eq("id", id)
-    .eq("agency_id", agencyId)
+    .from('bookings')
+    .select('*, booking_items(*, tours(name, slug, packages), upsell_items(name, price))')
+    .eq('id', id)
+    .eq('agency_id', agencyId)
     .single();
 
   if (error) {
@@ -50,29 +53,26 @@ export async function getBookingById(id: string): Promise<Booking | null> {
   return toCamelCase(data) as Booking;
 }
 
-export async function updateBookingStatus(
-  bookingId: string,
-  status: Booking["status"],
-) {
+export async function updateBookingStatus(bookingId: string, status: Booking['status']) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { error } = await supabase
-    .from("bookings")
+    .from('bookings')
     .update({ status })
-    .eq("id", bookingId)
-    .eq("agency_id", agencyId);
+    .eq('id', bookingId)
+    .eq('agency_id', agencyId);
 
   if (error) {
-    console.error("Error updating booking status:", error);
-    throw new Error("Failed to update booking status.");
+    console.error('Error updating booking status:', error);
+    throw new Error('Failed to update booking status.');
   }
 
-  revalidatePath("/admin/bookings");
+  revalidatePath('/admin/bookings');
   revalidatePath(`/admin/bookings/${bookingId}`);
 
   // Send status change email for notable status changes (non-blocking)
-  if (status === "Confirmed" || status === "Cancelled") {
+  if (status === 'Confirmed' || status === 'Cancelled') {
     try {
       const [booking, settings] = await Promise.all([
         getBookingById(bookingId),
@@ -84,9 +84,9 @@ export async function updateBookingStatus(
         await sendEmail({
           agencyEmailSettings: agencyData?.emailSettings,
           to: booking.customerEmail,
-          subject: `Booking ${status} — ${agencyData?.agencyName || "Your Travel Agency"}`,
+          subject: `Booking ${status} — ${agencyData?.agencyName || 'Your Travel Agency'}`,
           html: renderBookingStatusChangeEmail({
-            agencyName: agencyData?.agencyName || "Your Travel Agency",
+            agencyName: agencyData?.agencyName || 'Your Travel Agency',
             agencyLogoUrl: settings?.logo_url || undefined,
             agencyEmail: agencyData?.contactEmail,
             agencyPhone: agencyData?.phoneNumber,
@@ -95,7 +95,7 @@ export async function updateBookingStatus(
             newStatus: status,
             totalPrice: booking.totalPrice,
             items: (booking.bookingItems || []).map((bi) => ({
-              name: bi.tours?.name ?? bi.upsellItems?.name ?? "Item",
+              name: bi.tours?.name ?? bi.upsellItems?.name ?? 'Item',
               packageName: bi.packageName,
               adults: bi.adults,
               children: bi.children,
@@ -105,7 +105,7 @@ export async function updateBookingStatus(
         });
       }
     } catch (emailErr) {
-      console.error("Error sending status change email:", emailErr);
+      console.error('Error sending status change email:', emailErr);
       // Non-blocking: don’t fail the status update if email fails
     }
   }
@@ -116,17 +116,17 @@ export async function deleteBooking(bookingId: string) {
   const agencyId = await getCurrentAgencyId();
 
   const { error } = await supabase
-    .from("bookings")
+    .from('bookings')
     .delete()
-    .eq("id", bookingId)
-    .eq("agency_id", agencyId);
+    .eq('id', bookingId)
+    .eq('agency_id', agencyId);
 
   if (error) {
-    console.error("Error deleting booking:", error);
-    throw new Error("Failed to delete booking.");
+    console.error('Error deleting booking:', error);
+    throw new Error('Failed to delete booking.');
   }
 
-  revalidatePath("/admin/bookings");
+  revalidatePath('/admin/bookings');
 }
 
 interface CreateBookingData {
@@ -135,7 +135,7 @@ interface CreateBookingData {
   phoneNumber: string;
   nationality: string;
   cartItems: CartItem[];
-  paymentMethod: "cash" | "online";
+  paymentMethod: 'cash' | 'online';
   promoCode?: string;
 }
 
@@ -150,15 +150,15 @@ export async function createBooking(data: CreateBookingData) {
     let tourId: string | undefined;
     let upsellItemId: string | undefined;
 
-    if (item.productType === "tour") {
+    if (item.productType === 'tour') {
       const tour = item.product as Tour;
       tourId = tour.id;
       const totalPeople = (item.adults ?? 0) + (item.children ?? 0);
-      
+
       let priceTiers = tour.priceTiers;
-      
+
       if (item.packageId && tour.packages) {
-        const selectedPackage = tour.packages.find(p => p.id === item.packageId);
+        const selectedPackage = tour.packages.find((p) => p.id === item.packageId);
         if (selectedPackage) {
           priceTiers = selectedPackage.priceTiers;
         }
@@ -170,7 +170,7 @@ export async function createBooking(data: CreateBookingData) {
         priceTiers.find(
           (tier: PriceTier) =>
             totalPeople >= tier.minPeople &&
-            (tier.maxPeople === null || totalPeople <= tier.maxPeople),
+            (tier.maxPeople === null || totalPeople <= tier.maxPeople)
         ) || priceTiers[priceTiers.length - 1];
 
       if (priceTier) {
@@ -178,7 +178,7 @@ export async function createBooking(data: CreateBookingData) {
           (item.adults ?? 0) * priceTier.pricePerAdult +
           (item.children ?? 0) * priceTier.pricePerChild;
       }
-    } else if (item.productType === "upsell") {
+    } else if (item.productType === 'upsell') {
       const upsellItem = item.product as UpsellItem;
       upsellItemId = upsellItem.id;
       const variant =
@@ -211,8 +211,8 @@ export async function createBooking(data: CreateBookingData) {
     try {
       const promo = await validatePromoCode(data.promoCode, subtotal);
       promoCodeId = promo.id;
-      
-      if (promo.type === "percentage") {
+
+      if (promo.type === 'percentage') {
         discountAmount = (subtotal * promo.value) / 100;
         if (promo.maxDiscountAmount && discountAmount > promo.maxDiscountAmount) {
           discountAmount = promo.maxDiscountAmount;
@@ -220,13 +220,12 @@ export async function createBooking(data: CreateBookingData) {
       } else {
         discountAmount = promo.value;
       }
-      
+
       // Ensure discount doesn't exceed subtotal
       if (discountAmount > subtotal) discountAmount = subtotal;
-
     } catch (error) {
-      console.warn("Invalid promo code during booking creation:", error);
-      // We ignore invalid promo codes silently here or we could throw. 
+      console.warn('Invalid promo code during booking creation:', error);
+      // We ignore invalid promo codes silently here or we could throw.
       // Assuming client-side validation passed, this is a safety check.
       // If invalid, we just don't apply discount.
     }
@@ -236,23 +235,21 @@ export async function createBooking(data: CreateBookingData) {
 
   // 2b. Validate tour date availability
   for (const item of data.cartItems) {
-    if (item.productType === "tour" && item.date) {
+    if (item.productType === 'tour' && item.date) {
       const tour = item.product as Tour;
       const itemDate = item.date instanceof Date ? item.date : new Date(item.date as string);
-      const dateStr = itemDate.toISOString().split("T")[0];
+      const dateStr = itemDate.toISOString().split('T')[0];
       const requiredSpots = (item.adults ?? 0) + (item.children ?? 0);
 
       const check = await checkTourDateAvailability(tour.id, dateStr, requiredSpots);
       if (!check.available) {
-        throw new Error(
-          check.reason || `Tour "${tour.name}" is not available on ${dateStr}.`
-        );
+        throw new Error(check.reason || `Tour "${tour.name}" is not available on ${dateStr}.`);
       }
     }
   }
 
   // 3. Insert into bookings table
-  const status = data.paymentMethod === "cash" ? "Confirmed" : "Pending";
+  const status = data.paymentMethod === 'cash' ? 'Confirmed' : 'Pending';
   const insertPayload = {
     customer_name: data.customerName,
     customer_email: data.customerEmail,
@@ -271,60 +268,50 @@ export async function createBooking(data: CreateBookingData) {
   let bookingError: { message?: string } | null = null;
 
   {
-    const res = await supabase
-      .from("bookings")
-      .insert(insertPayload)
-      .select("id")
-      .single();
+    const res = await supabase.from('bookings').insert(insertPayload).select('id').single();
     bookingData = (res.data as { id: string } | null) ?? null;
     bookingError = (res.error as { message?: string } | null) ?? null;
   }
 
-  if (bookingError?.message?.includes("payment_method")) {
+  if (bookingError?.message?.includes('payment_method')) {
     // Fallback for schema mismatch if column doesn't exist (should exist based on previous checks but good for safety)
     const { payment_method: _, ...fallbackPayload } = insertPayload;
-    const res = await supabase
-      .from("bookings")
-      .insert(fallbackPayload)
-      .select("id")
-      .single();
+    const res = await supabase.from('bookings').insert(fallbackPayload).select('id').single();
     bookingData = (res.data as { id: string } | null) ?? null;
     bookingError = (res.error as { message?: string } | null) ?? null;
   }
 
   if (bookingError || !bookingData) {
-    console.error("Error creating booking:", bookingError);
-    throw new Error("Failed to create booking.");
+    console.error('Error creating booking:', bookingError);
+    throw new Error('Failed to create booking.');
   }
 
   const bookingId = bookingData.id;
 
   // 4. Insert into booking_items table
-  const itemsWithId = bookingItemsToInsert.map(item => ({
+  const itemsWithId = bookingItemsToInsert.map((item) => ({
     ...item,
-    booking_id: bookingId
+    booking_id: bookingId,
   }));
 
-  const { error: itemsError } = await supabase
-    .from("booking_items")
-    .insert(itemsWithId);
+  const { error: itemsError } = await supabase.from('booking_items').insert(itemsWithId);
 
   if (itemsError) {
-    console.error("Error creating booking items:", itemsError);
-    throw new Error("Failed to create booking items.");
+    console.error('Error creating booking items:', itemsError);
+    throw new Error('Failed to create booking items.');
   }
 
   // 4b. Decrement available spots for tour dates
   for (const item of data.cartItems) {
-    if (item.productType === "tour" && item.date) {
+    if (item.productType === 'tour' && item.date) {
       const tour = item.product as Tour;
       const itemDate2 = item.date instanceof Date ? item.date : new Date(item.date as string);
-      const dateStr = itemDate2.toISOString().split("T")[0];
+      const dateStr = itemDate2.toISOString().split('T')[0];
       const count = (item.adults ?? 0) + (item.children ?? 0);
       try {
         await decrementAvailableSpots(tour.id, dateStr, count);
       } catch (err) {
-        console.error("Error decrementing spots:", err);
+        console.error('Error decrementing spots:', err);
         // Non-blocking — booking already created
       }
     }
@@ -347,16 +334,16 @@ export async function createBooking(data: CreateBookingData) {
     // await supabase.rpc('increment', { table_name: 'promo_codes', row_id: promoCodeId, field: 'usage_count', amount: 1 });
     // I'll stick to simple update for this MVP.
     const { data: currentPromo } = await supabase
-        .from("promo_codes")
-        .select("usage_count")
-        .eq("id", promoCodeId)
-        .single();
-        
+      .from('promo_codes')
+      .select('usage_count')
+      .eq('id', promoCodeId)
+      .single();
+
     if (currentPromo) {
-        await supabase
-            .from("promo_codes")
-            .update({ usage_count: (currentPromo.usage_count || 0) + 1 })
-            .eq("id", promoCodeId);
+      await supabase
+        .from('promo_codes')
+        .update({ usage_count: (currentPromo.usage_count || 0) + 1 })
+        .eq('id', promoCodeId);
     }
   }
 
@@ -364,15 +351,15 @@ export async function createBooking(data: CreateBookingData) {
   // We try to find an existing customer by email to update their stats, or create a new one.
   try {
     const { data: existingCustomer } = await supabase
-      .from("customers")
-      .select("id, total_bookings, total_spent")
-      .eq("email", data.customerEmail)
-      .eq("agency_id", agencyId)
+      .from('customers')
+      .select('id, total_bookings, total_spent')
+      .eq('email', data.customerEmail)
+      .eq('agency_id', agencyId)
       .maybeSingle();
 
     if (existingCustomer) {
       await supabase
-        .from("customers")
+        .from('customers')
         .update({
           name: data.customerName,
           phone: data.phoneNumber,
@@ -381,9 +368,9 @@ export async function createBooking(data: CreateBookingData) {
           total_spent: (existingCustomer.total_spent || 0) + finalTotal,
           last_active: new Date().toISOString(),
         })
-        .eq("id", existingCustomer.id);
+        .eq('id', existingCustomer.id);
     } else {
-      await supabase.from("customers").insert({
+      await supabase.from('customers').insert({
         agency_id: agencyId,
         email: data.customerEmail,
         name: data.customerName,
@@ -391,18 +378,18 @@ export async function createBooking(data: CreateBookingData) {
         nationality: data.nationality,
         total_bookings: 1,
         total_spent: finalTotal,
-        source: "Booking",
+        source: 'Booking',
         last_active: new Date().toISOString(),
-        status: "active",
+        status: 'active',
       });
     }
   } catch (err) {
-    console.error("Error syncing customer data:", err);
+    console.error('Error syncing customer data:', err);
     // Non-blocking error, we don't fail the booking if customer sync fails
   }
 
-  revalidatePath("/admin/bookings");
-  revalidatePath("/admin/customers");
+  revalidatePath('/admin/bookings');
+  revalidatePath('/admin/customers');
 
   // 7. Send email notifications (non-blocking)
   try {
@@ -410,13 +397,13 @@ export async function createBooking(data: CreateBookingData) {
     const agencyData = settings?.data;
     const emailSettings = agencyData?.emailSettings;
     const notifyAdmin = emailSettings?.notifyAdminOnBooking !== false; // default: true
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || 'http://localhost:3000';
 
     const emailItems = data.cartItems.map((item, idx) => ({
       name: item.product.name,
       packageName: item.packageName,
-      adults: item.productType === "tour" ? (item.adults ?? 0) : undefined,
-      children: item.productType === "tour" ? (item.children ?? 0) : undefined,
+      adults: item.productType === 'tour' ? (item.adults ?? 0) : undefined,
+      children: item.productType === 'tour' ? (item.children ?? 0) : undefined,
       date: item.date ? item.date.toISOString() : undefined,
       price: bookingItemsToInsert[idx]?.price ?? 0,
     }));
@@ -427,9 +414,9 @@ export async function createBooking(data: CreateBookingData) {
     await sendEmail({
       ...sharedOpts,
       to: data.customerEmail,
-      subject: `Booking Received — ${agencyData?.agencyName || "Your Travel Agency"}`,
+      subject: `Booking Received — ${agencyData?.agencyName || 'Your Travel Agency'}`,
       html: renderBookingConfirmationEmail({
-        agencyName: agencyData?.agencyName || "Your Travel Agency",
+        agencyName: agencyData?.agencyName || 'Your Travel Agency',
         agencyLogoUrl: settings?.logo_url || undefined,
         agencyEmail: agencyData?.contactEmail,
         agencyPhone: agencyData?.phoneNumber,
@@ -449,10 +436,10 @@ export async function createBooking(data: CreateBookingData) {
       await sendEmail({
         ...sharedOpts,
         to: agencyData.contactEmail,
-        fromName: "Booking Alert",
+        fromName: 'Booking Alert',
         subject: `New Booking #${bookingId.substring(0, 8).toUpperCase()} — ${data.customerName}`,
         html: renderBookingNotificationEmail({
-          agencyName: agencyData?.agencyName || "Your Travel Agency",
+          agencyName: agencyData?.agencyName || 'Your Travel Agency',
           bookingId,
           customerName: data.customerName,
           customerEmail: data.customerEmail,
@@ -467,7 +454,7 @@ export async function createBooking(data: CreateBookingData) {
       });
     }
   } catch (emailErr) {
-    console.error("Error sending booking emails:", emailErr);
+    console.error('Error sending booking emails:', emailErr);
     // Non-blocking: booking succeeds even if emails fail
   }
 

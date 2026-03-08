@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
-import "./globals.css";
-import { CartProvider } from "@/hooks/use-cart";
-import { WishlistProvider } from "@/hooks/use-wishlist";
-import { Toaster } from "@/components/ui/toaster";
-import { getAgencySettings } from "@/lib/supabase/agency-content";
-import { getCurrentAgency } from "@/lib/supabase/agencies";
+import type { Metadata } from 'next';
+import { Inter, Playfair_Display } from 'next/font/google';
+import './globals.css';
+import { CartProvider } from '@/hooks/use-cart';
+import { WishlistProvider } from '@/hooks/use-wishlist';
+import { Toaster } from '@/components/ui/toaster';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ 
-  subsets: ["latin"], 
-  variable: "--font-playfair",
-  display: "swap",
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
 });
 
 function toUrl(value: string | undefined | null) {
@@ -30,7 +30,7 @@ function toUrl(value: string | undefined | null) {
 function ensureTemplate(value: string, fallback: string) {
   const raw = value?.trim();
   if (!raw) return fallback;
-  if (raw.includes("%s")) return raw;
+  if (raw.includes('%s')) return raw;
   return `%s | ${raw}`;
 }
 
@@ -46,23 +46,22 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const site = settings?.data?.seo?.site;
-  const siteName =
-    site?.siteName ||
-    settings?.data?.agencyName ||
-    agency?.name ||
-    "Travel Agency";
+  const siteName = site?.siteName || settings?.data?.agencyName || agency?.name || 'Travel Agency';
 
   const baseUrl =
     toUrl(agency?.domain) ||
     toUrl(process.env.NEXT_PUBLIC_APP_URL) ||
-    toUrl("http://localhost:3000")!;
+    toUrl('http://localhost:3000')!;
 
   const defaultTitle = site?.defaultTitle?.trim() || siteName;
-  const template = ensureTemplate(site?.titleTemplate || "", `%s | ${siteName}`);
-  const description = site?.description?.trim() || "";
+  const template = ensureTemplate(site?.titleTemplate || '', `%s | ${siteName}`);
+  const description = site?.description?.trim() || '';
 
   const keywords = site?.keywords
-    ? site.keywords.split(",").map((k) => k.trim()).filter(Boolean)
+    ? site.keywords
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean)
     : undefined;
 
   const ogImageUrl = site?.ogImageUrl?.trim() || undefined;
@@ -86,14 +85,16 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: defaultTitle,
       description,
-      url: "/",
+      url: '/',
       siteName,
-      locale: "en_US",
-      type: "website",
+      locale: 'en_US',
+      type: 'website',
       images: ogImageUrl ? [{ url: ogImageUrl }] : undefined,
     },
     twitter: {
-      card: (twitterImageUrl ? "summary_large_image" : "summary") as "summary" | "summary_large_image",
+      card: (twitterImageUrl ? 'summary_large_image' : 'summary') as
+        | 'summary'
+        | 'summary_large_image',
       title: siteName,
       description,
       images: twitterImageUrl ? [twitterImageUrl] : undefined,
@@ -104,16 +105,16 @@ export async function generateMetadata(): Promise<Metadata> {
       googleBot: {
         index: true,
         follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
       },
     },
   };
 }
 
-import { LanguageProvider } from "@/hooks/use-language";
-import { CurrencyProvider } from "@/hooks/use-currency";
+import { LanguageProvider } from '@/hooks/use-language';
+import { CurrencyProvider } from '@/hooks/use-currency';
 
 export default function RootLayout({
   children,

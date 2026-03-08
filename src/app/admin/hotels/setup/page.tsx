@@ -1,38 +1,38 @@
-import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { createHotelProfile, getHotels, updateHotelProfile } from "@/lib/supabase/hotels";
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { createHotelProfile, getHotels, updateHotelProfile } from '@/lib/supabase/hotels';
 
 export default async function SetupHotelPage() {
   const hotels = await getHotels();
   const hotel = hotels[0] || null;
 
   const saveHotel = async (formData: FormData) => {
-    "use server";
+    'use server';
 
-    const hotelId = String(formData.get("hotelId") || "").trim();
-    const name = String(formData.get("name") || "").trim();
-    const slug = String(formData.get("slug") || "").trim();
-    const description = String(formData.get("description") || "").trim();
-    const city = String(formData.get("city") || "").trim();
-    const country = String(formData.get("country") || "").trim();
-    const address = String(formData.get("address") || "").trim();
-    const contactEmail = String(formData.get("contactEmail") || "").trim();
-    const contactPhone = String(formData.get("contactPhone") || "").trim();
-    const website = String(formData.get("website") || "").trim();
-    const timezone = String(formData.get("timezone") || "").trim();
-    const starRatingRaw = String(formData.get("starRating") || "").trim();
-    const latitudeRaw = String(formData.get("latitude") || "").trim();
-    const longitudeRaw = String(formData.get("longitude") || "").trim();
-    const checkInTime = String(formData.get("checkInTime") || "").trim();
-    const checkOutTime = String(formData.get("checkOutTime") || "").trim();
-    const isActive = formData.get("isActive") === "on";
+    const hotelId = String(formData.get('hotelId') || '').trim();
+    const name = String(formData.get('name') || '').trim();
+    const slug = String(formData.get('slug') || '').trim();
+    const description = String(formData.get('description') || '').trim();
+    const city = String(formData.get('city') || '').trim();
+    const country = String(formData.get('country') || '').trim();
+    const address = String(formData.get('address') || '').trim();
+    const contactEmail = String(formData.get('contactEmail') || '').trim();
+    const contactPhone = String(formData.get('contactPhone') || '').trim();
+    const website = String(formData.get('website') || '').trim();
+    const timezone = String(formData.get('timezone') || '').trim();
+    const starRatingRaw = String(formData.get('starRating') || '').trim();
+    const latitudeRaw = String(formData.get('latitude') || '').trim();
+    const longitudeRaw = String(formData.get('longitude') || '').trim();
+    const checkInTime = String(formData.get('checkInTime') || '').trim();
+    const checkOutTime = String(formData.get('checkOutTime') || '').trim();
+    const isActive = formData.get('isActive') === 'on';
 
     if (!name) {
-      throw new Error("Hotel name is required.");
+      throw new Error('Hotel name is required.');
     }
 
     const starRating = starRatingRaw ? Number(starRatingRaw) : null;
@@ -87,7 +87,7 @@ export default async function SetupHotelPage() {
         <div>
           <h1 className="text-2xl font-semibold">Hotel Profile</h1>
           <p className="text-sm text-muted-foreground">
-            {hotel ? "Update your hotel details." : "Create the hotel profile for this account."}
+            {hotel ? 'Update your hotel details.' : 'Create the hotel profile for this account.'}
           </p>
         </div>
         <Button asChild variant="outline">
@@ -98,12 +98,12 @@ export default async function SetupHotelPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>{hotel ? "Edit Profile" : "Create Profile"}</CardTitle>
+            <CardTitle>{hotel ? 'Edit Profile' : 'Create Profile'}</CardTitle>
             <CardDescription>Used for public pages and hotel booking flow.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={saveHotel} className="grid gap-6">
-              <input type="hidden" name="hotelId" value={hotel?.id || ""} />
+              <input type="hidden" name="hotelId" value={hotel?.id || ''} />
 
               <div className="grid gap-2">
                 <Label htmlFor="name">Hotel Name</Label>
@@ -112,7 +112,7 @@ export default async function SetupHotelPage() {
                   name="name"
                   placeholder="Tourista Hotel"
                   required
-                  defaultValue={hotel?.name || ""}
+                  defaultValue={hotel?.name || ''}
                 />
               </div>
 
@@ -122,7 +122,7 @@ export default async function SetupHotelPage() {
                   id="slug"
                   name="slug"
                   placeholder="tourista-hotel"
-                  defaultValue={hotel?.slug || ""}
+                  defaultValue={hotel?.slug || ''}
                 />
               </div>
 
@@ -132,18 +132,28 @@ export default async function SetupHotelPage() {
                   id="description"
                   name="description"
                   placeholder="Tell guests what makes your hotel special…"
-                  defaultValue={hotel?.description || ""}
+                  defaultValue={hotel?.description || ''}
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="city">City</Label>
-                  <Input id="city" name="city" placeholder="Cairo" defaultValue={hotel?.city || ""} />
+                  <Input
+                    id="city"
+                    name="city"
+                    placeholder="Cairo"
+                    defaultValue={hotel?.city || ''}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="country">Country</Label>
-                  <Input id="country" name="country" placeholder="Egypt" defaultValue={hotel?.country || ""} />
+                  <Input
+                    id="country"
+                    name="country"
+                    placeholder="Egypt"
+                    defaultValue={hotel?.country || ''}
+                  />
                 </div>
               </div>
 
@@ -153,7 +163,7 @@ export default async function SetupHotelPage() {
                   id="address"
                   name="address"
                   placeholder="Street, district, etc."
-                  defaultValue={hotel?.address || ""}
+                  defaultValue={hotel?.address || ''}
                 />
               </div>
 
@@ -165,7 +175,7 @@ export default async function SetupHotelPage() {
                     name="contactEmail"
                     type="email"
                     placeholder="reservations@hotel.com"
-                    defaultValue={hotel?.contactEmail || ""}
+                    defaultValue={hotel?.contactEmail || ''}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -174,7 +184,7 @@ export default async function SetupHotelPage() {
                     id="contactPhone"
                     name="contactPhone"
                     placeholder="+20 10 0000 0000"
-                    defaultValue={hotel?.contactPhone || ""}
+                    defaultValue={hotel?.contactPhone || ''}
                   />
                 </div>
               </div>
@@ -186,7 +196,7 @@ export default async function SetupHotelPage() {
                     id="website"
                     name="website"
                     placeholder="https://hotel.com"
-                    defaultValue={hotel?.website || ""}
+                    defaultValue={hotel?.website || ''}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -195,7 +205,7 @@ export default async function SetupHotelPage() {
                     id="timezone"
                     name="timezone"
                     placeholder="Africa/Cairo"
-                    defaultValue={hotel?.timezone || ""}
+                    defaultValue={hotel?.timezone || ''}
                   />
                 </div>
               </div>
@@ -206,7 +216,7 @@ export default async function SetupHotelPage() {
                   <select
                     id="starRating"
                     name="starRating"
-                    defaultValue={hotel?.starRating ?? ""}
+                    defaultValue={hotel?.starRating ?? ''}
                     className="h-10 w-full rounded-md border bg-background px-3 text-sm"
                   >
                     <option value="">Not set</option>
@@ -226,7 +236,7 @@ export default async function SetupHotelPage() {
                       type="number"
                       step="0.000001"
                       placeholder="30.0444"
-                      defaultValue={hotel?.latitude ?? ""}
+                      defaultValue={hotel?.latitude ?? ''}
                     />
                   </div>
                   <div className="grid gap-2">
@@ -237,7 +247,7 @@ export default async function SetupHotelPage() {
                       type="number"
                       step="0.000001"
                       placeholder="31.2357"
-                      defaultValue={hotel?.longitude ?? ""}
+                      defaultValue={hotel?.longitude ?? ''}
                     />
                   </div>
                 </div>
@@ -250,7 +260,7 @@ export default async function SetupHotelPage() {
                     id="checkInTime"
                     name="checkInTime"
                     type="time"
-                    defaultValue={hotel?.checkInTime || ""}
+                    defaultValue={hotel?.checkInTime || ''}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -259,7 +269,7 @@ export default async function SetupHotelPage() {
                     id="checkOutTime"
                     name="checkOutTime"
                     type="time"
-                    defaultValue={hotel?.checkOutTime || ""}
+                    defaultValue={hotel?.checkOutTime || ''}
                   />
                 </div>
               </div>
@@ -278,7 +288,7 @@ export default async function SetupHotelPage() {
                 <Button asChild type="button" variant="outline">
                   <Link href="/admin/hotels">Cancel</Link>
                 </Button>
-                <Button type="submit">{hotel ? "Save Changes" : "Create Hotel"}</Button>
+                <Button type="submit">{hotel ? 'Save Changes' : 'Create Hotel'}</Button>
               </div>
             </form>
           </CardContent>
@@ -308,4 +318,3 @@ export default async function SetupHotelPage() {
     </div>
   );
 }
-

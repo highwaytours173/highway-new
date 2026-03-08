@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/middleware";
+import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = await createClient(request);
@@ -12,29 +12,29 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Guard admin routes
-  if (pathname.startsWith("/admin") || pathname.startsWith("/super-admin")) {
-    const isLoginPage = pathname === "/admin";
+  if (pathname.startsWith('/admin') || pathname.startsWith('/super-admin')) {
+    const isLoginPage = pathname === '/admin';
 
     // Super Admin route check
-    if (pathname === "/admin/super") {
+    if (pathname === '/admin/super') {
       const url = request.nextUrl.clone();
-      url.pathname = "/super-admin";
+      url.pathname = '/super-admin';
       return NextResponse.redirect(url);
     }
 
-    if (pathname.startsWith("/super-admin")) {
-        if (!session) {
-            const url = request.nextUrl.clone();
-            url.pathname = "/admin"; // Redirect to login
-            return NextResponse.redirect(url);
-        }
+    if (pathname.startsWith('/super-admin')) {
+      if (!session) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/admin'; // Redirect to login
+        return NextResponse.redirect(url);
+      }
     }
 
     // Single-user app: never redirect admin routes to home.
     // Require login only for non-login admin pages.
     if (!session && !isLoginPage) {
       const url = request.nextUrl.clone();
-      url.pathname = "/admin";
+      url.pathname = '/admin';
       return NextResponse.redirect(url);
     }
 
@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
     // to avoid redirecting admin routes to the public home page.
     if (session && isLoginPage) {
       const url = request.nextUrl.clone();
-      url.pathname = "/admin/dashboard";
+      url.pathname = '/admin/dashboard';
       return NextResponse.redirect(url);
     }
   }
@@ -60,7 +60,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
-

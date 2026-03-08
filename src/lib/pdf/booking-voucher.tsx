@@ -1,12 +1,5 @@
-import React from "react";
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Image,
-} from "@react-pdf/renderer";
+import React from 'react';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface VoucherItem {
@@ -41,32 +34,32 @@ export interface VoucherData {
 
 // ─── Styles ────────────────────────────────────────────────────────────────
 const colors = {
-  primary: "#2563eb",
-  primaryLight: "#eff6ff",
-  dark: "#1e293b",
-  muted: "#64748b",
-  border: "#e2e8f0",
-  white: "#ffffff",
-  green: "#16a34a",
-  greenBg: "#f0fdf4",
-  red: "#dc2626",
-  redBg: "#fef2f2",
-  yellow: "#ca8a04",
-  yellowBg: "#fefce8",
+  primary: '#2563eb',
+  primaryLight: '#eff6ff',
+  dark: '#1e293b',
+  muted: '#64748b',
+  border: '#e2e8f0',
+  white: '#ffffff',
+  green: '#16a34a',
+  greenBg: '#f0fdf4',
+  red: '#dc2626',
+  redBg: '#fef2f2',
+  yellow: '#ca8a04',
+  yellowBg: '#fefce8',
 };
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: "Helvetica",
+    fontFamily: 'Helvetica',
     fontSize: 10,
     color: colors.dark,
   },
   // Header
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
     paddingBottom: 16,
     borderBottomWidth: 2,
@@ -75,14 +68,14 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
-    objectFit: "contain",
+    objectFit: 'contain',
   },
   headerRight: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
   agencyName: {
     fontSize: 18,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     color: colors.primary,
   },
   voucherTitle: {
@@ -100,7 +93,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 10,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
   },
 
   // Section
@@ -109,7 +102,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     color: colors.primary,
     marginBottom: 8,
     paddingBottom: 4,
@@ -117,12 +110,12 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 4,
   },
   label: {
     width: 120,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     color: colors.muted,
     fontSize: 9,
   },
@@ -136,7 +129,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tableHeader: {
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: colors.primaryLight,
     paddingVertical: 6,
     paddingHorizontal: 8,
@@ -144,7 +137,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 4,
   },
   tableRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     paddingVertical: 6,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
@@ -153,18 +146,18 @@ const styles = StyleSheet.create({
   colName: { flex: 3, fontSize: 9 },
   colPackage: { flex: 2, fontSize: 9 },
   colDate: { flex: 2, fontSize: 9 },
-  colPeople: { flex: 1.5, fontSize: 9, textAlign: "center" as const },
-  colPrice: { flex: 1.5, fontSize: 9, textAlign: "right" as const },
+  colPeople: { flex: 1.5, fontSize: 9, textAlign: 'center' as const },
+  colPrice: { flex: 1.5, fontSize: 9, textAlign: 'right' as const },
   tableHeaderText: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     color: colors.primary,
     fontSize: 9,
   },
 
   // Total
   totalRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     paddingVertical: 8,
     paddingHorizontal: 8,
     marginTop: 4,
@@ -172,20 +165,20 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   totalLabel: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     fontSize: 11,
     color: colors.dark,
     marginRight: 16,
   },
   totalValue: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     fontSize: 11,
     color: colors.primary,
   },
 
   // Footer
   footer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 30,
     left: 40,
     right: 40,
@@ -194,8 +187,8 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   footerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 2,
   },
   footerText: {
@@ -205,7 +198,7 @@ const styles = StyleSheet.create({
   footerNote: {
     fontSize: 8,
     color: colors.muted,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 8,
   },
 
@@ -215,17 +208,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     borderRadius: 4,
     marginBottom: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   bookingIdLabel: {
     fontSize: 8,
     color: colors.muted,
     letterSpacing: 1,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
   },
   bookingIdValue: {
     fontSize: 12,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: 'Helvetica-Bold',
     color: colors.primary,
     marginTop: 2,
     letterSpacing: 0.5,
@@ -235,8 +228,8 @@ const styles = StyleSheet.create({
 // ─── Helper ────────────────────────────────────────────────────────────────
 function getStatusStyle(status: string) {
   const s = status.toLowerCase();
-  if (s === "confirmed") return { bg: colors.greenBg, color: colors.green };
-  if (s === "cancelled") return { bg: colors.redBg, color: colors.red };
+  if (s === 'confirmed') return { bg: colors.greenBg, color: colors.green };
+  if (s === 'cancelled') return { bg: colors.redBg, color: colors.red };
   return { bg: colors.yellowBg, color: colors.yellow };
 }
 
@@ -246,10 +239,10 @@ function formatCurrency(amount: number) {
 
 function formatDate(dateStr: string) {
   try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   } catch {
     return dateStr;
@@ -265,8 +258,9 @@ export function BookingVoucherDocument({ data }: { data: VoucherData }) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             {data.agencyLogoUrl && (
+              // eslint-disable-next-line jsx-a11y/alt-text
               <Image src={data.agencyLogoUrl} style={styles.logo} />
             )}
             <View>
@@ -275,12 +269,7 @@ export function BookingVoucherDocument({ data }: { data: VoucherData }) {
             </View>
           </View>
           <View style={styles.headerRight}>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: statusStyle.bg },
-              ]}
-            >
+            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
               <Text style={[styles.statusText, { color: statusStyle.color }]}>
                 {data.status.toUpperCase()}
               </Text>
@@ -324,11 +313,11 @@ export function BookingVoucherDocument({ data }: { data: VoucherData }) {
           <View style={styles.row}>
             <Text style={styles.label}>Payment Method</Text>
             <Text style={styles.value}>
-              {data.paymentMethod === "cash"
-                ? "Cash on Arrival"
-                : data.paymentMethod === "online"
-                  ? "Online Payment"
-                  : "—"}
+              {data.paymentMethod === 'cash'
+                ? 'Cash on Arrival'
+                : data.paymentMethod === 'online'
+                  ? 'Online Payment'
+                  : '—'}
             </Text>
           </View>
         </View>
@@ -340,61 +329,41 @@ export function BookingVoucherDocument({ data }: { data: VoucherData }) {
             {/* Table header */}
             <View style={styles.tableHeader}>
               <Text style={[styles.colName, styles.tableHeaderText]}>Item</Text>
-              <Text style={[styles.colPackage, styles.tableHeaderText]}>
-                Package
-              </Text>
+              <Text style={[styles.colPackage, styles.tableHeaderText]}>Package</Text>
               <Text style={[styles.colDate, styles.tableHeaderText]}>Date</Text>
-              <Text style={[styles.colPeople, styles.tableHeaderText]}>
-                People
-              </Text>
-              <Text style={[styles.colPrice, styles.tableHeaderText]}>
-                Price
-              </Text>
+              <Text style={[styles.colPeople, styles.tableHeaderText]}>People</Text>
+              <Text style={[styles.colPrice, styles.tableHeaderText]}>Price</Text>
             </View>
             {/* Table rows */}
             {data.items.map((item, idx) => (
               <View key={idx} style={styles.tableRow}>
                 <Text style={styles.colName}>{item.name}</Text>
-                <Text style={styles.colPackage}>
-                  {item.packageName || "—"}
-                </Text>
-                <Text style={styles.colDate}>
-                  {item.date ? formatDate(item.date) : "—"}
-                </Text>
+                <Text style={styles.colPackage}>{item.packageName || '—'}</Text>
+                <Text style={styles.colDate}>{item.date ? formatDate(item.date) : '—'}</Text>
                 <Text style={styles.colPeople}>
-                  {item.adults}A {item.children > 0 ? `+ ${item.children}C` : ""}
+                  {item.adults}A {item.children > 0 ? `+ ${item.children}C` : ''}
                 </Text>
-                <Text style={styles.colPrice}>
-                  {formatCurrency(item.price)}
-                </Text>
+                <Text style={styles.colPrice}>{formatCurrency(item.price)}</Text>
               </View>
             ))}
           </View>
           {/* Total */}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total:</Text>
-            <Text style={styles.totalValue}>
-              {formatCurrency(data.totalPrice)}
-            </Text>
+            <Text style={styles.totalValue}>{formatCurrency(data.totalPrice)}</Text>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
           <View style={styles.footerRow}>
-            {data.agencyEmail && (
-              <Text style={styles.footerText}>{data.agencyEmail}</Text>
-            )}
-            {data.agencyPhone && (
-              <Text style={styles.footerText}>{data.agencyPhone}</Text>
-            )}
-            {data.agencyAddress && (
-              <Text style={styles.footerText}>{data.agencyAddress}</Text>
-            )}
+            {data.agencyEmail && <Text style={styles.footerText}>{data.agencyEmail}</Text>}
+            {data.agencyPhone && <Text style={styles.footerText}>{data.agencyPhone}</Text>}
+            {data.agencyAddress && <Text style={styles.footerText}>{data.agencyAddress}</Text>}
           </View>
           <Text style={styles.footerNote}>
-            This voucher serves as proof of booking. Please present it upon
-            arrival. Thank you for booking with {data.agencyName}!
+            This voucher serves as proof of booking. Please present it upon arrival. Thank you for
+            booking with {data.agencyName}!
           </Text>
         </View>
       </Page>

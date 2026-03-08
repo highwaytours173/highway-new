@@ -1,5 +1,5 @@
-import { getPromoCodes } from "@/lib/supabase/promo-codes";
-import { PromotionsClient } from "./promotions-client";
+import { getPromoCodes } from '@/lib/supabase/promo-codes';
+import { PromotionsClient } from './promotions-client';
 
 export default async function PromotionsPage() {
   const promoCodes = await getPromoCodes();

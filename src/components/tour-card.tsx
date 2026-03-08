@@ -1,15 +1,15 @@
-import Link from "next/link";
-import Image from "next/image";
-import type { Tour } from "@/types";
-import { useWishlist } from "@/hooks/use-wishlist";
-import { useCurrency } from "@/hooks/use-currency";
-import { useLanguage } from "@/hooks/use-language";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Clock, MapPin, Star, Heart, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { BLUR_DATA_URL } from "@/lib/blur-data-url";
+import Link from 'next/link';
+import Image from 'next/image';
+import type { Tour } from '@/types';
+import { useWishlist } from '@/hooks/use-wishlist';
+import { useCurrency } from '@/hooks/use-currency';
+import { useLanguage } from '@/hooks/use-language';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Clock, MapPin, Star, Heart, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { BLUR_DATA_URL } from '@/lib/blur-data-url';
 
 interface TourCardProps {
   tour: Tour;
@@ -21,19 +21,16 @@ export function TourCard({ tour }: TourCardProps) {
   const { t } = useLanguage();
   const isFavorited = isInWishlist(tour.id);
 
-  const imageUrl =
-    Array.isArray(tour.images) && tour.images.length > 0
-      ? tour.images[0]
-      : null;
+  const imageUrl = Array.isArray(tour.images) && tour.images.length > 0 ? tour.images[0] : null;
 
   const startingPrice = (() => {
     const prices: number[] = [];
     for (const tier of tour.priceTiers ?? []) {
-      if (typeof tier?.pricePerAdult === "number") prices.push(tier.pricePerAdult);
+      if (typeof tier?.pricePerAdult === 'number') prices.push(tier.pricePerAdult);
     }
     for (const pkg of tour.packages ?? []) {
       for (const tier of pkg.priceTiers ?? []) {
-        if (typeof tier?.pricePerAdult === "number") prices.push(tier.pricePerAdult);
+        if (typeof tier?.pricePerAdult === 'number') prices.push(tier.pricePerAdult);
       }
     }
     if (prices.length === 0) return null;
@@ -41,11 +38,11 @@ export function TourCard({ tour }: TourCardProps) {
     return Number.isFinite(min) ? min : null;
   })();
 
-  const durationLabel = `${tour.duration} ${t("featured.duration")}`;
+  const durationLabel = `${tour.duration} ${t('featured.duration')}`;
   const ratingLabel =
-    typeof tour.rating === "number" && Number.isFinite(tour.rating) && tour.rating > 0
+    typeof tour.rating === 'number' && Number.isFinite(tour.rating) && tour.rating > 0
       ? tour.rating.toFixed(1)
-      : t("tour.new");
+      : t('tour.new');
 
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -67,7 +64,7 @@ export function TourCard({ tour }: TourCardProps) {
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              data-ai-hint={`${tour.destination} ${(Array.isArray(tour.type) ? tour.type[0] : "") || "travel"}`}
+              data-ai-hint={`${tour.destination} ${(Array.isArray(tour.type) ? tour.type[0] : '') || 'travel'}`}
               placeholder="blur"
               blurDataURL={BLUR_DATA_URL}
               priority={false}
@@ -88,15 +85,15 @@ export function TourCard({ tour }: TourCardProps) {
           variant="secondary"
           size="icon"
           className={cn(
-            "absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 text-gray-800 backdrop-blur hover:bg-white",
-            isFavorited && "text-red-600 bg-red-50 hover:bg-red-50",
+            'absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 text-gray-800 backdrop-blur hover:bg-white',
+            isFavorited && 'text-red-600 bg-red-50 hover:bg-red-50'
           )}
           onClick={handleFavoriteClick}
-          aria-label={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
           aria-pressed={isFavorited}
           type="button"
         >
-          <Heart className={cn("h-4 w-4", isFavorited && "fill-current")} />
+          <Heart className={cn('h-4 w-4', isFavorited && 'fill-current')} />
         </Button>
       </div>
 
@@ -124,13 +121,13 @@ export function TourCard({ tour }: TourCardProps) {
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3">
           <div className="min-w-0">
-            <div className="text-sm text-muted-foreground">{t("featured.from")}</div>
+            <div className="text-sm text-muted-foreground">{t('featured.from')}</div>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-primary">
-                {startingPrice != null ? format(startingPrice) : t("tour.contactUs")}
+                {startingPrice != null ? format(startingPrice) : t('tour.contactUs')}
               </span>
               {startingPrice != null && (
-                <span className="text-xs text-muted-foreground">{t("tour.perPerson")}</span>
+                <span className="text-xs text-muted-foreground">{t('tour.perPerson')}</span>
               )}
             </div>
           </div>

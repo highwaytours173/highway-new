@@ -1,30 +1,24 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import type { Tour, TourDateAvailability } from "@/types";
-import Image from "next/image";
-import { BLUR_DATA_URL } from "@/lib/blur-data-url";
-import { useCart } from "@/hooks/use-cart";
-import { useCurrency } from "@/hooks/use-currency";
-import { useLanguage } from "@/hooks/use-language";
+import { useState, useMemo } from 'react';
+import type { Tour, TourDateAvailability } from '@/types';
+import Image from 'next/image';
+import { BLUR_DATA_URL } from '@/lib/blur-data-url';
+import { useCart } from '@/hooks/use-cart';
+import { useCurrency } from '@/hooks/use-currency';
+import { useLanguage } from '@/hooks/use-language';
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from '@/components/ui/carousel';
 import {
   Clock,
   MapPin,
@@ -36,10 +30,10 @@ import {
   CheckCircle,
   XCircle,
   ShoppingBag,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Calendar } from "@/components/ui/calendar";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface TourDetailsClientProps {
   tour: Tour;
@@ -69,7 +63,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
   const limitedDates = useMemo(() => {
     return availability
       .filter((e) => !e.isBlocked && e.availableSpots !== null)
-      .map((e) => new Date(e.date + "T00:00:00"));
+      .map((e) => new Date(e.date + 'T00:00:00'));
   }, [availability]);
 
   const availabilityMap = useMemo(() => {
@@ -86,8 +80,8 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
 
   const calendarModifiersStyles: Record<string, React.CSSProperties> = {
     limited: {
-      backgroundColor: "hsl(45 93% 47% / 0.15)",
-      borderRadius: "6px",
+      backgroundColor: 'hsl(45 93% 47% / 0.15)',
+      borderRadius: '6px',
     },
   };
 
@@ -95,14 +89,14 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
     // Past dates
     if (d < new Date(new Date().setDate(new Date().getDate() - 1))) return true;
     // Blocked dates
-    const dateStr = d.toISOString().split("T")[0];
+    const dateStr = d.toISOString().split('T')[0];
     return blockedDatesSet.has(dateStr);
   };
 
   // Get availability info for selected date
   const selectedDateInfo = useMemo(() => {
     if (!date) return null;
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = date.toISOString().split('T')[0];
     return availabilityMap.get(dateStr) || null;
   }, [date, availabilityMap]);
 
@@ -117,12 +111,12 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
     if (!tour) return null;
     // Use package tiers if available, otherwise tour tiers
     const tiers = currentPackage ? currentPackage.priceTiers : tour.priceTiers;
-    
+
     return (
       tiers.find(
         (tier) =>
           totalPeople >= tier.minPeople &&
-          (tier.maxPeople === null || totalPeople <= tier.maxPeople),
+          (tier.maxPeople === null || totalPeople <= tier.maxPeople)
       ) || tiers[tiers.length - 1]
     );
   }, [tour, totalPeople, currentPackage]);
@@ -136,16 +130,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
 
   const handleBooking = () => {
     if (tour && date) {
-      addToCart(
-        tour, 
-        "tour", 
-        adults, 
-        children, 
-        date, 
-        1, 
-        selectedPackageId, 
-        currentPackage?.name
-      );
+      addToCart(tour, 'tour', adults, children, date, 1, selectedPackageId, currentPackage?.name);
     }
   };
 
@@ -184,20 +169,19 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-sm mb-6">
               <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />{" "}
-                <span>{tour.destination}</span>
+                <MapPin className="h-5 w-5 text-primary" /> <span>{tour.destination}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />{" "}
+                <Clock className="h-5 w-5 text-primary" />{' '}
                 <span>{tour.durationText ?? `${tour.duration} days`}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary fill-primary" />{" "}
+                <Star className="h-5 w-5 text-primary fill-primary" />{' '}
                 <span>{tour.rating}/5.0</span>
               </div>
               <div className="flex items-center gap-2">
-                <Tag className="h-5 w-5 text-primary" />{" "}
-                <span>{tour.tourType ?? tour.type.join(", ")}</span>
+                <Tag className="h-5 w-5 text-primary" />{' '}
+                <span>{tour.tourType ?? tour.type.join(', ')}</span>
               </div>
             </div>
             <Separator className="my-6" />
@@ -209,7 +193,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                   {tour.includes && (
                     <div>
                       <h3 className="font-bold text-lg mb-2 text-green-700">
-                        {t("tour.includes")}
+                        {t('tour.includes')}
                       </h3>
                       <ul className="space-y-2 text-sm">
                         {tour.includes.map((item, index) => (
@@ -232,7 +216,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                   {tour.excludes && (
                     <div>
                       <h3 className="font-bold text-lg mb-2 text-destructive">
-                        {t("tour.excludes")}
+                        {t('tour.excludes')}
                       </h3>
                       <ul className="space-y-2 text-sm">
                         {tour.excludes.map((item, index) => (
@@ -259,34 +243,28 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
 
             <Card className="bg-muted/50">
               <CardHeader>
-                <CardTitle className="text-xl text-primary">
-                  {t("tour.details")}
-                </CardTitle>
+                <CardTitle className="text-xl text-primary">{t('tour.details')}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm space-y-2">
                 <p>
-                  <span className="font-semibold text-foreground">
-                    {t("tour.durationLabel")}
-                  </span>{" "}
+                  <span className="font-semibold text-foreground">{t('tour.durationLabel')}</span>{' '}
                   {tour.durationText ?? `${tour.duration} days`}
                 </p>
                 <p>
-                  <span className="font-semibold text-foreground">{t("tour.typeLabel")}</span>{" "}
-                  {tour.tourType ?? tour.type.join(", ")}
+                  <span className="font-semibold text-foreground">{t('tour.typeLabel')}</span>{' '}
+                  {tour.tourType ?? tour.type.join(', ')}
                 </p>
                 {tour.availabilityDescription && (
                   <p>
                     <span className="font-semibold text-foreground">
-                      {t("tour.availabilityLabel")}
-                    </span>{" "}
+                      {t('tour.availabilityLabel')}
+                    </span>{' '}
                     {tour.availabilityDescription}
                   </p>
                 )}
                 {tour.pickupAndDropoff && (
                   <p>
-                    <span className="font-semibold text-foreground">
-                      {t("tour.pickupDropoff")}
-                    </span>{" "}
+                    <span className="font-semibold text-foreground">{t('tour.pickupDropoff')}</span>{' '}
                     {tour.pickupAndDropoff}
                   </p>
                 )}
@@ -298,7 +276,9 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
         {tour.itinerary && tour.itinerary.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-2xl md:text-3xl">{t("tour.itinerary")}</CardTitle>
+              <CardTitle className="font-headline text-2xl md:text-3xl">
+                {t('tour.itinerary')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -314,7 +294,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                     </div>
                     <div>
                       <h3 className="font-bold text-lg text-primary">
-                        {t("tour.dayLabel")} {item.day}
+                        {t('tour.dayLabel')} {item.day}
                       </h3>
                       <p className="text-muted-foreground">{item.activity}</p>
                     </div>
@@ -328,12 +308,12 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
         {tour.cancellationPolicy && (
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-2xl md:text-3xl">{t("tour.cancellationPolicy")}</CardTitle>
+              <CardTitle className="font-headline text-2xl md:text-3xl">
+                {t('tour.cancellationPolicy')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm">
-                {tour.cancellationPolicy}
-              </p>
+              <p className="text-muted-foreground text-sm">{tour.cancellationPolicy}</p>
             </CardContent>
           </Card>
         )}
@@ -345,7 +325,9 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
           {tour.highlights && (
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline text-2xl md:text-3xl">{t("tour.highlights")}</CardTitle>
+                <CardTitle className="font-headline text-2xl md:text-3xl">
+                  {t('tour.highlights')}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 text-sm">
@@ -371,10 +353,13 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
 
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-2xl md:text-3xl">{t("tour.pricing")}</CardTitle>
+              <CardTitle className="font-headline text-2xl md:text-3xl">
+                {t('tour.pricing')}
+              </CardTitle>
               {currentPackage && (
                 <p className="text-sm text-muted-foreground">
-                  {t("tour.showingPricesFor")} <span className="font-semibold">{currentPackage.name}</span>
+                  {t('tour.showingPricesFor')}{' '}
+                  <span className="font-semibold">{currentPackage.name}</span>
                 </p>
               )}
             </CardHeader>
@@ -382,47 +367,43 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 font-semibold">{t("tour.groupSize")}</th>
-                    <th className="text-center py-2 font-semibold">{t("tour.adult")}</th>
-                    <th className="text-center py-2 font-semibold">{t("tour.child")}</th>
+                    <th className="text-left py-2 font-semibold">{t('tour.groupSize')}</th>
+                    <th className="text-center py-2 font-semibold">{t('tour.adult')}</th>
+                    <th className="text-center py-2 font-semibold">{t('tour.child')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(currentPackage ? currentPackage.priceTiers : tour.priceTiers).map((tier, index) => (
-                    <tr
-                      key={index}
-                      className={`border-b ${tier.minPeople === currentPriceTier?.minPeople ? "bg-primary/10" : ""}`}
-                    >
-                      <td className="py-2 font-medium">
-                        {tier.minPeople}
-                        {tier.maxPeople ? ` - ${tier.maxPeople}` : "+"} {t("tour.persons")}
-                      </td>
-                      <td className="py-2 text-center">
-                        {format(tier.pricePerAdult)}
-                      </td>
-                      <td className="py-2 text-center">
-                        {format(tier.pricePerChild)}
-                      </td>
-                    </tr>
-                  ))}
+                  {(currentPackage ? currentPackage.priceTiers : tour.priceTiers).map(
+                    (tier, index) => (
+                      <tr
+                        key={index}
+                        className={`border-b ${tier.minPeople === currentPriceTier?.minPeople ? 'bg-primary/10' : ''}`}
+                      >
+                        <td className="py-2 font-medium">
+                          {tier.minPeople}
+                          {tier.maxPeople ? ` - ${tier.maxPeople}` : '+'} {t('tour.persons')}
+                        </td>
+                        <td className="py-2 text-center">{format(tier.pricePerAdult)}</td>
+                        <td className="py-2 text-center">{format(tier.pricePerChild)}</td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
-              <p className="text-xs text-muted-foreground mt-2">
-                {t("tour.infantsFree")}
-              </p>
+              <p className="text-xs text-muted-foreground mt-2">{t('tour.infantsFree')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle className="font-headline text-2xl md:text-3xl">
-                {t("tour.bookSpot")}
+                {t('tour.bookSpot')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {tour.packages && tour.packages.length > 0 && (
                 <div>
-                  <Label className="font-semibold mb-2 block">{t("tour.selectPackage")}</Label>
+                  <Label className="font-semibold mb-2 block">{t('tour.selectPackage')}</Label>
                   <RadioGroup
                     value={selectedPackageId}
                     onValueChange={setSelectedPackageId}
@@ -430,11 +411,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                   >
                     {tour.packages.map((pkg) => (
                       <div key={pkg.id}>
-                        <RadioGroupItem
-                          value={pkg.id}
-                          id={pkg.id}
-                          className="peer sr-only"
-                        />
+                        <RadioGroupItem value={pkg.id} id={pkg.id} className="peer sr-only" />
                         <Label
                           htmlFor={pkg.id}
                           className="flex flex-col items-start justify-between rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
@@ -453,7 +430,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
               )}
 
               <div>
-                <Label className="font-semibold mb-2 block">{t("tour.selectDate")}</Label>
+                <Label className="font-semibold mb-2 block">{t('tour.selectDate')}</Label>
                 <Calendar
                   mode="single"
                   selected={date}
@@ -463,17 +440,22 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                   modifiers={calendarModifiers}
                   modifiersStyles={calendarModifiersStyles}
                 />
-                {selectedDateInfo && !selectedDateInfo.isBlocked && selectedDateInfo.availableSpots !== null && (
-                  <p className="mt-2 text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-                    {selectedDateInfo.availableSpots} {selectedDateInfo.availableSpots === 1 ? t("tour.spot") : t("tour.spotsRemaining")}
-                  </p>
-                )}
+                {selectedDateInfo &&
+                  !selectedDateInfo.isBlocked &&
+                  selectedDateInfo.availableSpots !== null && (
+                    <p className="mt-2 text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                      {selectedDateInfo.availableSpots}{' '}
+                      {selectedDateInfo.availableSpots === 1
+                        ? t('tour.spot')
+                        : t('tour.spotsRemaining')}
+                    </p>
+                  )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="adults" className="font-semibold">
-                    {t("tour.adults")}
+                    {t('tour.adults')}
                   </Label>
                   <div className="flex items-center gap-2 mt-1">
                     <Button
@@ -490,18 +472,14 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                       value={adults}
                       className="w-12 text-center"
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setAdults((v) => v + 1)}
-                    >
+                    <Button variant="outline" size="icon" onClick={() => setAdults((v) => v + 1)}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="children" className="font-semibold">
-                    {t("tour.children")}
+                    {t('tour.children')}
                   </Label>
                   <div className="flex items-center gap-2 mt-1">
                     <Button
@@ -518,11 +496,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                       value={children}
                       className="w-12 text-center"
                     />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setChildren((v) => v + 1)}
-                    >
+                    <Button variant="outline" size="icon" onClick={() => setChildren((v) => v + 1)}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -531,34 +505,27 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
               <Separator />
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("tour.adultsPrice")}</span>
+                  <span className="text-muted-foreground">{t('tour.adultsPrice')}</span>
                   <span>
-                    {adults} x{" "}
-                    {format(currentPriceTier?.pricePerAdult ?? 0)}
+                    {adults} x {format(currentPriceTier?.pricePerAdult ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("tour.childrenPrice")}</span>
+                  <span className="text-muted-foreground">{t('tour.childrenPrice')}</span>
                   <span>
-                    {children} x{" "}
-                    {format(currentPriceTier?.pricePerChild ?? 0)}
+                    {children} x {format(currentPriceTier?.pricePerChild ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-xl text-primary pt-2">
-                  <span>{t("tour.totalPrice")}</span>
+                  <span>{t('tour.totalPrice')}</span>
                   <span>{format(totalPrice)}</span>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button
-                onClick={handleBooking}
-                className="w-full"
-                size="lg"
-                disabled={!date}
-              >
+              <Button onClick={handleBooking} className="w-full" size="lg" disabled={!date}>
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {!date ? t("tour.selectDateFirst") : t("tour.addToCart")}
+                {!date ? t('tour.selectDateFirst') : t('tour.addToCart')}
               </Button>
             </CardFooter>
           </Card>
@@ -571,19 +538,18 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
           <div>
             {date ? (
               <>
-                <p className="text-xs text-muted-foreground">{t("tour.totalLabel")}</p>
+                <p className="text-xs text-muted-foreground">{t('tour.totalLabel')}</p>
                 <p className="text-lg font-bold text-primary">{format(totalPrice)}</p>
               </>
             ) : (
               <>
-                <p className="text-xs text-muted-foreground">{t("tour.fromLabel")}</p>
+                <p className="text-xs text-muted-foreground">{t('tour.fromLabel')}</p>
                 <p className="text-lg font-bold text-primary">
                   {format(
                     Math.min(
-                      ...(currentPackage
-                        ? currentPackage.priceTiers
-                        : tour.priceTiers
-                      ).map((t) => t.pricePerAdult).filter((p) => typeof p === "number")
+                      ...(currentPackage ? currentPackage.priceTiers : tour.priceTiers)
+                        .map((t) => t.pricePerAdult)
+                        .filter((p) => typeof p === 'number')
                     )
                   )}
                 </p>
@@ -597,7 +563,9 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
             className="flex-1 max-w-xs gap-2"
           >
             <ShoppingBag className="h-4 w-4" />
-            {date ? `${t("tour.bookNow")} · ${adults + children} ${adults + children === 1 ? t("tour.person") : t("tour.people")}` : t("tour.selectDateMobile")}
+            {date
+              ? `${t('tour.bookNow')} · ${adults + children} ${adults + children === 1 ? t('tour.person') : t('tour.people')}`
+              : t('tour.selectDateMobile')}
           </Button>
         </div>
       </div>

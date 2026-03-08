@@ -9,28 +9,28 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "20mb",
+      bodySizeLimit: '20mb',
     },
   },
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "dnzyghjhtzcpnbqmfcrs.supabase.co",
-        port: "",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: 'dnzyghjhtzcpnbqmfcrs.supabase.co',
+        port: '',
+        pathname: '/**',
       },
       {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
       },
       {
-        protocol: "https",
-        hostname: "placehold.co",
-        port: "",
-        pathname: "/**",
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

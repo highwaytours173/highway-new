@@ -1,11 +1,10 @@
+'use server';
 
-"use server";
-
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import { HomeContent } from "@/types";
-import { revalidatePath } from "next/cache";
-import type { Metadata } from "next";
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import { HomeContent } from '@/types';
+import { revalidatePath } from 'next/cache';
+import type { Metadata } from 'next';
 
 export type PageSeoSettings = {
   title?: string;
@@ -70,7 +69,7 @@ export type AgencySettingsData = {
   paymentMethods?: {
     cash?: boolean;
     online?: boolean;
-    defaultMethod?: "cash" | "online";
+    defaultMethod?: 'cash' | 'online';
   };
   theme?: {
     primaryColor?: string;
@@ -113,7 +112,7 @@ export type AgencySettingsData = {
   };
 };
 
-export type TourTaxonomyType = "category" | "destination";
+export type TourTaxonomyType = 'category' | 'destination';
 
 type AgencySettingsRow = {
   data: AgencySettingsData;
@@ -130,14 +129,14 @@ type TourTaxonomyRow = {
 };
 
 function normalizeTaxonomyName(value: string) {
-  return value.trim().replace(/\s+/g, " ");
+  return value.trim().replace(/\s+/g, ' ');
 }
 
 function slugifyTaxonomyName(value: string) {
   return normalizeTaxonomyName(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-+|-+$)/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-+|-+$)/g, '');
 }
 
 async function getAgencySettingsRow(): Promise<AgencySettingsRow | null> {
@@ -145,13 +144,13 @@ async function getAgencySettingsRow(): Promise<AgencySettingsRow | null> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("settings")
-    .select("data, logo_url, favicon_url, agency_id")
-    .eq("agency_id", agencyId)
+    .from('settings')
+    .select('data, logo_url, favicon_url, agency_id')
+    .eq('agency_id', agencyId)
     .maybeSingle();
 
   if (error) {
-    console.error("Error fetching agency settings:", error);
+    console.error('Error fetching agency settings:', error);
     return null;
   }
 
@@ -163,16 +162,16 @@ export async function getTourTaxonomy(type: TourTaxonomyType): Promise<string[]>
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("tour_taxonomy")
-    .select("name, sort_order")
-    .eq("agency_id", agencyId)
-    .eq("taxonomy_type", type)
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-    .order("name", { ascending: true });
+    .from('tour_taxonomy')
+    .select('name, sort_order')
+    .eq('agency_id', agencyId)
+    .eq('taxonomy_type', type)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true });
 
   if (error) {
-    console.error("Error fetching tour taxonomy:", error);
+    console.error('Error fetching tour taxonomy:', error);
     return [];
   }
 
@@ -186,8 +185,8 @@ export async function getAgencySettings() {
 
   const [row, tourCategories, tourDestinations] = await Promise.all([
     getAgencySettingsRow(),
-    getTourTaxonomy("category"),
-    getTourTaxonomy("destination"),
+    getTourTaxonomy('category'),
+    getTourTaxonomy('destination'),
   ]);
 
   const baseData = (row?.data ?? {}) as AgencySettingsData;
@@ -198,7 +197,7 @@ export async function getAgencySettings() {
         faviconUrl: rowFaviconUrl,
       }
     : baseData.seo?.site;
-  const mergedSeo: AgencySettingsData["seo"] | undefined =
+  const mergedSeo: AgencySettingsData['seo'] | undefined =
     mergedSeoSite || baseData.seo
       ? {
           ...(baseData.seo ?? {}),
@@ -239,17 +238,13 @@ export async function updateAgencySettings(
     ...settingsDataWithoutTaxonomy
   } = settingsData ?? {};
 
-  const resolvedLogoUrl =
-    logoUrl === undefined ? existing?.logo_url ?? null : logoUrl;
+  const resolvedLogoUrl = logoUrl === undefined ? (existing?.logo_url ?? null) : logoUrl;
   const existingFaviconUrlFromData =
-    existing?.data?.seo?.site?.faviconUrl &&
-    existing.data.seo.site.faviconUrl.trim()
+    existing?.data?.seo?.site?.faviconUrl && existing.data.seo.site.faviconUrl.trim()
       ? existing.data.seo.site.faviconUrl.trim()
       : null;
   const resolvedFaviconUrl =
-    faviconUrl === undefined
-      ? existing?.favicon_url ?? existingFaviconUrlFromData
-      : faviconUrl;
+    faviconUrl === undefined ? (existing?.favicon_url ?? existingFaviconUrlFromData) : faviconUrl;
 
   const currentData = (existing?.data ?? {}) as AgencySettingsData;
 
@@ -315,15 +310,13 @@ export async function updateAgencySettings(
   if (existing) {
     // Update
     const { error: updateError } = await supabase
-      .from("settings")
+      .from('settings')
       .update(payload)
-      .eq("agency_id", agencyId);
+      .eq('agency_id', agencyId);
     error = updateError;
   } else {
     // Insert
-    const { error: insertError } = await supabase
-      .from("settings")
-      .insert(payload);
+    const { error: insertError } = await supabase.from('settings').insert(payload);
     error = insertError;
   }
 
@@ -331,25 +324,22 @@ export async function updateAgencySettings(
     throw new Error(`Failed to save settings: ${error.message}`);
   }
 
-  revalidatePath("/");
-  revalidatePath("/about");
-  revalidatePath("/contact");
-  revalidatePath("/tours");
-  revalidatePath("/services");
-  revalidatePath("/blog");
-  revalidatePath("/destination");
-  revalidatePath("/upsell-items");
-  revalidatePath("/tailor-made");
-  revalidatePath("/admin/tours");
-  revalidatePath("/admin/tours/new");
-  revalidatePath("/admin/tours/settings");
-  revalidatePath("/admin/settings");
+  revalidatePath('/');
+  revalidatePath('/about');
+  revalidatePath('/contact');
+  revalidatePath('/tours');
+  revalidatePath('/services');
+  revalidatePath('/blog');
+  revalidatePath('/destination');
+  revalidatePath('/upsell-items');
+  revalidatePath('/tailor-made');
+  revalidatePath('/admin/tours');
+  revalidatePath('/admin/tours/new');
+  revalidatePath('/admin/tours/settings');
+  revalidatePath('/admin/settings');
 }
 
-export async function updateTourTaxonomy(input: {
-  categories: string[];
-  destinations: string[];
-}) {
+export async function updateTourTaxonomy(input: { categories: string[]; destinations: string[] }) {
   const agencyId = await getCurrentAgencyId();
   const supabase = await createClient();
 
@@ -358,13 +348,13 @@ export async function updateTourTaxonomy(input: {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("You must be signed in to update tour settings.");
+    throw new Error('You must be signed in to update tour settings.');
   }
 
   const { data: adminMembership, error: adminMembershipError } = await supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", user.id)
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', user.id)
     .maybeSingle();
 
   if (adminMembershipError) {
@@ -373,10 +363,10 @@ export async function updateTourTaxonomy(input: {
 
   if (!adminMembership) {
     const { data: agencyMembership, error: agencyMembershipError } = await supabase
-      .from("agency_users")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("agency_id", agencyId)
+      .from('agency_users')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('agency_id', agencyId)
       .maybeSingle();
 
     if (agencyMembershipError) {
@@ -384,8 +374,8 @@ export async function updateTourTaxonomy(input: {
     }
 
     const role = agencyMembership?.role;
-    if (role !== "owner" && role !== "admin") {
-      throw new Error("You are not authorized to update tour settings.");
+    if (role !== 'owner' && role !== 'admin') {
+      throw new Error('You are not authorized to update tour settings.');
     }
   }
 
@@ -393,9 +383,7 @@ export async function updateTourTaxonomy(input: {
   const now = new Date().toISOString();
 
   async function syncType(taxonomyType: TourTaxonomyType, values: string[]) {
-    const normalizedValues = values
-      .map(normalizeTaxonomyName)
-      .filter(Boolean);
+    const normalizedValues = values.map(normalizeTaxonomyName).filter(Boolean);
 
     const seen = new Set<string>();
     const unique = normalizedValues.filter((name) => {
@@ -435,8 +423,8 @@ export async function updateTourTaxonomy(input: {
 
     if (upsertRows.length > 0) {
       const { error: upsertError } = await adminClient
-        .from("tour_taxonomy")
-        .upsert(upsertRows, { onConflict: "agency_id,taxonomy_type,slug" });
+        .from('tour_taxonomy')
+        .upsert(upsertRows, { onConflict: 'agency_id,taxonomy_type,slug' });
 
       if (upsertError) {
         throw new Error(upsertError.message);
@@ -444,11 +432,11 @@ export async function updateTourTaxonomy(input: {
     }
 
     const { data: existingActive, error: existingError } = await adminClient
-      .from("tour_taxonomy")
-      .select("id, name, slug, is_active")
-      .eq("agency_id", agencyId)
-      .eq("taxonomy_type", taxonomyType)
-      .eq("is_active", true);
+      .from('tour_taxonomy')
+      .select('id, name, slug, is_active')
+      .eq('agency_id', agencyId)
+      .eq('taxonomy_type', taxonomyType)
+      .eq('is_active', true);
 
     if (existingError) {
       throw new Error(existingError.message);
@@ -461,9 +449,9 @@ export async function updateTourTaxonomy(input: {
 
     if (toDeactivateIds.length > 0) {
       const { error: deactivateError } = await adminClient
-        .from("tour_taxonomy")
+        .from('tour_taxonomy')
         .update({ is_active: false, updated_at: now })
-        .in("id", toDeactivateIds);
+        .in('id', toDeactivateIds);
 
       if (deactivateError) {
         throw new Error(deactivateError.message);
@@ -471,15 +459,15 @@ export async function updateTourTaxonomy(input: {
     }
   }
 
-  await syncType("category", input.categories ?? []);
-  await syncType("destination", input.destinations ?? []);
+  await syncType('category', input.categories ?? []);
+  await syncType('destination', input.destinations ?? []);
 
-  revalidatePath("/");
-  revalidatePath("/tours");
-  revalidatePath("/destination");
-  revalidatePath("/admin/tours");
-  revalidatePath("/admin/tours/new");
-  revalidatePath("/admin/tours/settings");
+  revalidatePath('/');
+  revalidatePath('/tours');
+  revalidatePath('/destination');
+  revalidatePath('/admin/tours');
+  revalidatePath('/admin/tours/new');
+  revalidatePath('/admin/tours/settings');
 }
 
 export async function getHomePageContent() {
@@ -487,13 +475,13 @@ export async function getHomePageContent() {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("home_page_content")
-    .select("data")
-    .eq("agency_id", agencyId)
+    .from('home_page_content')
+    .select('data')
+    .eq('agency_id', agencyId)
     .maybeSingle();
 
   if (error) {
-    console.error("Error fetching home page content:", error);
+    console.error('Error fetching home page content:', error);
     return null;
   }
 
@@ -515,14 +503,12 @@ export async function updateHomePageContent(content: HomeContent) {
   let error;
   if (existing) {
     const { error: updateError } = await supabase
-      .from("home_page_content")
+      .from('home_page_content')
       .update(payload)
-      .eq("agency_id", agencyId);
+      .eq('agency_id', agencyId);
     error = updateError;
   } else {
-    const { error: insertError } = await supabase
-      .from("home_page_content")
-      .insert(payload);
+    const { error: insertError } = await supabase.from('home_page_content').insert(payload);
     error = insertError;
   }
 
@@ -530,19 +516,11 @@ export async function updateHomePageContent(content: HomeContent) {
     throw new Error(`Failed to save home page content: ${error.message}`);
   }
 
-  revalidatePath("/");
+  revalidatePath('/');
 }
 
 export async function getPageMetadata(
-  page:
-    | "home"
-    | "about"
-    | "contact"
-    | "tours"
-    | "services"
-    | "blog"
-    | "destination"
-    | "tailorMade",
+  page: 'home' | 'about' | 'contact' | 'tours' | 'services' | 'blog' | 'destination' | 'tailorMade',
   defaults?: { title?: string; description?: string }
 ): Promise<Metadata> {
   let settings;
@@ -554,26 +532,18 @@ export async function getPageMetadata(
 
   const site = settings?.data?.seo?.site;
   const seo = settings?.data?.seo?.[page];
-  
-  const siteName =
-    site?.siteName ||
-    settings?.data?.agencyName ||
-    "Travel Agency";
 
-  const title =
-    seo?.title ||
-    defaults?.title ||
-    site?.defaultTitle ||
-    siteName;
-  const description =
-    seo?.description ||
-    defaults?.description ||
-    site?.description ||
-    "";
+  const siteName = site?.siteName || settings?.data?.agencyName || 'Travel Agency';
+
+  const title = seo?.title || defaults?.title || site?.defaultTitle || siteName;
+  const description = seo?.description || defaults?.description || site?.description || '';
 
   const keywordsSource = seo?.keywords || site?.keywords;
   const keywords = keywordsSource
-    ? keywordsSource.split(",").map((k) => k.trim()).filter(Boolean)
+    ? keywordsSource
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean)
     : undefined;
 
   return {

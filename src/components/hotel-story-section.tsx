@@ -1,11 +1,11 @@
-import React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import type { HotelStorySection as HotelStorySectionType } from "@/types";
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import type { HotelStorySection as HotelStorySectionType } from '@/types';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,7 +21,7 @@ export function HotelStorySection({ data, className }: HotelStorySectionProps) {
   if (!data?.title || !data?.description) return null;
 
   return (
-    <section className={cn("py-16 md:py-24 overflow-hidden", className)}>
+    <section className={cn('py-16 md:py-24 overflow-hidden', className)}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Text Content */}
@@ -71,7 +71,7 @@ export function HotelStorySection({ data, className }: HotelStorySectionProps) {
                 <span className="text-muted-foreground">No image provided</span>
               </div>
             )}
-            
+
             {/* Decorative elements */}
             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
             <div className="absolute top-10 right-10 w-20 h-20 bg-secondary/20 rounded-full blur-2xl" />

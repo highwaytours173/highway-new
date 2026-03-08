@@ -10,7 +10,7 @@ export type BookingConfirmationData = {
   agencyPhone?: string;
   bookingId: string;
   customerName: string;
-  paymentMethod: "cash" | "online";
+  paymentMethod: 'cash' | 'online';
   status: string;
   items: Array<{
     name: string;
@@ -40,37 +40,37 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): s
     subtotal,
     discountAmount = 0,
     totalPrice,
-    currency = "USD",
+    currency = 'USD',
   } = data;
 
   const fmt = (amount: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+    new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 
-  const statusColor = status === "Confirmed" ? "#16a34a" : "#d97706";
-  const statusLabel = status === "Confirmed" ? "✅ Confirmed" : "⏳ Pending Payment";
+  const statusColor = status === 'Confirmed' ? '#16a34a' : '#d97706';
+  const statusLabel = status === 'Confirmed' ? '✅ Confirmed' : '⏳ Pending Payment';
 
   const itemsHtml = items
     .map((item) => {
       const pax = [
-        item.adults ? `${item.adults} adult${item.adults > 1 ? "s" : ""}` : "",
-        item.children ? `${item.children} child${item.children > 1 ? "ren" : ""}` : "",
+        item.adults ? `${item.adults} adult${item.adults > 1 ? 's' : ''}` : '',
+        item.children ? `${item.children} child${item.children > 1 ? 'ren' : ''}` : '',
       ]
         .filter(Boolean)
-        .join(", ");
+        .join(', ');
       return `
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
             <strong style="color: #111;">${item.name}</strong>
-            ${item.packageName ? `<br><span style="color:#666;font-size:13px;">Package: ${item.packageName}</span>` : ""}
-            ${pax ? `<br><span style="color:#666;font-size:13px;">${pax}</span>` : ""}
-            ${item.date ? `<br><span style="color:#666;font-size:13px;">📅 ${new Date(item.date).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "long", day: "numeric" })}</span>` : ""}
+            ${item.packageName ? `<br><span style="color:#666;font-size:13px;">Package: ${item.packageName}</span>` : ''}
+            ${pax ? `<br><span style="color:#666;font-size:13px;">${pax}</span>` : ''}
+            ${item.date ? `<br><span style="color:#666;font-size:13px;">📅 ${new Date(item.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</span>` : ''}
           </td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-align: right; white-space: nowrap; color: #111; font-weight: 600;">
             ${fmt(item.price)}
           </td>
         </tr>`;
     })
-    .join("");
+    .join('');
 
   const discountRow =
     discountAmount > 0
@@ -78,10 +78,10 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): s
           <td style="padding: 8px 0; color: #16a34a;">Discount Applied</td>
           <td style="padding: 8px 0; text-align: right; color: #16a34a; font-weight: 600;">−${fmt(discountAmount)}</td>
         </tr>`
-      : "";
+      : '';
 
   const paymentNote =
-    paymentMethod === "cash"
+    paymentMethod === 'cash'
       ? `<p style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;color:#166534;font-size:14px;margin:24px 0;">
            💵 <strong>Payment Method:</strong> Cash on arrival. Please bring the exact amount on the day of your tour.
          </p>`
@@ -104,7 +104,7 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): s
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:32px 40px;text-align:center;">
-            ${agencyLogoUrl ? `<img src="${agencyLogoUrl}" alt="${agencyName}" style="max-height:50px;max-width:200px;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />` : ""}
+            ${agencyLogoUrl ? `<img src="${agencyLogoUrl}" alt="${agencyName}" style="max-height:50px;max-width:200px;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />` : ''}
             <h1 style="color:#fff;margin:0;font-size:24px;font-weight:700;letter-spacing:-0.5px;">${agencyName}</h1>
             <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:14px;">Booking Confirmation</p>
           </td>
@@ -141,7 +141,7 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): s
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
               ${itemsHtml}
               ${discountRow}
-              ${subtotal !== totalPrice ? `<tr><td style="padding:8px 0;color:#555;">Subtotal</td><td style="padding:8px 0;text-align:right;color:#555;">${fmt(subtotal)}</td></tr>` : ""}
+              ${subtotal !== totalPrice ? `<tr><td style="padding:8px 0;color:#555;">Subtotal</td><td style="padding:8px 0;text-align:right;color:#555;">${fmt(subtotal)}</td></tr>` : ''}
               <tr>
                 <td style="padding:12px 0;border-top:2px solid #111;font-size:16px;font-weight:700;color:#111;">Total</td>
                 <td style="padding:12px 0;border-top:2px solid #111;text-align:right;font-size:18px;font-weight:700;color:#2563eb;">${fmt(totalPrice)}</td>
@@ -151,12 +151,16 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): s
             ${paymentNote}
 
             <!-- Contact info -->
-            ${(agencyEmail || agencyPhone) ? `
+            ${
+              agencyEmail || agencyPhone
+                ? `
             <div style="background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;font-size:14px;color:#555;">
               <strong style="color:#111;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Need Help?</strong>
-              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#2563eb;">${agencyEmail}</a>` : ""}
-              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ""}
-            </div>` : ""}
+              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#2563eb;">${agencyEmail}</a>` : ''}
+              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ''}
+            </div>`
+                : ''
+            }
 
           </td>
         </tr>

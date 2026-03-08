@@ -1,9 +1,9 @@
-import { getAgencySettings } from "@/lib/supabase/agency-content";
-import { SettingsClient } from "./settings-client";
+import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { SettingsClient } from './settings-client';
 
 export const metadata = {
-  title: "Tour Settings",
-  description: "Manage your tour settings",
+  title: 'Tour Settings',
+  description: 'Manage your tour settings',
 };
 
 export default async function TourSettingsPage() {

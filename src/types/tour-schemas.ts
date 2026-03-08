@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const TourInputSchema = z.object({
   travelDates: z.object({
@@ -12,10 +12,10 @@ export const TourInputSchema = z.object({
     currency: z.string(),
   }),
   accommodation: z.enum([
-    "3-star hotel accommodation",
-    "4-star hotel accommodation",
-    "5-star hotel accommodation",
-    "Self-booked accommodation"
+    '3-star hotel accommodation',
+    '4-star hotel accommodation',
+    '5-star hotel accommodation',
+    'Self-booked accommodation',
   ]),
   participants: z.number().min(1).max(20),
   inclusions: z.array(z.string()),
@@ -45,5 +45,3 @@ export const TourOutputSchema = z.object({
 
 export type TourInput = z.infer<typeof TourInputSchema>;
 export type TourOutput = z.infer<typeof TourOutputSchema>;
-
-

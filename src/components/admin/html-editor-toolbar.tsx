@@ -1,26 +1,16 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Bold,
-  Italic,
-  Heading2,
-  Heading3,
-  Link as LinkIcon,
-  List,
-} from "lucide-react";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Bold, Italic, Heading2, Heading3, Link as LinkIcon, List } from 'lucide-react';
 
 interface HtmlEditorToolbarProps {
   textAreaRef: React.RefObject<HTMLTextAreaElement>;
   onContentChange: (newContent: string) => void;
 }
 
-export function HtmlEditorToolbar({
-  textAreaRef,
-  onContentChange,
-}: HtmlEditorToolbarProps) {
-  const applyTag = (tag: "strong" | "em" | "h2" | "h3" | "li") => {
+export function HtmlEditorToolbar({ textAreaRef, onContentChange }: HtmlEditorToolbarProps) {
+  const applyTag = (tag: 'strong' | 'em' | 'h2' | 'h3' | 'li') => {
     const textArea = textAreaRef.current;
     if (!textArea) return;
 
@@ -32,11 +22,11 @@ export function HtmlEditorToolbar({
 
     let newText;
 
-    if (tag === "li") {
+    if (tag === 'li') {
       const lines = selectedText
-        .split("\n")
+        .split('\n')
         .map((line) => `  <li>${line}</li>`)
-        .join("\n");
+        .join('\n');
       newText = `<ul>\n${lines}\n</ul>`;
     } else {
       newText = `<${tag}>${selectedText}</${tag}>`;
@@ -60,7 +50,7 @@ export function HtmlEditorToolbar({
     const start = textArea.selectionStart;
     const end = textArea.selectionEnd;
     const selectedText = textArea.value.substring(start, end);
-    const url = prompt("Enter the URL:", "https://");
+    const url = prompt('Enter the URL:', 'https://');
 
     if (url) {
       const textBefore = textArea.value.substring(0, start);
@@ -71,12 +61,12 @@ export function HtmlEditorToolbar({
   };
 
   const buttons = [
-    { label: "Bold", icon: Bold, action: () => applyTag("strong") },
-    { label: "Italic", icon: Italic, action: () => applyTag("em") },
-    { label: "H2", icon: Heading2, action: () => applyTag("h2") },
-    { label: "H3", icon: Heading3, action: () => applyTag("h3") },
-    { label: "List", icon: List, action: () => applyTag("li") },
-    { label: "Link", icon: LinkIcon, action: applyLink },
+    { label: 'Bold', icon: Bold, action: () => applyTag('strong') },
+    { label: 'Italic', icon: Italic, action: () => applyTag('em') },
+    { label: 'H2', icon: Heading2, action: () => applyTag('h2') },
+    { label: 'H3', icon: Heading3, action: () => applyTag('h3') },
+    { label: 'List', icon: List, action: () => applyTag('li') },
+    { label: 'Link', icon: LinkIcon, action: applyLink },
   ];
 
   return (

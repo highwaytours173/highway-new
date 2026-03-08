@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, MapPin } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, MapPin } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 type DestinationCard = {
   name: string;
@@ -53,21 +53,19 @@ export function DestinationClient({
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit">
-                {t("destination.badge")}
+                {t('destination.badge')}
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
                 {heroTitle}
               </h1>
-              <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                {heroSubtitle}
-              </p>
+              <p className="max-w-2xl text-base text-muted-foreground md:text-lg">{heroSubtitle}</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/tours">{t("destination.exploreTours")}</Link>
+                <Link href="/tours">{t('destination.exploreTours')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/tailor-made">{t("destination.tailorTrip")}</Link>
+                <Link href="/tailor-made">{t('destination.tailorTrip')}</Link>
               </Button>
             </div>
           </div>
@@ -104,11 +102,8 @@ export function DestinationClient({
                       <MapPin className="mr-1.5 h-3.5 w-3.5" />
                       {d.name}
                     </Badge>
-                    <Badge
-                      variant="secondary"
-                      className="bg-white/80 text-gray-800 hover:bg-white"
-                    >
-                      {d.count} {d.count === 1 ? t("destination.tour") : t("destination.tours")}
+                    <Badge variant="secondary" className="bg-white/80 text-gray-800 hover:bg-white">
+                      {d.count} {d.count === 1 ? t('destination.tour') : t('destination.tours')}
                     </Badge>
                   </div>
                 </div>
@@ -117,12 +112,12 @@ export function DestinationClient({
                   <div className="space-y-1">
                     <p className="text-lg font-semibold leading-snug">{d.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {destinationDescriptions[d.name] ?? `${t("destination.browseIn")} ${d.name}.`}
+                      {destinationDescriptions[d.name] ?? `${t('destination.browseIn')} ${d.name}.`}
                     </p>
                   </div>
                   <Button asChild variant="outline" className="shrink-0">
                     <Link href={href}>
-                      {t("destination.explore")} <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('destination.explore')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -132,10 +127,8 @@ export function DestinationClient({
         ) : (
           <Card className="rounded-3xl border bg-card">
             <CardContent className="p-10 text-center">
-              <p className="text-lg font-semibold">{t("destination.noDestinations")}</p>
-              <p className="mt-2 text-muted-foreground">
-                {t("destination.noDestinationsDesc")}
-              </p>
+              <p className="text-lg font-semibold">{t('destination.noDestinations')}</p>
+              <p className="mt-2 text-muted-foreground">{t('destination.noDestinationsDesc')}</p>
             </CardContent>
           </Card>
         )}

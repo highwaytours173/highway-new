@@ -1,26 +1,20 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { DollarSign, Package, ShoppingCart, Users } from "lucide-react";
-import { OverviewChart } from "@/components/admin/overview-chart";
-import { RecentSales } from "@/components/admin/recent-sales";
-import { PeriodSelector } from "@/components/admin/period-selector";
-import { GettingStarted } from "@/components/admin/getting-started";
-import { getBookings } from "@/lib/supabase/bookings";
-import { getCustomers } from "@/lib/supabase/customers";
-import { getTours } from "@/lib/supabase/tours";
-import { getCurrentAgency } from "@/lib/supabase/agencies";
-import { Suspense } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, Package, ShoppingCart, Users } from 'lucide-react';
+import { OverviewChart } from '@/components/admin/overview-chart';
+import { RecentSales } from '@/components/admin/recent-sales';
+import { PeriodSelector } from '@/components/admin/period-selector';
+import { GettingStarted } from '@/components/admin/getting-started';
+import { getBookings } from '@/lib/supabase/bookings';
+import { getCustomers } from '@/lib/supabase/customers';
+import { getTours } from '@/lib/supabase/tours';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
+import { Suspense } from 'react';
 
 function formatUSD(value: number) {
   try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
       maximumFractionDigits: 0,
     }).format(value);
   } catch {
@@ -29,9 +23,9 @@ function formatUSD(value: number) {
 }
 
 function getPeriodDays(period: string): number | null {
-  if (period === "7") return 7;
-  if (period === "90") return 90;
-  if (period === "all") return null;
+  if (period === '7') return 7;
+  if (period === '90') return 90;
+  if (period === 'all') return null;
   return 30; // default
 }
 
@@ -45,12 +39,12 @@ function buildChartData(
     const labels: string[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      labels.push(d.toLocaleString("en-US", { month: "short", year: "2-digit" }));
+      labels.push(d.toLocaleString('en-US', { month: 'short', year: '2-digit' }));
     }
     const totals: Record<string, number> = Object.fromEntries(labels.map((l) => [l, 0]));
     for (const b of bookings) {
       const d = b.bookingDate ? new Date(b.bookingDate) : new Date();
-      const label = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+      const label = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
       if (totals[label] !== undefined) totals[label] += b.totalPrice ?? 0;
     }
     return labels.map((l) => ({ name: l, total: totals[l] }));
@@ -67,8 +61,8 @@ function buildChartData(
   for (const cur = new Date(startDate); cur <= today; cur.setDate(cur.getDate() + 1)) {
     const label =
       days <= 7
-        ? cur.toLocaleString("en-US", { weekday: "short" })
-        : cur.toLocaleString("en-US", { month: "short", day: "numeric" });
+        ? cur.toLocaleString('en-US', { weekday: 'short' })
+        : cur.toLocaleString('en-US', { month: 'short', day: 'numeric' });
     points.push({ date: new Date(cur), label });
   }
 
@@ -93,7 +87,7 @@ export default async function AdminDashboard({
   searchParams: Promise<{ period?: string }>;
 }) {
   const { period: periodParam } = await searchParams;
-  const period = periodParam ?? "30";
+  const period = periodParam ?? '30';
   const periodDays = getPeriodDays(period);
 
   const [allBookings, customers, tours, agency] = await Promise.all([
@@ -133,34 +127,31 @@ export default async function AdminDashboard({
   const onboardingDismissed = !!agency?.settings?.onboarding_dismissed;
   const onboardingSteps = [
     {
-      id: "logo",
-      label: "Upload your logo",
-      description: "Brand your agency with a custom logo",
-      href: "/admin/settings",
+      id: 'logo',
+      label: 'Upload your logo',
+      description: 'Brand your agency with a custom logo',
+      href: '/admin/settings',
       completed: !!agency?.settings?.theme?.logoUrl,
     },
     {
-      id: "contact",
-      label: "Configure contact info",
-      description: "Add your email, phone, and address",
-      href: "/admin/settings",
-      completed: !!(
-        agency?.settings?.contact?.email ||
-        agency?.settings?.contact?.phone
-      ),
+      id: 'contact',
+      label: 'Configure contact info',
+      description: 'Add your email, phone, and address',
+      href: '/admin/settings',
+      completed: !!(agency?.settings?.contact?.email || agency?.settings?.contact?.phone),
     },
     {
-      id: "tour",
-      label: "Create your first tour",
-      description: "Add a tour or hotel for customers to book",
-      href: "/admin/tours",
+      id: 'tour',
+      label: 'Create your first tour',
+      description: 'Add a tour or hotel for customers to book',
+      href: '/admin/tours',
       completed: tours.length > 0,
     },
     {
-      id: "homepage",
-      label: "Set up your homepage",
-      description: "Customise the hero section and visuals",
-      href: "/admin/home-page-editor",
+      id: 'homepage',
+      label: 'Set up your homepage',
+      description: 'Customise the hero section and visuals',
+      href: '/admin/home-page-editor',
       completed: !!(
         agency?.settings?.theme?.primaryColor ||
         agency?.settings?.social?.facebook ||
@@ -168,39 +159,40 @@ export default async function AdminDashboard({
       ),
     },
     {
-      id: "booking",
-      label: "Receive your first booking",
-      description: "Share your site and start taking orders",
-      href: "/admin/bookings",
+      id: 'booking',
+      label: 'Receive your first booking',
+      description: 'Share your site and start taking orders',
+      href: '/admin/bookings',
       completed: allBookings.length > 0,
     },
   ];
-  const showOnboarding =
-    !onboardingDismissed &&
-    !onboardingSteps.every((s) => s.completed);
+  const showOnboarding = !onboardingDismissed && !onboardingSteps.every((s) => s.completed);
 
   const periodLabel =
-    period === "7" ? "last 7 days" :
-    period === "90" ? "last 90 days" :
-    period === "all" ? "all time" :
-    "last 30 days";
+    period === '7'
+      ? 'last 7 days'
+      : period === '90'
+        ? 'last 90 days'
+        : period === 'all'
+          ? 'all time'
+          : 'last 30 days';
 
   const recentItems = periodBookings.slice(0, 5).map((b) => ({
-    user: b.customerName ?? b.customerEmail ?? "Customer",
-    email: b.customerEmail ?? "",
+    user: b.customerName ?? b.customerEmail ?? 'Customer',
+    email: b.customerEmail ?? '',
     amount: `+${formatUSD(b.totalPrice ?? 0)}`,
     avatar: undefined,
   }));
 
   return (
     <div className="space-y-6">
-      {showOnboarding && (
-        <GettingStarted steps={onboardingSteps} />
-      )}
+      {showOnboarding && <GettingStarted steps={onboardingSteps} />}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground capitalize">Showing stats for {periodLabel}</p>
+          <p className="text-sm text-muted-foreground capitalize">
+            Showing stats for {periodLabel}
+          </p>
         </div>
         <Suspense fallback={null}>
           <PeriodSelector currentPeriod={period} />

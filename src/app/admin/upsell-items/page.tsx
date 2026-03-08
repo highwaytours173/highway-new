@@ -1,10 +1,10 @@
-import { getUpsellItems, deleteUpsellItem } from "@/lib/supabase/upsell-items";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import Link from "next/link";
-import { UpsellItemsClient } from "./upsell-items-client";
+import { getUpsellItems, deleteUpsellItem } from '@/lib/supabase/upsell-items';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import Link from 'next/link';
+import { UpsellItemsClient } from './upsell-items-client';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function UpsellItemsPage() {
   const upsellItems = await getUpsellItems();
@@ -13,12 +13,9 @@ export default async function UpsellItemsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Upsell Items Management
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Upsell Items Management</h2>
           <p className="text-muted-foreground">
-            Here&apos;s a list of all your upsell items. You can add, edit, or delete
-            them.
+            Here&apos;s a list of all your upsell items. You can add, edit, or delete them.
           </p>
         </div>
         <div className="flex gap-2">
@@ -30,11 +27,7 @@ export default async function UpsellItemsPage() {
           </Button>
         </div>
       </div>
-      <UpsellItemsClient
-        initialUpsellItems={upsellItems}
-        onDelete={deleteUpsellItem}
-      />
+      <UpsellItemsClient initialUpsellItems={upsellItems} onDelete={deleteUpsellItem} />
     </div>
   );
 }
-

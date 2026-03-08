@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import type { Tour } from "@/types";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { toCamelCase } from "@/lib/utils";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import type { Tour } from '@/types';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { toCamelCase } from '@/lib/utils';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
 
 type GetToursOptions = {
   q?: string;
@@ -33,36 +33,36 @@ export async function getTours(options: GetToursOptions = {}): Promise<Tour[]> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
-  let query = supabase.from("tours").select("*").eq("agency_id", agencyId);
+  let query = supabase.from('tours').select('*').eq('agency_id', agencyId);
 
   if (q && q.trim()) {
     // Search in name (and optionally description)
-    query = query.ilike("name", `%${q.trim()}%`);
+    query = query.ilike('name', `%${q.trim()}%`);
   }
   if (destination && destination.trim()) {
-    query = query.ilike("destination", destination.trim());
+    query = query.ilike('destination', destination.trim());
   }
   if (type && type.trim()) {
-    query = query.contains("type", [type.trim()]);
+    query = query.contains('type', [type.trim()]);
   }
   if (limit != null) {
     query = query.limit(limit);
   }
 
   const { data, error } = await query;
-  
+
   if (error) {
-    console.error("Supabase error fetching tours:", error);
+    console.error('Supabase error fetching tours:', error);
     // Only fallback if specifically requested or strictly needed during dev
     // Ideally, we should throw or return empty array to debug DB issues
-    throw error; 
+    throw error;
   }
-  
+
   if (!data || data.length === 0) {
-    console.log("No tours found in Supabase database.");
+    console.log('No tours found in Supabase database.');
     return [];
   }
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data as any[]).map((item) => ensureTourDefaults(toCamelCase(item) as Tour));
 }
@@ -70,12 +70,12 @@ export async function getTours(options: GetToursOptions = {}): Promise<Tour[]> {
 export async function getTourBySlug(slug: string): Promise<Tour | null> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
-  
+
   const { data, error } = await supabase
-    .from("tours")
-    .select("*")
-    .eq("slug", slug)
-    .eq("agency_id", agencyId)
+    .from('tours')
+    .select('*')
+    .eq('slug', slug)
+    .eq('agency_id', agencyId)
     .single();
 
   if (error) {
@@ -91,10 +91,10 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
 }
 
 export async function addTour(
-  formData: Omit<Tour, "id" | "images"> & {
+  formData: Omit<Tour, 'id' | 'images'> & {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images: any[];
-  },
+  }
 ) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
@@ -107,18 +107,14 @@ export async function addTour(
       if (!file.name || !file.size) continue; // Skip empty/invalid file inputs
       const filePath = `public/${Date.now()}-${file.name}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("tours")
-        .upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('tours').upload(filePath, file);
 
       if (uploadError) {
-        console.error("Error uploading image:", uploadError);
-        throw new Error("Failed to upload image.");
+        console.error('Error uploading image:', uploadError);
+        throw new Error('Failed to upload image.');
       }
 
-      const { data: urlData } = supabase.storage
-        .from("tours")
-        .getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from('tours').getPublicUrl(filePath);
 
       imageUrls.push(urlData.publicUrl);
     }
@@ -149,18 +145,18 @@ export async function addTour(
   };
 
   // 3. Insert into database
-  const { error: insertError } = await supabase.from("tours").insert(dbData);
+  const { error: insertError } = await supabase.from('tours').insert(dbData);
 
   if (insertError) {
-    console.error("Error inserting tour:", insertError);
-    throw new Error("Failed to create tour.");
+    console.error('Error inserting tour:', insertError);
+    throw new Error('Failed to create tour.');
   }
 
   // 4. Revalidate and redirect
-  revalidatePath("/admin/tours");
-  revalidatePath("/"); // Revalidate homepage
-  revalidatePath("/tours"); // Revalidate tours page
-  redirect("/admin/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/'); // Revalidate homepage
+  revalidatePath('/tours'); // Revalidate tours page
+  redirect('/admin/tours');
 }
 
 export async function deleteTour(id: string) {
@@ -172,56 +168,55 @@ export async function deleteTour(id: string) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("You must be signed in to delete tours.");
+    throw new Error('You must be signed in to delete tours.');
   }
 
-  const allowedAdminEmailsRaw =
-    process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "";
+  const allowedAdminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
 
   if (allowedAdminEmailsRaw.trim()) {
     const allowed = new Set(
       allowedAdminEmailsRaw
-        .split(",")
+        .split(',')
         .map((v) => v.trim().toLowerCase())
-        .filter(Boolean),
+        .filter(Boolean)
     );
 
-    const email = (user.email || "").trim().toLowerCase();
+    const email = (user.email || '').trim().toLowerCase();
     if (!email || !allowed.has(email)) {
-      throw new Error("You are not authorized to delete tours.");
+      throw new Error('You are not authorized to delete tours.');
     }
   }
 
-  const { error } = await supabase.from("tours").delete().eq("id", id).eq("agency_id", agencyId);
+  const { error } = await supabase.from('tours').delete().eq('id', id).eq('agency_id', agencyId);
 
   if (error) {
-    console.error("Error deleting tour:", error);
+    console.error('Error deleting tour:', error);
     try {
       const adminClient = createServiceRoleClient();
       const { error: adminError } = await adminClient
-        .from("tours")
+        .from('tours')
         .delete()
-        .eq("id", id)
-        .eq("agency_id", agencyId);
+        .eq('id', id)
+        .eq('agency_id', agencyId);
 
       if (adminError) {
-        console.error("Service role delete failed:", adminError);
-        throw new Error(adminError.message || "Failed to delete tour.");
+        console.error('Service role delete failed:', adminError);
+        throw new Error(adminError.message || 'Failed to delete tour.');
       }
     } catch (err) {
       if (err instanceof Error) {
         throw err;
       }
-      throw new Error(error.message || "Failed to delete tour.");
+      throw new Error(error.message || 'Failed to delete tour.');
     }
   }
 
-  revalidatePath("/admin/tours");
-  revalidatePath("/");
-  revalidatePath("/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/');
+  revalidatePath('/tours');
 }
 
-export async function updateTour(id: string, formData: Omit<Tour, "id">) {
+export async function updateTour(id: string, formData: Omit<Tour, 'id'>) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
@@ -230,27 +225,22 @@ export async function updateTour(id: string, formData: Omit<Tour, "id">) {
   if (formData.images && formData.images.length > 0) {
     for (const image of formData.images) {
       // If it's a new File object, upload it
-      if (typeof image === "object" && "name" in image && "size" in image) {
-
+      if (typeof image === 'object' && 'name' in image && 'size' in image) {
         const file = image as unknown as File;
         if (!file.name || !file.size) continue;
         const filePath = `public/${Date.now()}-${file.name}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("tours")
-          .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage.from('tours').upload(filePath, file);
 
         if (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          throw new Error("Failed to upload image.");
+          console.error('Error uploading image:', uploadError);
+          throw new Error('Failed to upload image.');
         }
 
-        const { data: urlData } = supabase.storage
-          .from("tours")
-          .getPublicUrl(filePath);
+        const { data: urlData } = supabase.storage.from('tours').getPublicUrl(filePath);
 
         imageUrls.push(urlData.publicUrl);
-      } else if (typeof image === "string") {
+      } else if (typeof image === 'string') {
         // If it's an existing URL, keep it
         imageUrls.push(image);
       }
@@ -282,19 +272,19 @@ export async function updateTour(id: string, formData: Omit<Tour, "id">) {
 
   // 3. Update in database
   const { error: updateError } = await supabase
-    .from("tours")
+    .from('tours')
     .update(dbData)
-    .eq("id", id)
-    .eq("agency_id", agencyId);
+    .eq('id', id)
+    .eq('agency_id', agencyId);
 
   if (updateError) {
-    console.error("Error updating tour:", updateError);
-    throw new Error("Failed to update tour.");
+    console.error('Error updating tour:', updateError);
+    throw new Error('Failed to update tour.');
   }
 
   // 4. Revalidate and redirect
-  revalidatePath("/admin/tours");
-  revalidatePath("/"); // Revalidate homepage
-  revalidatePath("/tours"); // Revalidate tours page
-  redirect("/admin/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/'); // Revalidate homepage
+  revalidatePath('/tours'); // Revalidate tours page
+  redirect('/admin/tours');
 }

@@ -1,54 +1,54 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import type { UpsellItem } from "@/types";
-import * as React from "react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useCart } from "@/hooks/use-cart";
-import { useCurrency } from "@/hooks/use-currency";
-import { ArrowUpDown, PlusCircle, Search, ShoppingBag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Image from 'next/image';
+import type { UpsellItem } from '@/types';
+import * as React from 'react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useCart } from '@/hooks/use-cart';
+import { useCurrency } from '@/hooks/use-currency';
+import { ArrowUpDown, PlusCircle, Search, ShoppingBag } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function getUpsellCategory(item: UpsellItem) {
-  const haystack = `${item.name ?? ""} ${item.description ?? ""}`.toLowerCase();
+  const haystack = `${item.name ?? ''} ${item.description ?? ''}`.toLowerCase();
   if (
-    haystack.includes("airport") ||
-    haystack.includes("pickup") ||
-    haystack.includes("pick up") ||
-    haystack.includes("dropoff") ||
-    haystack.includes("drop off") ||
-    haystack.includes("transfer")
+    haystack.includes('airport') ||
+    haystack.includes('pickup') ||
+    haystack.includes('pick up') ||
+    haystack.includes('dropoff') ||
+    haystack.includes('drop off') ||
+    haystack.includes('transfer')
   ) {
-    return "Airport Transfers";
+    return 'Airport Transfers';
   }
-  if (haystack.includes("sim") || haystack.includes("esim") || haystack.includes("internet")) {
-    return "SIM & Internet";
-  }
-  if (
-    haystack.includes("driver") ||
-    haystack.includes("private car") ||
-    haystack.includes("rent car") ||
-    haystack.includes("car with driver") ||
-    haystack.includes("vehicle")
-  ) {
-    return "Private Driver";
+  if (haystack.includes('sim') || haystack.includes('esim') || haystack.includes('internet')) {
+    return 'SIM & Internet';
   }
   if (
-    haystack.includes("guide") ||
-    haystack.includes("assistant") ||
-    haystack.includes("meet & assist") ||
-    haystack.includes("meet and assist")
+    haystack.includes('driver') ||
+    haystack.includes('private car') ||
+    haystack.includes('rent car') ||
+    haystack.includes('car with driver') ||
+    haystack.includes('vehicle')
   ) {
-    return "Meet & Assist";
+    return 'Private Driver';
   }
-  if (haystack.includes("ticket") || haystack.includes("entry") || haystack.includes("pass")) {
-    return "Tickets";
+  if (
+    haystack.includes('guide') ||
+    haystack.includes('assistant') ||
+    haystack.includes('meet & assist') ||
+    haystack.includes('meet and assist')
+  ) {
+    return 'Meet & Assist';
   }
-  return "Other";
+  if (haystack.includes('ticket') || haystack.includes('entry') || haystack.includes('pass')) {
+    return 'Tickets';
+  }
+  return 'Other';
 }
 
 function getUpsellSortPrice(item: UpsellItem) {
@@ -59,17 +59,17 @@ function getUpsellSortPrice(item: UpsellItem) {
   return item.price ?? 0;
 }
 
-function getVariantKey(variant: NonNullable<UpsellItem["variants"]>[number]) {
+function getVariantKey(variant: NonNullable<UpsellItem['variants']>[number]) {
   return variant.id ?? variant.name;
 }
 
 export function ServicesClient({
   services,
   showTypeFilter = false,
-  badgeLabel = "Services",
-  title = "Choose what you need",
-  description = "Add services that make your trip smoother.",
-  searchPlaceholder = "Search services...",
+  badgeLabel = 'Services',
+  title = 'Choose what you need',
+  description = 'Add services that make your trip smoother.',
+  searchPlaceholder = 'Search services...',
 }: {
   services: UpsellItem[];
   showTypeFilter?: boolean;
@@ -80,43 +80,41 @@ export function ServicesClient({
 }) {
   const { addToCart, cartItems } = useCart();
   const { format } = useCurrency();
-  const [q, setQ] = React.useState("");
-  const [sort, setSort] = React.useState<"recommended" | "price_asc" | "price_desc">(
-    "recommended",
-  );
-  const [typeFilter, setTypeFilter] = React.useState<"all" | UpsellItem["type"]>("all");
-  const [category, setCategory] = React.useState<string>("All");
+  const [q, setQ] = React.useState('');
+  const [sort, setSort] = React.useState<'recommended' | 'price_asc' | 'price_desc'>('recommended');
+  const [typeFilter, setTypeFilter] = React.useState<'all' | UpsellItem['type']>('all');
+  const [category, setCategory] = React.useState<string>('All');
   const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({});
 
   const categories = React.useMemo(() => {
     const set = new Set<string>();
     for (const item of services) set.add(getUpsellCategory(item));
-    return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [services]);
 
   const visibleServices = React.useMemo(() => {
     const query = q.trim().toLowerCase();
     let filtered = services;
 
-    if (showTypeFilter && typeFilter !== "all") {
+    if (showTypeFilter && typeFilter !== 'all') {
       filtered = filtered.filter((s) => s.type === typeFilter);
     }
 
-    if (category !== "All") {
+    if (category !== 'All') {
       filtered = filtered.filter((s) => getUpsellCategory(s) === category);
     }
 
     if (query.length > 0) {
       filtered = filtered.filter((s) => {
-        const name = s.name?.toLowerCase() || "";
-        const description = s.description?.toLowerCase() || "";
+        const name = s.name?.toLowerCase() || '';
+        const description = s.description?.toLowerCase() || '';
         return name.includes(query) || description.includes(query);
       });
     }
 
     const sorted = [...filtered];
-    if (sort === "price_asc") sorted.sort((a, b) => getUpsellSortPrice(a) - getUpsellSortPrice(b));
-    if (sort === "price_desc") sorted.sort((a, b) => getUpsellSortPrice(b) - getUpsellSortPrice(a));
+    if (sort === 'price_asc') sorted.sort((a, b) => getUpsellSortPrice(a) - getUpsellSortPrice(b));
+    if (sort === 'price_desc') sorted.sort((a, b) => getUpsellSortPrice(b) - getUpsellSortPrice(a));
     return sorted;
   }, [category, q, services, showTypeFilter, sort, typeFilter]);
 
@@ -125,9 +123,7 @@ export function ServicesClient({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{badgeLabel}</p>
-          <p className="text-2xl font-semibold tracking-tight">
-            {title}
-          </p>
+          <p className="text-2xl font-semibold tracking-tight">{title}</p>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
 
@@ -147,7 +143,7 @@ export function ServicesClient({
             <select
               value={sort}
               onChange={(e) =>
-                setSort(e.target.value as "recommended" | "price_asc" | "price_desc")
+                setSort(e.target.value as 'recommended' | 'price_asc' | 'price_desc')
               }
               className="h-10 rounded-md border bg-background px-3 text-sm"
               aria-label={`Sort ${badgeLabel}`}
@@ -164,14 +160,14 @@ export function ServicesClient({
         {showTypeFilter ? (
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "All", value: "all" as const },
-              { label: "Services", value: "service" as const },
-              { label: "Tour Add-ons", value: "tour_addon" as const },
+              { label: 'All', value: 'all' as const },
+              { label: 'Services', value: 'service' as const },
+              { label: 'Tour Add-ons', value: 'tour_addon' as const },
             ].map((t) => (
               <Button
                 key={t.value}
                 type="button"
-                variant={typeFilter === t.value ? "default" : "outline"}
+                variant={typeFilter === t.value ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setTypeFilter(t.value)}
               >
@@ -186,7 +182,7 @@ export function ServicesClient({
             <Button
               key={c}
               type="button"
-              variant={category === c ? "default" : "outline"}
+              variant={category === c ? 'default' : 'outline'}
               size="sm"
               onClick={() => setCategory(c)}
             >
@@ -196,7 +192,7 @@ export function ServicesClient({
         </div>
 
         <div className="text-sm text-muted-foreground">
-          Showing {visibleServices.length} item{visibleServices.length === 1 ? "" : "s"}
+          Showing {visibleServices.length} item{visibleServices.length === 1 ? '' : 's'}
         </div>
       </div>
 
@@ -212,7 +208,7 @@ export function ServicesClient({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setQ("")}
+              onClick={() => setQ('')}
               className="w-full sm:w-auto"
             >
               Clear search
@@ -223,17 +219,18 @@ export function ServicesClient({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visibleServices.map((item) => {
             const variants = item.variants ?? [];
-            const selectedVariantKey = variants.length > 0
-              ? (selectedVariants[item.id] ?? (variants[0] ? getVariantKey(variants[0]) : ""))
-              : undefined;
+            const selectedVariantKey =
+              variants.length > 0
+                ? (selectedVariants[item.id] ?? (variants[0] ? getVariantKey(variants[0]) : ''))
+                : undefined;
             const selectedVariant = selectedVariantKey
-              ? variants.find((v) => getVariantKey(v) === selectedVariantKey) ?? variants[0]
+              ? (variants.find((v) => getVariantKey(v) === selectedVariantKey) ?? variants[0])
               : undefined;
             const displayPrice = selectedVariant?.price ?? item.price ?? 0;
             const isInCart = cartItems.some((c) => {
-              if (c.productType !== "upsell") return false;
+              if (c.productType !== 'upsell') return false;
               if (c.product.id !== item.id) return false;
-              return (c.packageId ?? "base") === (selectedVariantKey ?? "base");
+              return (c.packageId ?? 'base') === (selectedVariantKey ?? 'base');
             });
             const canAdd = item.isActive && !isInCart;
             const itemCategory = getUpsellCategory(item);
@@ -260,32 +257,28 @@ export function ServicesClient({
                   <div className="absolute left-4 top-4 flex items-center gap-2">
                     <Badge className="bg-background/90 text-foreground hover:bg-background">
                       $
-                      {new Intl.NumberFormat("en-US", {
+                      {new Intl.NumberFormat('en-US', {
                         maximumFractionDigits: 0,
                       }).format(displayPrice)}
                     </Badge>
                     <Badge variant="secondary" className="bg-background/90">
                       {itemCategory}
                     </Badge>
-                    {!item.isActive && (
-                      <Badge variant="secondary">Unavailable</Badge>
-                    )}
+                    {!item.isActive && <Badge variant="secondary">Unavailable</Badge>}
                   </div>
                 </div>
 
                 <CardContent className="flex flex-col gap-4 p-6">
                   <div className="space-y-1">
-                    <p className="line-clamp-2 text-lg font-semibold leading-snug">
-                      {item.name}
-                    </p>
+                    <p className="line-clamp-2 text-lg font-semibold leading-snug">{item.name}</p>
                     <p
                       className={cn(
-                        "text-sm text-muted-foreground",
-                        item.description ? "line-clamp-3" : "line-clamp-2",
+                        'text-sm text-muted-foreground',
+                        item.description ? 'line-clamp-3' : 'line-clamp-2'
                       )}
                     >
                       {item.description ||
-                        "Add this service to make your trip smoother and more comfortable."}
+                        'Add this service to make your trip smoother and more comfortable.'}
                     </p>
                   </div>
 
@@ -294,7 +287,7 @@ export function ServicesClient({
                       <div className="grid gap-2">
                         <p className="text-sm font-medium">Variant</p>
                         <select
-                          value={selectedVariantKey ?? ""}
+                          value={selectedVariantKey ?? ''}
                           onChange={(e) =>
                             setSelectedVariants((prev) => ({
                               ...prev,
@@ -316,20 +309,20 @@ export function ServicesClient({
                       onClick={() =>
                         addToCart(
                           item,
-                          "upsell",
+                          'upsell',
                           undefined,
                           undefined,
                           undefined,
                           1,
                           selectedVariant ? getVariantKey(selectedVariant) : undefined,
-                          selectedVariant?.name,
+                          selectedVariant?.name
                         )
                       }
                       disabled={!canAdd}
                       className="w-full"
                     >
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      {isInCart ? "In Cart" : "Add to cart"}
+                      {isInCart ? 'In Cart' : 'Add to cart'}
                     </Button>
                     <Button asChild variant="outline" className="w-full">
                       <Link href={`/services/${item.id}`}>Details</Link>
@@ -341,9 +334,7 @@ export function ServicesClient({
                     )}
                     {!item.isActive ? (
                       <Button asChild variant="outline" className="w-full">
-                        <Link
-                          href={`/contact?service=${encodeURIComponent(item.name)}`}
-                        >
+                        <Link href={`/contact?service=${encodeURIComponent(item.name)}`}>
                           Request availability
                         </Link>
                       </Button>

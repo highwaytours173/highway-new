@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -7,9 +7,9 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
-} from "react";
-import type { Tour } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+} from 'react';
+import type { Tour } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface WishlistContextType {
   wishlistItems: Tour[];
@@ -18,16 +18,14 @@ interface WishlistContextType {
   isInWishlist: (tourId: string) => boolean;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(
-  undefined,
-);
+const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [wishlistItems, setWishlistItems] = useState<Tour[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    const host = typeof window === "undefined" ? "app" : window.location.host;
+    const host = typeof window === 'undefined' ? 'app' : window.location.host;
     const WISHLIST_STORAGE_KEY = `${host}-wishlist`;
     try {
       const storedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
@@ -35,20 +33,17 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         setWishlistItems(JSON.parse(storedWishlist));
       }
     } catch (error) {
-      console.error("Could not load wishlist from localStorage", error);
+      console.error('Could not load wishlist from localStorage', error);
     }
   }, []);
 
   useEffect(() => {
-    const host = typeof window === "undefined" ? "app" : window.location.host;
+    const host = typeof window === 'undefined' ? 'app' : window.location.host;
     const WISHLIST_STORAGE_KEY = `${host}-wishlist`;
     try {
-      localStorage.setItem(
-        WISHLIST_STORAGE_KEY,
-        JSON.stringify(wishlistItems),
-      );
+      localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlistItems));
     } catch (error) {
-      console.error("Could not save wishlist to localStorage", error);
+      console.error('Could not save wishlist to localStorage', error);
     }
   }, [wishlistItems]);
 
@@ -59,13 +54,13 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
           return prevItems;
         }
         toast({
-          title: "Added to Wishlist",
+          title: 'Added to Wishlist',
           description: `${tour.name} has been added to your wishlist.`,
         });
         return [...prevItems, tour];
       });
     },
-    [toast],
+    [toast]
   );
 
   const removeFromWishlist = useCallback(
@@ -78,12 +73,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
 
       if (tourName) {
         toast({
-          title: "Removed from Wishlist",
+          title: 'Removed from Wishlist',
           description: `${tourName} has been removed from your wishlist.`,
         });
       }
     },
-    [toast],
+    [toast]
   );
 
   const isInWishlist = (tourId: string) => {
@@ -102,7 +97,7 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
 export const useWishlist = () => {
   const context = useContext(WishlistContext);
   if (context === undefined) {
-    throw new Error("useWishlist must be used within a WishlistProvider");
+    throw new Error('useWishlist must be used within a WishlistProvider');
   }
   return context;
 };

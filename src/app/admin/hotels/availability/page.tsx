@@ -1,15 +1,15 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   getHotelBookings,
   getHotels,
   getRoomInventory,
   getRoomTypesByHotelId,
   upsertRoomInventoryRange,
-} from "@/lib/supabase/hotels";
+} from '@/lib/supabase/hotels';
 
 function addDaysISO(dateIso: string, days: number) {
   const d = new Date(`${dateIso}T00:00:00Z`);
@@ -43,15 +43,15 @@ export default async function AdminHotelAvailabilityPage({
   const defaultFrom = today;
   const defaultTo = addDaysISO(today, 30);
 
-  const fromParam = typeof sp.from === "string" ? sp.from : undefined;
-  const toParam = typeof sp.to === "string" ? sp.to : undefined;
+  const fromParam = typeof sp.from === 'string' ? sp.from : undefined;
+  const toParam = typeof sp.to === 'string' ? sp.to : undefined;
   const from = fromParam && isValidISODate(fromParam) ? fromParam : defaultFrom;
   const to = toParam && isValidISODate(toParam) ? toParam : defaultTo;
 
   const hotels = await getHotels();
   const activeHotel = hotels[0] || null;
   const roomTypes = activeHotel ? await getRoomTypesByHotelId(activeHotel.id) : [];
-  const roomTypeIdParam = typeof sp.roomTypeId === "string" ? sp.roomTypeId : undefined;
+  const roomTypeIdParam = typeof sp.roomTypeId === 'string' ? sp.roomTypeId : undefined;
   const selectedRoomTypeId =
     roomTypeIdParam && roomTypes.some((rt) => rt.id === roomTypeIdParam)
       ? roomTypeIdParam
@@ -59,12 +59,14 @@ export default async function AdminHotelAvailabilityPage({
 
   const toExclusive = addDaysISO(to, 1);
   const [inventory, bookings] = await Promise.all([
-    selectedRoomTypeId ? getRoomInventory({ roomTypeId: selectedRoomTypeId, from, to: toExclusive }) : Promise.resolve([]),
+    selectedRoomTypeId
+      ? getRoomInventory({ roomTypeId: selectedRoomTypeId, from, to: toExclusive })
+      : Promise.resolve([]),
     getHotelBookings(),
   ]);
 
   const selectedBookings = selectedRoomTypeId
-    ? bookings.filter((b) => b.roomTypeId === selectedRoomTypeId && b.status !== "cancelled")
+    ? bookings.filter((b) => b.roomTypeId === selectedRoomTypeId && b.status !== 'cancelled')
     : [];
 
   const upcomingReservations = selectedBookings
@@ -76,17 +78,17 @@ export default async function AdminHotelAvailabilityPage({
   const days = isValidISODate(from) && isValidISODate(to) ? buildDateRange(from, to) : [];
 
   const setRange = async (formData: FormData) => {
-    "use server";
+    'use server';
 
-    const roomTypeId = String(formData.get("roomTypeId") || "").trim();
-    const rangeFrom = String(formData.get("from") || "").trim();
-    const rangeTo = String(formData.get("to") || "").trim();
-    const availableUnits = Number(formData.get("availableUnits") || 0);
-    const pricePerNight = Number(formData.get("pricePerNight") || 0);
-    const stopSell = formData.get("stopSell") === "on";
+    const roomTypeId = String(formData.get('roomTypeId') || '').trim();
+    const rangeFrom = String(formData.get('from') || '').trim();
+    const rangeTo = String(formData.get('to') || '').trim();
+    const availableUnits = Number(formData.get('availableUnits') || 0);
+    const pricePerNight = Number(formData.get('pricePerNight') || 0);
+    const stopSell = formData.get('stopSell') === 'on';
 
-    if (!roomTypeId) throw new Error("Room type is required.");
-    if (!rangeFrom || !rangeTo) throw new Error("Date range is required.");
+    if (!roomTypeId) throw new Error('Room type is required.');
+    if (!rangeFrom || !rangeTo) throw new Error('Date range is required.');
 
     await upsertRoomInventoryRange({
       roomTypeId,
@@ -140,7 +142,10 @@ export default async function AdminHotelAvailabilityPage({
             </div>
           ) : (
             <div className="space-y-6">
-              <form method="GET" className="grid gap-4 rounded-lg border p-4 sm:grid-cols-4 sm:items-end">
+              <form
+                method="GET"
+                className="grid gap-4 rounded-lg border p-4 sm:grid-cols-4 sm:items-end"
+              >
                 <div className="grid gap-2 sm:col-span-2">
                   <Label htmlFor="roomTypeId">Room Type</Label>
                   <select
@@ -172,7 +177,10 @@ export default async function AdminHotelAvailabilityPage({
               </form>
 
               {selectedRoomTypeId ? (
-                <form action={setRange} className="grid gap-4 rounded-lg border p-4 sm:grid-cols-5 sm:items-end">
+                <form
+                  action={setRange}
+                  className="grid gap-4 rounded-lg border p-4 sm:grid-cols-5 sm:items-end"
+                >
                   <input type="hidden" name="roomTypeId" value={selectedRoomTypeId} />
                   <div className="grid gap-2">
                     <Label htmlFor="rangeFrom">From</Label>
@@ -184,11 +192,24 @@ export default async function AdminHotelAvailabilityPage({
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="availableUnits">Units</Label>
-                    <Input id="availableUnits" name="availableUnits" type="number" min={0} defaultValue={0} />
+                    <Input
+                      id="availableUnits"
+                      name="availableUnits"
+                      type="number"
+                      min={0}
+                      defaultValue={0}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="pricePerNight">Price / night</Label>
-                    <Input id="pricePerNight" name="pricePerNight" type="number" min={0} step="0.01" defaultValue={0} />
+                    <Input
+                      id="pricePerNight"
+                      name="pricePerNight"
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      defaultValue={0}
+                    />
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <label className="flex items-center gap-2 text-sm">
@@ -225,9 +246,11 @@ export default async function AdminHotelAvailabilityPage({
                           <td className="px-3 py-2">{row?.availableUnits ?? 0}</td>
                           <td className="px-3 py-2">{booked}</td>
                           <td className="px-3 py-2">
-                            {row?.pricePerNight != null ? Number(row.pricePerNight).toFixed(2) : "—"}
+                            {row?.pricePerNight != null
+                              ? Number(row.pricePerNight).toFixed(2)
+                              : '—'}
                           </td>
-                          <td className="px-3 py-2">{row?.stopSell ? "Yes" : "No"}</td>
+                          <td className="px-3 py-2">{row?.stopSell ? 'Yes' : 'No'}</td>
                         </tr>
                       );
                     })}
@@ -257,12 +280,12 @@ export default async function AdminHotelAvailabilityPage({
               {upcomingReservations.map((b) => (
                 <div key={b.id} className="rounded-lg border p-4">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="font-medium">{b.guestName || b.guestEmail || "Guest"}</p>
+                    <p className="font-medium">{b.guestName || b.guestEmail || 'Guest'}</p>
                     <p className="text-sm text-muted-foreground">{b.status}</p>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {b.checkIn} → {b.checkOut} · {b.units} room(s) · {b.guestsAdults} adult(s)
-                    {b.guestsChildren ? `, ${b.guestsChildren} child(ren)` : ""}
+                    {b.guestsChildren ? `, ${b.guestsChildren} child(ren)` : ''}
                   </p>
                 </div>
               ))}

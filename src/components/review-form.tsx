@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { submitReview } from "@/lib/supabase/reviews";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { submitReview } from '@/lib/supabase/reviews';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReviewFormProps {
   agencyId: string;
@@ -27,9 +21,9 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [content, setContent] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -37,7 +31,7 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
     e.preventDefault();
 
     if (rating === 0) {
-      toast({ title: "Please select a rating", variant: "destructive" });
+      toast({ title: 'Please select a rating', variant: 'destructive' });
       return;
     }
 
@@ -54,14 +48,14 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
       });
       setSubmitted(true);
       toast({
-        title: "Review submitted!",
-        description: "Your review will appear after moderation.",
+        title: 'Review submitted!',
+        description: 'Your review will appear after moderation.',
       });
     } catch {
       toast({
-        title: "Failed to submit review",
-        description: "Please try again later.",
-        variant: "destructive",
+        title: 'Failed to submit review',
+        description: 'Please try again later.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -88,9 +82,7 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
     <Card>
       <CardHeader>
         <CardTitle>Leave a Review</CardTitle>
-        <CardDescription>
-          Share your experience with {itemName}
-        </CardDescription>
+        <CardDescription>Share your experience with {itemName}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -110,17 +102,13 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
                   <Star
                     className={`h-7 w-7 transition-colors ${
                       star <= (hoveredRating || rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-muted-foreground/40"
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted-foreground/40'
                     }`}
                   />
                 </button>
               ))}
-              {rating > 0 && (
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {rating}/5
-                </span>
-              )}
+              {rating > 0 && <span className="ml-2 text-sm text-muted-foreground">{rating}/5</span>}
             </div>
           </div>
 
@@ -163,7 +151,7 @@ export function ReviewForm({ agencyId, tourId, hotelId, itemName }: ReviewFormPr
           </div>
 
           <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-            {isSubmitting ? "Submitting..." : "Submit Review"}
+            {isSubmitting ? 'Submitting...' : 'Submit Review'}
           </Button>
         </form>
       </CardContent>

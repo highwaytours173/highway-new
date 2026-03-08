@@ -1,9 +1,9 @@
-import { getTours } from "@/lib/supabase/tours";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Settings } from "lucide-react";
-import Link from "next/link";
+import { getTours } from '@/lib/supabase/tours';
+import { columns } from './columns';
+import { DataTable } from './data-table';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Settings } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function ToursPage() {
   const tours = await getTours();
@@ -12,9 +12,7 @@ export default async function ToursPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Tours
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Tours</h1>
           <p className="text-muted-foreground mt-1">
             Manage your tour packages, pricing, and availability.
           </p>
@@ -38,4 +36,3 @@ export default async function ToursPage() {
     </div>
   );
 }
-

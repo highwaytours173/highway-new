@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
-import type { Customer } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import type { Customer } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,17 +23,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  MoreHorizontal,
-  ArrowUpDown,
-  Newspaper,
-  ShoppingBag,
-  Mail,
-} from "lucide-react";
-import Link from "next/link";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { MoreHorizontal, ArrowUpDown, Newspaper, ShoppingBag, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface ColumnsProps {
   onDelete: (customerId: string) => void;
@@ -54,8 +48,8 @@ function ActionCell({ customer, onDelete }: ActionCellProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              customer and all associated booking data.
+              This action cannot be undone. This will permanently delete the customer and all
+              associated booking data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -83,9 +77,7 @@ function ActionCell({ customer, onDelete }: ActionCellProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href={`/admin/customers/${customer.id}`}>
-              View Customer Details
-            </Link>
+            <Link href={`/admin/customers/${customer.id}`}>View Customer Details</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Send Email</DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -103,12 +95,11 @@ function ActionCell({ customer, onDelete }: ActionCellProps) {
 
 export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -125,12 +116,12 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Customer
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -141,35 +132,33 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
       return (
         <div className="flex flex-col">
           <span className="font-medium">{row.original.name}</span>
-          <span className="text-xs text-muted-foreground">
-            {row.original.email}
-          </span>
+          <span className="text-xs text-muted-foreground">{row.original.email}</span>
         </div>
       );
     },
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: 'email',
+    header: 'Email',
   },
   {
-    accessorKey: "source",
-    header: "Source",
+    accessorKey: 'source',
+    header: 'Source',
     cell: ({ row }) => {
-      const source = row.getValue("source") as string;
+      const source = row.getValue('source') as string;
       return (
         <Badge
           variant="outline"
           className={cn(
-            "font-medium",
-            source === "Booking" && "border-sky-500 text-sky-600",
-            source === "Newsletter" && "border-amber-500 text-amber-600",
-            source === "Contact" && "border-purple-500 text-purple-600",
+            'font-medium',
+            source === 'Booking' && 'border-sky-500 text-sky-600',
+            source === 'Newsletter' && 'border-amber-500 text-amber-600',
+            source === 'Contact' && 'border-purple-500 text-purple-600'
           )}
         >
-          {source === "Booking" ? (
+          {source === 'Booking' ? (
             <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
-          ) : source === "Newsletter" ? (
+          ) : source === 'Newsletter' ? (
             <Newspaper className="mr-1.5 h-3.5 w-3.5" />
           ) : (
             <Mail className="mr-1.5 h-3.5 w-3.5" />
@@ -180,29 +169,27 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<Customer>[] => [
     },
   },
   {
-    accessorKey: "createdAt",
-    header: "Joined Date",
+    accessorKey: 'createdAt',
+    header: 'Joined Date',
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"));
-      return format(date, "PPP");
+      const date = new Date(row.getValue('createdAt'));
+      return format(date, 'PPP');
     },
   },
   {
-    accessorKey: "totalSpent",
-    header: "Total Spent",
+    accessorKey: 'totalSpent',
+    header: 'Total Spent',
     cell: ({ row }) => {
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(row.getValue("totalSpent"));
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(row.getValue('totalSpent'));
 
       return <div className="font-mono">{formatted}</div>;
     },
   },
   {
-    id: "actions",
-    cell: ({ row }) => (
-      <ActionCell customer={row.original} onDelete={onDelete} />
-    ),
+    id: 'actions',
+    cell: ({ row }) => <ActionCell customer={row.original} onDelete={onDelete} />,
   },
 ];

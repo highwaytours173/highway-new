@@ -1,9 +1,8 @@
+'use server';
 
-"use server";
-
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import { redirect } from "next/navigation";
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import { redirect } from 'next/navigation';
 
 export async function checkAgencyAccess() {
   const supabase = await createClient();
@@ -19,10 +18,10 @@ export async function checkAgencyAccess() {
 
   // Check if user is a member of this agency
   const { data, error } = await supabase
-    .from("agency_users")
-    .select("role")
-    .eq("user_id", user.id)
-    .eq("agency_id", agencyId)
+    .from('agency_users')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('agency_id', agencyId)
     .maybeSingle();
 
   if (error || !data) {
@@ -39,6 +38,6 @@ export async function ensureAgencyAccess() {
     // If not authorized, redirect to a generic error page or logout
     // For now, redirect to home with error? Or just throw.
     // In a real app, maybe /unauthorized
-    redirect("/"); 
+    redirect('/');
   }
 }

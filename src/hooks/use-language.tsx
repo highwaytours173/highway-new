@@ -1,14 +1,8 @@
-"use client";
+'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
-import { localeLoaders } from "@/locales";
-import type { TranslationMap } from "@/locales";
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { localeLoaders } from '@/locales';
+import type { TranslationMap } from '@/locales';
 
 export type Language = string;
 
@@ -16,10 +10,10 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
-  dir: "ltr" | "rtl";
+  dir: 'ltr' | 'rtl';
 }
 
-const RTL_LANGUAGES = new Set(["ar", "he", "fa", "ur"]);
+const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur']);
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
@@ -36,7 +30,7 @@ async function loadLocale(lang: Language): Promise<Partial<TranslationMap>> {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
+  const [language, setLanguageState] = useState<Language>('en');
   // translations for the current language — starts populated from en.json
   const [translations, setTranslations] = useState<Partial<TranslationMap>>({});
   // fallback (English) — loaded once on mount
@@ -44,18 +38,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Load English first so t() never returns bare keys
   useEffect(() => {
-    loadLocale("en").then((en) => {
+    loadLocale('en').then((en) => {
       setFallback(en);
       // Also use it as the active locale if language is already "en"
-      setTranslations((prev) =>
-        Object.keys(prev).length === 0 ? en : prev,
-      );
+      setTranslations((prev) => (Object.keys(prev).length === 0 ? en : prev));
     });
   }, []);
 
   // Restore language preference from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("language");
+    const saved = localStorage.getItem('language');
     if (saved && localeLoaders[saved]) {
       setLanguageState(saved);
     }
@@ -65,31 +57,28 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadLocale(language).then(setTranslations);
 
-    localStorage.setItem("language", language);
-    document.documentElement.dir = RTL_LANGUAGES.has(language) ? "rtl" : "ltr";
+    localStorage.setItem('language', language);
+    document.documentElement.dir = RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
   }, [language]);
 
-  const setLanguage = useCallback(
-    (lang: Language) => {
-      if (localeLoaders[lang]) {
-        setLanguageState(lang);
-      } else {
-        console.warn(`[i18n] Unknown locale "${lang}". Add it to src/locales/index.ts.`);
-      }
-    },
-    [],
-  );
+  const setLanguage = useCallback((lang: Language) => {
+    if (localeLoaders[lang]) {
+      setLanguageState(lang);
+    } else {
+      console.warn(`[i18n] Unknown locale "${lang}". Add it to src/locales/index.ts.`);
+    }
+  }, []);
 
   const t = useCallback(
     (key: string): string =>
       (translations as Record<string, string>)[key] ??
       (fallback as Record<string, string>)[key] ??
       key,
-    [translations, fallback],
+    [translations, fallback]
   );
 
-  const dir: "ltr" | "rtl" = RTL_LANGUAGES.has(language) ? "rtl" : "ltr";
+  const dir: 'ltr' | 'rtl' = RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr';
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
@@ -101,7 +90,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
+    throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 }
@@ -111,10 +100,9 @@ export function useLanguage() {
  * Add new entries here when adding a new locale JSON file.
  */
 export const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "ar", name: "العربية", flag: "🇪🇬" },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'ar', name: 'العربية', flag: '🇪🇬' },
 ];
-

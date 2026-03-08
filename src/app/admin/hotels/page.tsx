@@ -1,36 +1,34 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { getHotelBookings, getHotels, getRoomTypesByHotelId } from "@/lib/supabase/hotels";
-import { BedDouble, Building2, Calendar, DollarSign } from "lucide-react";
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { getHotelBookings, getHotels, getRoomTypesByHotelId } from '@/lib/supabase/hotels';
+import { BedDouble, Building2, Calendar, DollarSign } from 'lucide-react';
 
 export default async function AdminHotelsPage() {
   const [hotels, bookings] = await Promise.all([getHotels(), getHotelBookings()]);
 
   const roomsByHotel = await Promise.all(
-    hotels.map(async (h) => ({ hotelId: h.id, rooms: await getRoomTypesByHotelId(h.id) })),
+    hotels.map(async (h) => ({ hotelId: h.id, rooms: await getRoomTypesByHotelId(h.id) }))
   );
 
   const totalRoomTypes = roomsByHotel.reduce((sum, h) => sum + h.rooms.length, 0);
   const activeRoomTypes = roomsByHotel.reduce(
     (sum, h) => sum + h.rooms.filter((r) => r.isActive).length,
-    0,
+    0
   );
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcomingBookings = bookings.filter(
-    (b) => b.status !== "cancelled" && b.checkIn >= today,
-  );
+  const upcomingBookings = bookings.filter((b) => b.status !== 'cancelled' && b.checkIn >= today);
 
   const hotelRevenue = bookings
-    .filter((b) => b.status !== "cancelled")
+    .filter((b) => b.status !== 'cancelled')
     .reduce((sum, b) => sum + (b.total ?? 0), 0);
 
   const formatUSD = (value: number) => {
     try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
         maximumFractionDigits: 0,
       }).format(value);
     } catch {
@@ -58,7 +56,9 @@ export default async function AdminHotelsPage() {
             <Link href="/admin/hotels/bookings">Bookings</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/admin/hotels/setup">{hotels.length === 0 ? "Create Hotel" : "Edit Profile"}</Link>
+            <Link href="/admin/hotels/setup">
+              {hotels.length === 0 ? 'Create Hotel' : 'Edit Profile'}
+            </Link>
           </Button>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default async function AdminHotelsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{formatUSD(hotelRevenue)}</div>
             <p className="text-xs text-muted-foreground">
-              {bookings.filter((b) => b.status !== "cancelled").length} booking(s)
+              {bookings.filter((b) => b.status !== 'cancelled').length} booking(s)
             </p>
           </CardContent>
         </Card>
@@ -135,11 +135,11 @@ export default async function AdminHotelsPage() {
                     <div className="flex items-center gap-2">
                       <p className="truncate font-medium">{hotel.name}</p>
                       <span className="text-xs text-muted-foreground">
-                        {hotel.isActive ? "Active" : "Inactive"}
+                        {hotel.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                     <p className="truncate text-sm text-muted-foreground">
-                      {hotel.city || hotel.country || hotel.address || "—"}
+                      {hotel.city || hotel.country || hotel.address || '—'}
                     </p>
                   </div>
                   <div className="flex gap-2">

@@ -1,11 +1,13 @@
 # tix and trips egypt – Technical Assessment and Development Plan
 
 ## Executive Summary
+
 tix and trips egypt is a Next.js 15 application with a modern App Router architecture, Tailwind CSS styling, Shadcn UI components, and Supabase for data and storage. The product already provides core browsing and booking experiences for tours, a shopping cart and checkout flow that creates bookings (without payments), an admin panel for managing tours, bookings, customers (derived), upsell items, a dashboard with analytics, and AI features for cart suggestions and blog post generation.
 
 Key gaps remain around production-grade data persistence for CMS features (blog, homepage, settings), robust authentication/authorization (admin roles), payment integration (Stripe), and comprehensive security (RLS policies). This plan defines functional requirements, technical specifications, and a roadmap to achieve a production-ready release.
 
 ## Technology Stack Overview
+
 - Framework: Next.js 15 (App Router)
 - Styling/UI: Tailwind CSS + Shadcn UI
 - Data/Storage: Supabase (Postgres + Storage) with SSR and browser clients
@@ -13,7 +15,9 @@ Key gaps remain around production-grade data persistence for CMS features (blog,
 - AI: Genkit with Google AI (Gemini 2.0 Flash), flows for tour suggestions and blog generation
 
 ## Current Feature Inventory
+
 Public-facing
+
 - Homepage with hero search, categories, last-minute offers, testimonials, articles
 - Tours listing page and tour details page (dynamic, SSR data from Supabase)
 - Search results page with filters by query, destination, type
@@ -22,6 +26,7 @@ Public-facing
 - Checkout form (Zod-validated) with booking creation and success page
 
 Admin Panel
+
 - Authentication page (email/password via Supabase)
 - Dashboard with revenue/bookings/customers metrics, date range picker, charts and recent sales
 - Tours CRUD with image uploads to Supabase storage
@@ -33,7 +38,9 @@ Admin Panel
 - Settings page (mock data only; not persisted)
 
 ## Functional Requirements and Gap Analysis
+
 Must-have functions
+
 1. Tour Management
    - Create/read/update tours, upload images, manage detailed attributes (itinerary, includes/excludes).
    - Search & filter tours by destination/type.
@@ -52,6 +59,7 @@ Must-have functions
    - Dashboard metrics sourced from live data (revenue, bookings, customers, active tours).
 
 Identified gaps
+
 - Payments: No Stripe integration; bookings complete without payment.
 - AuthZ: Admin role not enforced; middleware checks only session presence.
 - CMS persistence: Blog, Home page editor, Settings use mock data and onSubmit logs.
@@ -60,9 +68,11 @@ Identified gaps
 - Webhooks: No Stripe webhook handler to confirm bookings.
 
 ## Proposed Data Model (Supabase)
+
 Tables use snake_case to align with existing server actions.
 
-1) tours
+1. tours
+
 - id uuid primary key default gen_random_uuid()
 - slug text unique not null
 - name text not null
@@ -85,7 +95,8 @@ Tables use snake_case to align with existing server actions.
 - cancellation_policy text
 - created_at timestamptz not null default now()
 
-2) upsell_items
+2. upsell_items
+
 - id uuid primary key default gen_random_uuid()
 - name text not null
 - description text
@@ -96,7 +107,8 @@ Tables use snake_case to align with existing server actions.
 - is_active boolean not null default true
 - created_at timestamptz not null default now()
 
-3) bookings
+3. bookings
+
 - id uuid primary key default gen_random_uuid()
 - customer_name text not null
 - customer_email text not null
@@ -108,7 +120,8 @@ Tables use snake_case to align with existing server actions.
 - user_id uuid references auth.users(id) on delete set null
 - created_at timestamptz not null default now()
 
-4) booking_items
+4. booking_items
+
 - id uuid primary key default gen_random_uuid()
 - booking_id uuid not null references bookings(id) on delete cascade
 - tour_id uuid references tours(id) on delete set null
@@ -119,7 +132,8 @@ Tables use snake_case to align with existing server actions.
 - price numeric(10,2) not null
 - created_at timestamptz not null default now()
 
-5) customers (optional but recommended for CRM)
+5. customers (optional but recommended for CRM)
+
 - id uuid primary key default gen_random_uuid()
 - user_id uuid references auth.users(id) unique
 - name text not null
@@ -127,7 +141,8 @@ Tables use snake_case to align with existing server actions.
 - source text not null check (source in ('Booking','Newsletter','Manual'))
 - created_at timestamptz not null default now()
 
-6) posts (for blog)
+6. posts (for blog)
+
 - id uuid primary key default gen_random_uuid()
 - slug text unique not null
 - title text not null
@@ -139,22 +154,27 @@ Tables use snake_case to align with existing server actions.
 - created_at timestamptz not null default now()
 - updated_at timestamptz not null default now()
 
-7) home_page_content (single row or per-section rows)
+7. home_page_content (single row or per-section rows)
+
 - id uuid primary key default gen_random_uuid()
 - content jsonb not null
 - updated_at timestamptz not null default now()
 
-8) admin_users (for RBAC)
+8. admin_users (for RBAC)
+
 - user_id uuid primary key references auth.users(id) on delete cascade
 - created_at timestamptz not null default now()
 
 Storage
+
 - Bucket: tours (existing) for tour and upsell images; consider separate bucket `cms` for homepage/blog featured images.
 
 ## Security and Authorization (Supabase RLS)
+
 Enable RLS on all tables. Example policies:
 
 Helper function
+
 ```sql
 create or replace function public.current_user_is_admin()
 returns boolean language sql stable as $$
@@ -165,6 +185,7 @@ $$;
 ```
 
 Tours
+
 ```sql
 alter table public.tours enable row level security;
 create policy "Public read tours" on public.tours for select using (true);
@@ -172,6 +193,7 @@ create policy "Admins manage tours" on public.tours for all using (public.curren
 ```
 
 Upsell Items
+
 ```sql
 alter table public.upsell_items enable row level security;
 create policy "Public read upsell" on public.upsell_items for select using (true);
@@ -179,6 +201,7 @@ create policy "Admins manage upsell" on public.upsell_items for all using (publi
 ```
 
 Bookings
+
 ```sql
 alter table public.bookings enable row level security;
 -- Anyone can insert a booking (anonymous checkout) or authenticated users
@@ -192,6 +215,7 @@ create policy "Admins delete bookings" on public.bookings for delete using (publ
 ```
 
 Booking Items
+
 ```sql
 alter table public.booking_items enable row level security;
 create policy "Insert booking items with any role" on public.booking_items for insert with check (true);
@@ -208,6 +232,7 @@ create policy "Admins delete booking items" on public.booking_items for delete u
 ```
 
 Posts
+
 ```sql
 alter table public.posts enable row level security;
 create policy "Public read published posts" on public.posts for select using (status = 'Published');
@@ -216,6 +241,7 @@ create policy "Admins manage posts" on public.posts for all using (public.curren
 ```
 
 Home Page Content
+
 ```sql
 alter table public.home_page_content enable row level security;
 create policy "Public read homepage" on public.home_page_content for select using (true);
@@ -223,12 +249,16 @@ create policy "Admins manage homepage" on public.home_page_content for all using
 ```
 
 Admin Middleware
+
 - Update Next.js middleware to enforce admin-only access to /admin routes:
+
 ```ts
 // src/middleware.ts (excerpt)
 if (pathname.startsWith('/admin/') && pathname !== '/admin') {
   if (!session) redirectTo('/admin');
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const isAdmin = user?.user_metadata?.is_admin === true; // or fetch from admin_users via RPC
   if (!isAdmin) redirectTo('/');
 }
@@ -237,11 +267,14 @@ if (pathname.startsWith('/admin/') && pathname !== '/admin') {
 Alternatively, store admin membership in `admin_users` table and check it via an RPC.
 
 ## Payment Integration (Stripe)
+
 Environment
+
 - STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 - STRIPE_WEBHOOK_SECRET
 
 Server-side Stripe client
+
 ```ts
 // src/lib/stripe.ts
 import Stripe from 'stripe';
@@ -249,6 +282,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '
 ```
 
 Checkout route handler
+
 ```ts
 // src/app/api/checkout/route.ts
 import { NextResponse } from 'next/server';
@@ -283,6 +317,7 @@ export async function POST(req: Request) {
 ```
 
 Webhook handler to confirm bookings
+
 ```ts
 // src/app/api/stripe/webhook/route.ts
 import { NextResponse } from 'next/server';
@@ -318,16 +353,20 @@ export async function POST(req: Request) {
 ```
 
 Checkout page integration
+
 - Replace direct createBooking call with POST to /api/checkout and redirect to session URL.
 
 ## API and Server Actions
+
 Existing server actions
+
 - getTours, getTourBySlug, addTour, updateTour
 - getBookings, getBookingById, updateBookingStatus, deleteBooking, createBooking
 - getUpsellItems, getUpsellItemById, addUpsellItem, updateUpsellItem, deleteUpsellItem
 - getAiSuggestions, generateBlogPostAction (actions.ts)
 
 Proposed additions
+
 - savePost, deletePost, getPostBySlug (Supabase-backed)
 - getHomepageContent, updateHomepageContent
 - getSettings, updateSettings
@@ -335,53 +374,63 @@ Proposed additions
 - Stripe checkout route & webhook
 
 ## Testing and Quality Assurance
+
 - Unit tests: price tier calculations, booking item totals, RLS policy expectations (via supabase-js).
 - Integration tests: server actions for tours/bookings/upsell items.
 - E2E tests: Playwright flows for browsing, adding to cart, checkout, admin CRUD.
 - Linting and type checking enforced locally; CI can tolerate build errors initially but should be tightened before release.
 
 ## Deployment & Configuration
+
 - Hosting: Vercel or similar for Next.js; Supabase for DB and storage.
 - Environment variables: Supabase URL and keys, Stripe keys, webhook secret.
 - Image domains configured in next.config.ts (already includes Supabase storage and Unsplash).
 - Revalidation: keep using revalidatePath after mutations.
 
 ## Development Roadmap
+
 Phase 1 – Foundations (Security, Auth, CMS persistence)
+
 - Implement admin RBAC (admin_users table, middleware checks, RLS policies).
 - Convert blog to persisted posts table; build public blog pages and admin CRUD.
 - Implement home_page_content table; wire up Home Page Editor and Settings to Supabase.
 - Add customers table and wire admin customers page to live data.
 
 Phase 2 – Payments and Booking Enhancements
+
 - Integrate Stripe checkout route and webhook.
 - Update checkout flow to use Stripe session; persist bookings on webhook.
 - Email notifications on booking confirmation/cancellation.
 
 Phase 3 – UX, Search, and Analytics
+
 - Improve tours search/filter UX; server-side filtering by query/destination/type.
 - Enhance dashboard metrics using live aggregates from bookings and customers.
 - Polish tour details page and itinerary management.
 
 Phase 4 – QA and Release Prep
+
 - Implement unit/integration/E2E tests.
 - Harden security (audit RLS, env handling, error logs).
 - Performance (SSR where appropriate, caching, image optimization).
 
 ## Estimated Timeline
+
 - Phase 1: 1.5–2 weeks
 - Phase 2: 1.5–2 weeks
 - Phase 3: 1 week
 - Phase 4: 1 week
-Total: ~5–7 weeks, depending on scope and revision cycles.
+  Total: ~5–7 weeks, depending on scope and revision cycles.
 
 ## Risks and Mitigations
+
 - RBAC complexity: Mitigate with a simple admin_users table and helper function.
 - Payment reliability: Use Stripe webhooks + idempotency; thorough testing.
 - Data consistency: Apply foreign keys and cascading rules; write integration tests.
 - AI content accuracy: Keep AI output moderated by editor before publishing.
 
 ## Actionable Next Steps
+
 1. Create the Supabase tables (DDL above) and enable RLS with policies.
 2. Add admin_users entries and middleware checks for /admin.
 3. Persist blog, homepage, and settings into Supabase; add server actions.
@@ -393,6 +442,7 @@ Total: ~5–7 weeks, depending on scope and revision cycles.
 ## Phase 1 Progress Update
 
 Overview
+
 - Admin RBAC and middleware protections are in place for all /admin routes.
 - Blog is now persisted via Supabase (with a fallback to mock data), including admin CRUD and public pages.
 - Home Page Editor and Admin Settings now load/save data from Supabase.
@@ -400,7 +450,8 @@ Overview
 - Next.js dev server is running and UI changes have been previewed locally.
 
 Key Code Changes
-- src/middleware.ts: Enforce admin-only access on /admin/* using Supabase session + user metadata or admin_users membership.
+
+- src/middleware.ts: Enforce admin-only access on /admin/\* using Supabase session + user metadata or admin_users membership.
 - src/lib/supabase/blog.ts: Supabase-backed data layer for posts (getPosts, getPostBySlug, upsertPost, deletePostBySlug) with fallback to src/lib/blog.ts.
 - src/app/admin/blog/page.tsx: Switched to async server component using Supabase getPosts().
 - src/app/admin/blog/[slug]/edit/page.tsx: Editor now loads/saves posts to Supabase; supports image upload to the 'blog' storage bucket.
@@ -410,6 +461,7 @@ Key Code Changes
 - src/lib/supabase/customers.ts and src/app/admin/customers/page.tsx: Supabase-backed customers list with fallback to mock data.
 
 Schema Notes (Recommended)
+
 - Admin membership
   - Table: public.admin_users (user_id uuid primary key, created_at timestamptz default now())
   - Helper SQL function: public.current_user_is_admin() returns boolean, checks admin_users for auth.uid().
@@ -450,6 +502,7 @@ Schema Notes (Recommended)
 
 RLS Policies (Recommended)
 -- Helper function
+
 ```sql
 create or replace function public.current_user_is_admin()
 returns boolean language sql stable as $$
@@ -461,6 +514,7 @@ $$;
 ```
 
 -- Posts
+
 ```sql
 alter table public.posts enable row level security;
 create policy "Public read published posts" on public.posts for select using (status = 'Published');
@@ -469,6 +523,7 @@ create policy "Admins manage posts" on public.posts for all using (public.curren
 ```
 
 -- Home Page Content
+
 ```sql
 alter table public.home_page_content enable row level security;
 create policy "Public read homepage" on public.home_page_content for select using (true);
@@ -476,6 +531,7 @@ create policy "Admins manage homepage" on public.home_page_content for all using
 ```
 
 -- Settings
+
 ```sql
 alter table public.settings enable row level security;
 create policy "Public read settings" on public.settings for select using (true);
@@ -483,6 +539,7 @@ create policy "Admins manage settings" on public.settings for all using (public.
 ```
 
 -- Customers
+
 ```sql
 alter table public.customers enable row level security;
 create policy "Admins read customers" on public.customers for select using (public.current_user_is_admin());
@@ -490,9 +547,11 @@ create policy "Admins manage customers" on public.customers for all using (publi
 ```
 
 Storage Buckets
+
 - Create bucket 'blog' for post featured images. Public read is acceptable for published images; restrict writes to admins.
 - Create bucket 'cms' for site assets (e.g., logo). Public read is acceptable; restrict writes to admins.
 - Add storage policies accordingly, for example:
+
 ```sql
 -- Example storage policy for public read
 create policy "Public read blog images" on storage.objects for select using (
@@ -505,11 +564,13 @@ create policy "Admins manage blog images" on storage.objects for all using (
 ```
 
 Operational Notes
+
 - Next.js dev server started on port 9010 with Turbopack for preview.
 - Image domains should include Supabase storage and Unsplash in next.config.js.
 - Fallback logic ensures mock data is used if Supabase is unreachable or tables are not yet created.
 
 Remaining Phase 1 Follow-ups
+
 - Ensure the recommended tables and RLS policies are created in Supabase.
 - Verify storage bucket policies for 'blog' and 'cms'.
 - Add uniqueness constraint for posts.slug and optional index for status.

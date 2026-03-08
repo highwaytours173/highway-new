@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
-import type { Booking } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import type { Booking } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,20 +23,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import Link from "next/link";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import Link from 'next/link';
+import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface ColumnsProps {
-  onUpdateStatus: (bookingId: string, status: Booking["status"]) => void;
+  onUpdateStatus: (bookingId: string, status: Booking['status']) => void;
   onDelete: (bookingId: string) => void;
 }
 
 interface ActionCellProps {
   booking: Booking;
-  onUpdateStatus: (bookingId: string, status: Booking["status"]) => void;
+  onUpdateStatus: (bookingId: string, status: Booking['status']) => void;
   onDelete: (bookingId: string) => void;
 }
 
@@ -50,8 +50,8 @@ function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              booking and remove its data from our servers.
+              This action cannot be undone. This will permanently delete the booking and remove its
+              data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -79,25 +79,16 @@ function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href={`/admin/bookings/${booking.id}`}>
-              View Booking Details
-            </Link>
+            <Link href={`/admin/bookings/${booking.id}`}>View Booking Details</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onUpdateStatus(booking.id, "Confirmed")}
-          >
+          <DropdownMenuItem onClick={() => onUpdateStatus(booking.id, 'Confirmed')}>
             Mark as Confirmed
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onUpdateStatus(booking.id, "Cancelled")}
-          >
+          <DropdownMenuItem onClick={() => onUpdateStatus(booking.id, 'Cancelled')}>
             Mark as Cancelled
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={() => setIsAlertOpen(true)}
-          >
+          <DropdownMenuItem className="text-destructive" onClick={() => setIsAlertOpen(true)}>
             Delete Booking
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -106,17 +97,13 @@ function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
   );
 }
 
-export const columns = ({
-  onUpdateStatus,
-  onDelete,
-}: ColumnsProps): ColumnDef<Booking>[] => [
+export const columns = ({ onUpdateStatus, onDelete }: ColumnsProps): ColumnDef<Booking>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -133,12 +120,12 @@ export const columns = ({
     enableHiding: false,
   },
   {
-    accessorKey: "customerName",
+    accessorKey: 'customerName',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Customer
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -149,16 +136,14 @@ export const columns = ({
       return (
         <div className="flex flex-col">
           <span className="font-medium">{row.original.customerName}</span>
-          <span className="text-xs text-muted-foreground">
-            {row.original.customerEmail}
-          </span>
+          <span className="text-xs text-muted-foreground">{row.original.customerEmail}</span>
         </div>
       );
     },
   },
   {
-    accessorKey: "bookingItems",
-    header: "Tours",
+    accessorKey: 'bookingItems',
+    header: 'Tours',
     cell: ({ row }) => {
       const items = row.original.bookingItems;
       if (!items || items.length === 0)
@@ -167,58 +152,54 @@ export const columns = ({
       return (
         <div className="flex flex-col">
           {items.map((item) => (
-            <span key={item.id}>{item.tours?.name || "Unknown Tour"}</span>
+            <span key={item.id}>{item.tours?.name || 'Unknown Tour'}</span>
           ))}
         </div>
       );
     },
   },
   {
-    accessorKey: "bookingDate",
-    header: "Booking Date",
+    accessorKey: 'bookingDate',
+    header: 'Booking Date',
     cell: ({ row }) => {
-      const date = new Date(row.getValue("bookingDate"));
-      return format(date, "PPP");
+      const date = new Date(row.getValue('bookingDate'));
+      return format(date, 'PPP');
     },
     filterFn: (row, id, value) => {
       if (!value || !value.from) return true;
       const rowDate = new Date(row.getValue(id));
       const from = startOfDay(value.from);
       const to = value.to ? endOfDay(value.to) : endOfDay(value.from);
-      
+
       return isWithinInterval(rowDate, { start: from, end: to });
     },
   },
   {
-    accessorKey: "totalPrice",
-    header: "Total Price",
+    accessorKey: 'totalPrice',
+    header: 'Total Price',
     cell: ({ row }) => {
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(row.getValue("totalPrice"));
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(row.getValue('totalPrice'));
 
       return <div className="font-mono">{formatted}</div>;
     },
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue('status') as string;
       return (
         <Badge
           variant={
-            status === "Confirmed"
-              ? "default"
-              : status === "Pending"
-                ? "secondary"
-                : "destructive"
+            status === 'Confirmed' ? 'default' : status === 'Pending' ? 'secondary' : 'destructive'
           }
           className={cn(
-            status === "Confirmed" && "bg-green-100 text-green-800",
-            status === "Pending" && "bg-yellow-100 text-yellow-800",
-            status === "Cancelled" && "bg-red-100 text-red-800",
+            status === 'Confirmed' && 'bg-green-100 text-green-800',
+            status === 'Pending' && 'bg-yellow-100 text-yellow-800',
+            status === 'Cancelled' && 'bg-red-100 text-red-800'
           )}
         >
           {status}
@@ -227,13 +208,9 @@ export const columns = ({
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => (
-      <ActionCell
-        booking={row.original}
-        onUpdateStatus={onUpdateStatus}
-        onDelete={onDelete}
-      />
+      <ActionCell booking={row.original} onUpdateStatus={onUpdateStatus} onDelete={onDelete} />
     ),
   },
 ];

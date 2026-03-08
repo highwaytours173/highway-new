@@ -1,33 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useEffect, useCallback } from 'react';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Ban, CheckCircle2, Users, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/select';
+import { Loader2, Ban, Users, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import {
   getTourAvailability,
   setDateAvailability,
   removeDateAvailability,
-} from "@/lib/supabase/tour-availability";
-import type { TourDateAvailability } from "@/types";
+} from '@/lib/supabase/tour-availability';
+import type { TourDateAvailability } from '@/types';
 
 interface TourAvailabilityManagerProps {
   tourId: string;
@@ -39,8 +33,8 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [action, setAction] = useState<"block" | "limit">("block");
-  const [spots, setSpots] = useState<string>("10");
+  const [action, setAction] = useState<'block' | 'limit'>('block');
+  const [spots, setSpots] = useState<string>('10');
 
   const loadAvailability = useCallback(async () => {
     try {
@@ -48,7 +42,11 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
       const data = await getTourAvailability(tourId);
       setAvailability(data);
     } catch {
-      toast({ title: "Error", description: "Failed to load availability.", variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: 'Failed to load availability.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -63,22 +61,26 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
   const handleSave = async () => {
     if (!selectedDate) return;
 
-    const dateStr = selectedDate.toISOString().split("T")[0];
+    const dateStr = selectedDate.toISOString().split('T')[0];
     setSaving(true);
 
     try {
       await setDateAvailability({
         tourId,
         date: dateStr,
-        availableSpots: action === "limit" ? parseInt(spots, 10) : null,
-        isBlocked: action === "block",
+        availableSpots: action === 'limit' ? parseInt(spots, 10) : null,
+        isBlocked: action === 'block',
       });
 
-      toast({ title: "Saved", description: `Availability updated for ${dateStr}.` });
+      toast({ title: 'Saved', description: `Availability updated for ${dateStr}.` });
       await loadAvailability();
       setSelectedDate(undefined);
     } catch {
-      toast({ title: "Error", description: "Failed to save availability.", variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: 'Failed to save availability.',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }
@@ -87,10 +89,14 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
   const handleRemove = async (date: string) => {
     try {
       await removeDateAvailability(tourId, date);
-      toast({ title: "Removed", description: `Restrictions removed for ${date}.` });
+      toast({ title: 'Removed', description: `Restrictions removed for ${date}.` });
       await loadAvailability();
     } catch {
-      toast({ title: "Error", description: "Failed to remove availability.", variant: "destructive" });
+      toast({
+        title: 'Error',
+        description: 'Failed to remove availability.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -99,7 +105,7 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
   const limitedDates: Date[] = [];
 
   for (const entry of availability) {
-    const d = new Date(entry.date + "T00:00:00");
+    const d = new Date(entry.date + 'T00:00:00');
     if (entry.isBlocked) {
       blockedDates.push(d);
     } else if (entry.availableSpots !== null) {
@@ -114,19 +120,19 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
 
   const modifiersStyles: Record<string, React.CSSProperties> = {
     blocked: {
-      backgroundColor: "hsl(0 84% 60%)",
-      color: "white",
-      borderRadius: "6px",
+      backgroundColor: 'hsl(0 84% 60%)',
+      color: 'white',
+      borderRadius: '6px',
     },
     limited: {
-      backgroundColor: "hsl(45 93% 47%)",
-      color: "white",
-      borderRadius: "6px",
+      backgroundColor: 'hsl(45 93% 47%)',
+      color: 'white',
+      borderRadius: '6px',
     },
   };
 
   // Get entry for selected date
-  const selectedDateStr = selectedDate?.toISOString().split("T")[0];
+  const selectedDateStr = selectedDate?.toISOString().split('T')[0];
   const selectedEntry = selectedDateStr
     ? availability.find((a) => a.date === selectedDateStr)
     : undefined;
@@ -161,11 +167,11 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
           />
           <div className="mt-4 flex flex-wrap gap-3 text-xs">
             <div className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: "hsl(0 84% 60%)" }} />
+              <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: 'hsl(0 84% 60%)' }} />
               <span>Blocked</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: "hsl(45 93% 47%)" }} />
+              <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: 'hsl(45 93% 47%)' }} />
               <span>Limited spots</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -182,24 +188,24 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
           <CardHeader>
             <CardTitle className="text-lg">
               {selectedDate
-                ? `Configure: ${selectedDate.toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}`
-                : "Select a Date"}
+                ? `Configure: ${selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}`
+                : 'Select a Date'}
             </CardTitle>
             <CardDescription>
               {selectedDate
                 ? selectedEntry
                   ? selectedEntry.isBlocked
-                    ? "This date is currently blocked."
+                    ? 'This date is currently blocked.'
                     : `Limited to ${selectedEntry.availableSpots} spots.`
-                  : "No restrictions set — unlimited availability."
-                : "Click a date on the calendar to configure it."}
+                  : 'No restrictions set — unlimited availability.'
+                : 'Click a date on the calendar to configure it.'}
             </CardDescription>
           </CardHeader>
           {selectedDate && (
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Action</Label>
-                <Select value={action} onValueChange={(v) => setAction(v as "block" | "limit")}>
+                <Select value={action} onValueChange={(v) => setAction(v as 'block' | 'limit')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -218,7 +224,7 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
                 </Select>
               </div>
 
-              {action === "limit" && (
+              {action === 'limit' && (
                 <div className="space-y-2">
                   <Label htmlFor="spots">Available Spots</Label>
                   <Input
@@ -235,13 +241,10 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
               <div className="flex gap-2">
                 <Button onClick={handleSave} disabled={saving} className="flex-1">
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {selectedEntry ? "Update" : "Save"}
+                  {selectedEntry ? 'Update' : 'Save'}
                 </Button>
                 {selectedEntry && (
-                  <Button
-                    variant="outline"
-                    onClick={() => handleRemove(selectedDateStr!)}
-                  >
+                  <Button variant="outline" onClick={() => handleRemove(selectedDateStr!)}>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Remove
                   </Button>
@@ -257,8 +260,8 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
             <CardTitle className="text-lg">Active Rules</CardTitle>
             <CardDescription>
               {availability.length === 0
-                ? "No date restrictions set. All dates are available with unlimited spots."
-                : `${availability.length} date${availability.length === 1 ? "" : "s"} with custom rules.`}
+                ? 'No date restrictions set. All dates are available with unlimited spots.'
+                : `${availability.length} date${availability.length === 1 ? '' : 's'} with custom rules.`}
             </CardDescription>
           </CardHeader>
           {availability.length > 0 && (
@@ -281,11 +284,7 @@ export function TourAvailabilityManager({ tourId }: TourAvailabilityManagerProps
                         </Badge>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemove(entry.date)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleRemove(entry.date)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>

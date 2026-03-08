@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -16,7 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Card,
   CardContent,
@@ -24,45 +24,42 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import { createClient } from "@/lib/supabase/client";
-import { Combobox } from "@/components/ui/combobox";
-import { useEffect, useState, useActionState, useRef } from "react";
-import { generateBlogPostAction } from "@/app/actions";
-import { HtmlEditorToolbar } from "@/components/admin/html-editor-toolbar";
-import type { Post } from "@/types";
+} from '@/components/ui/select';
+import { ArrowLeft, Sparkles, Loader2 } from 'lucide-react';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import { createClient } from '@/lib/supabase/client';
+import { Combobox } from '@/components/ui/combobox';
+import { useEffect, useState, useActionState, useRef } from 'react';
+import { generateBlogPostAction } from '@/app/actions';
+import { HtmlEditorToolbar } from '@/components/admin/html-editor-toolbar';
+import type { Post } from '@/types';
 
-const authors = ["Admin User", "Guest Writer"];
+const authors = ['Admin User', 'Guest Writer'];
 const availableTags = [
-  { value: "Travel Tips", label: "Travel Tips" },
-  { value: "Destinations", label: "Destinations" },
-  { value: "Egypt", label: "Egypt" },
-  { value: "Adventure", label: "Adventure" },
-  { value: "Culture", label: "Culture" },
-  { value: "Food", label: "Food" },
+  { value: 'Travel Tips', label: 'Travel Tips' },
+  { value: 'Destinations', label: 'Destinations' },
+  { value: 'Egypt', label: 'Egypt' },
+  { value: 'Adventure', label: 'Adventure' },
+  { value: 'Culture', label: 'Culture' },
+  { value: 'Food', label: 'Food' },
 ];
 
 const formSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters."),
+  title: z.string().min(3, 'Title must be at least 3 characters.'),
   slug: z
     .string()
-    .min(3, "Slug must be at least 3 characters.")
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase with words separated by dashes.",
-    ),
-  content: z.string().min(100, "Content should be at least 100 characters."),
-  author: z.string().min(1, "Author is required."),
-  status: z.enum(["Published", "Draft"]),
+    .min(3, 'Slug must be at least 3 characters.')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with words separated by dashes.'),
+  content: z.string().min(100, 'Content should be at least 100 characters.'),
+  author: z.string().min(1, 'Author is required.'),
+  status: z.enum(['Published', 'Draft']),
   tags: z.array(z.string()).optional(),
   featuredImage: z.array(z.any()).optional(),
   topic: z.string().optional(),
@@ -93,29 +90,29 @@ export default function EditPostPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
-  const isNewPost = slug === "new";
+  const isNewPost = slug === 'new';
   const [post, setPost] = useState<Post | null>(null);
   const [existingId, setExistingId] = useState<string | null>(null);
 
-  const [aiState, formAction, isGenerating] = useActionState(
-    generateBlogPostAction,
-    { message: "", content: "" },
-  );
+  const [aiState, formAction, isGenerating] = useActionState(generateBlogPostAction, {
+    message: '',
+    content: '',
+  });
 
   const contentTextAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      slug: "",
-      content: "",
-      author: "",
-      status: "Draft",
+      title: '',
+      slug: '',
+      content: '',
+      author: '',
+      status: 'Draft',
       tags: [],
       featuredImage: [],
-      topic: "",
-      keywords: "",
+      topic: '',
+      keywords: '',
     },
   });
 
@@ -124,11 +121,11 @@ export default function EditPostPage() {
       if (isNewPost) return;
       const supabase = createClient();
       const { data, error } = await supabase
-        .from("posts")
+        .from('posts')
         .select(
-          "id, slug, title, content, author, status, tags, featured_image, created_at, updated_at",
+          'id, slug, title, content, author, status, tags, featured_image, created_at, updated_at'
         )
-        .eq("slug", slug)
+        .eq('slug', slug)
         .maybeSingle();
       if (!error && data) {
         const mappedPost = {
@@ -137,7 +134,7 @@ export default function EditPostPage() {
           createdAt: data.created_at,
           updatedAt: data.updated_at,
         } as unknown as Post;
-        
+
         setPost(mappedPost);
         setExistingId(data.id as string);
         form.reset({
@@ -157,7 +154,7 @@ export default function EditPostPage() {
 
   useEffect(() => {
     if (aiState.content) {
-      form.setValue("content", aiState.content, {
+      form.setValue('content', aiState.content, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -169,8 +166,8 @@ export default function EditPostPage() {
   }
 
   const handleFormAction = (formData: FormData) => {
-    const action = (formData.get("action") as string) || "submit";
-    if (action === "generate") {
+    const action = (formData.get('action') as string) || 'submit';
+    if (action === 'generate') {
       formAction(formData);
     } else {
       form.handleSubmit(onSubmit)();
@@ -185,18 +182,14 @@ export default function EditPostPage() {
     try {
       const file = values.featuredImage && values.featuredImage[0];
       if (file && file instanceof File) {
-        const ext = file.name.split(".").pop() || "jpg";
+        const ext = file.name.split('.').pop() || 'jpg';
         const path = `featured/${values.slug}-${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("blog")
-          .upload(path, file, {
-            contentType: file.type || "image/jpeg",
-            upsert: true,
-          });
+        const { error: uploadError } = await supabase.storage.from('blog').upload(path, file, {
+          contentType: file.type || 'image/jpeg',
+          upsert: true,
+        });
         if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
-            .from("blog")
-            .getPublicUrl(path);
+          const { data: publicUrlData } = supabase.storage.from('blog').getPublicUrl(path);
           featuredImageUrl = publicUrlData.publicUrl;
         }
       }
@@ -217,15 +210,15 @@ export default function EditPostPage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("posts").upsert(payload, {
-      onConflict: "slug",
+    const { error } = await supabase.from('posts').upsert(payload, {
+      onConflict: 'slug',
     });
     if (error) {
       alert(`Failed to save post: ${error.message}`);
       return;
     }
-    alert(`${isNewPost ? "New post created" : "Post updated"}!`);
-    router.push("/admin/blog");
+    alert(`${isNewPost ? 'New post created' : 'Post updated'}!`);
+    router.push('/admin/blog');
   }
 
   return (
@@ -239,11 +232,11 @@ export default function EditPostPage() {
         </Button>
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            {isNewPost ? "Create a New Post" : "Edit Post"}
+            {isNewPost ? 'Create a New Post' : 'Edit Post'}
           </h2>
           <p className="text-muted-foreground">
             {isNewPost
-              ? "Fill out the details to publish a new article."
+              ? 'Fill out the details to publish a new article.'
               : `Editing "${post?.title}"`}
           </p>
         </div>
@@ -264,10 +257,7 @@ export default function EditPostPage() {
                       <FormItem>
                         <FormLabel>Post Title</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="e.g., Top 10 Things to Do in Cairo"
-                            {...field}
-                          />
+                          <Input placeholder="e.g., Top 10 Things to Do in Cairo" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -292,12 +282,9 @@ export default function EditPostPage() {
 
                   <Card className="bg-muted/50">
                     <CardHeader>
-                      <CardTitle className="text-lg">
-                        AI Content Generator
-                      </CardTitle>
+                      <CardTitle className="text-lg">AI Content Generator</CardTitle>
                       <CardDescription>
-                        Provide a topic and keywords, and let AI draft the
-                        content for you.
+                        Provide a topic and keywords, and let AI draft the content for you.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -343,10 +330,8 @@ export default function EditPostPage() {
                       <div className="flex justify-end mt-4">
                         <GenerateButton pending={isGenerating} />
                       </div>
-                      {aiState.message && aiState.message !== "Success" && (
-                        <p className="text-sm text-destructive mt-2">
-                          {aiState.message}
-                        </p>
+                      {aiState.message && aiState.message !== 'Success' && (
+                        <p className="text-sm text-destructive mt-2">{aiState.message}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -360,7 +345,7 @@ export default function EditPostPage() {
                         <HtmlEditorToolbar
                           textAreaRef={contentTextAreaRef}
                           onContentChange={(newContent) =>
-                            form.setValue("content", newContent, {
+                            form.setValue('content', newContent, {
                               shouldDirty: true,
                               shouldValidate: true,
                             })
@@ -393,10 +378,7 @@ export default function EditPostPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select status" />
@@ -417,10 +399,7 @@ export default function EditPostPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Author</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select an author" />
@@ -450,14 +429,14 @@ export default function EditPostPage() {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
                     {isGenerating
-                      ? "Generating..."
+                      ? 'Generating...'
                       : form.formState.isSubmitting
                         ? isNewPost
-                          ? "Creating..."
-                          : "Saving..."
+                          ? 'Creating...'
+                          : 'Saving...'
                         : isNewPost
-                          ? "Create Post"
-                          : "Save Changes"}
+                          ? 'Create Post'
+                          : 'Save Changes'}
                   </Button>
                 </CardFooter>
               </Card>
@@ -496,10 +475,7 @@ export default function EditPostPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <ImageUploader
-                            value={field.value || []}
-                            onChange={field.onChange}
-                          />
+                          <ImageUploader value={field.value || []} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

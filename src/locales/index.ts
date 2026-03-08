@@ -9,16 +9,16 @@
  * That's it — no other code changes required.
  */
 
-import type en from "./en.json";
+import type en from './en.json';
 
 export type TranslationMap = typeof en;
 export type TranslationKey = keyof TranslationMap;
 
 /** Lazy loaders — each returns a JSON module with a `default` export. */
 export const localeLoaders: Record<string, () => Promise<{ default: Partial<TranslationMap> }>> = {
-  en: () => import("./en.json"),
-  fr: () => import("./fr.json"),
-  ar: () => import("./ar.json"),
-  de: () => import("./de.json"),
-  es: () => import("./es.json"),
+  en: () => import('./en.json'),
+  fr: () => import('./fr.json'),
+  ar: () => import('./ar.json'),
+  de: () => import('./de.json'),
+  es: () => import('./es.json'),
 };

@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
-import type { UpsellItem } from "@/types";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { toCamelCase } from "@/lib/utils";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
+import { createClient } from '@/lib/supabase/server';
+import type { UpsellItem } from '@/types';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { toCamelCase } from '@/lib/utils';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
 
 function ensureUpsellItemDefaults(item: UpsellItem): UpsellItem {
   return {
@@ -20,17 +20,17 @@ function ensureUpsellItemDefaults(item: UpsellItem): UpsellItem {
   };
 }
 
-function normalizeVariants(variants: UpsellItem["variants"] | undefined) {
+function normalizeVariants(variants: UpsellItem['variants'] | undefined) {
   return (variants ?? []).map((variant) => ({
     ...variant,
     id: variant.id || crypto.randomUUID(),
   }));
 }
 
-function normalizeTargeting(targeting: UpsellItem["targeting"] | undefined) {
+function normalizeTargeting(targeting: UpsellItem['targeting'] | undefined) {
   if (!targeting) return null;
 
-  const match = targeting.match ?? "any";
+  const match = targeting.match ?? 'any';
   const destinations = (targeting.destinations ?? []).filter((v) => v && v.length > 0);
   const tourIds = (targeting.tourIds ?? []).filter((v) => v && v.length > 0);
 
@@ -48,30 +48,28 @@ export async function getUpsellItems(): Promise<UpsellItem[]> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("upsell_items")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
+    .from('upsell_items')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("Error fetching upsell items:", error);
+    console.error('Error fetching upsell items:', error);
     return [];
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data as any[]).map((item) => ensureUpsellItemDefaults(toCamelCase(item) as UpsellItem));
 }
 
-export async function getUpsellItemById(
-  id: string,
-): Promise<UpsellItem | null> {
+export async function getUpsellItemById(id: string): Promise<UpsellItem | null> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("upsell_items")
-    .select("*")
-    .eq("id", id)
-    .eq("agency_id", agencyId)
+    .from('upsell_items')
+    .select('*')
+    .eq('id', id)
+    .eq('agency_id', agencyId)
     .single();
 
   if (error) {
@@ -86,7 +84,7 @@ export async function getUpsellItemById(
 async function handleImageUpload(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   images: any[] | undefined,
-  existingImageUrl?: string,
+  existingImageUrl?: string
 ): Promise<string | undefined> {
   const supabase = await createClient();
   let imageUrl: string | undefined = existingImageUrl;
@@ -97,17 +95,15 @@ async function handleImageUpload(
       // Check if it's a new file object
       const filePath = `public/upsell-items/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from("tours") // Using the existing 'tours' bucket as requested
+        .from('tours') // Using the existing 'tours' bucket as requested
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error("Error uploading upsell item image:", uploadError);
-        throw new Error("Failed to upload upsell item image.");
+        console.error('Error uploading upsell item image:', uploadError);
+        throw new Error('Failed to upload upsell item image.');
       }
 
-      const { data: urlData } = supabase.storage
-        .from("tours")
-        .getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from('tours').getPublicUrl(filePath);
 
       imageUrl = urlData.publicUrl;
     }
@@ -116,10 +112,10 @@ async function handleImageUpload(
 }
 
 export async function addUpsellItem(
-  formData: Omit<UpsellItem, "id" | "createdAt" | "imageUrl"> & {
+  formData: Omit<UpsellItem, 'id' | 'createdAt' | 'imageUrl'> & {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images?: any[];
-  },
+  }
 ) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
@@ -128,7 +124,7 @@ export async function addUpsellItem(
   const variants = normalizeVariants(formData.variants);
   const targeting = normalizeTargeting(formData.targeting);
 
-  const { error } = await supabase.from("upsell_items").insert({
+  const { error } = await supabase.from('upsell_items').insert({
     name: formData.name,
     description: formData.description,
     price: formData.price,
@@ -142,21 +138,21 @@ export async function addUpsellItem(
   });
 
   if (error) {
-    console.error("Error adding upsell item:", error);
-    throw new Error("Failed to add upsell item.");
+    console.error('Error adding upsell item:', error);
+    throw new Error('Failed to add upsell item.');
   }
 
-  revalidatePath("/admin/upsell-items");
-  redirect("/admin/upsell-items");
+  revalidatePath('/admin/upsell-items');
+  redirect('/admin/upsell-items');
 }
 
 export async function updateUpsellItem(
   id: string,
-  formData: Omit<UpsellItem, "id" | "createdAt" | "imageUrl"> & {
+  formData: Omit<UpsellItem, 'id' | 'createdAt' | 'imageUrl'> & {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     images?: any[];
     imageUrl?: string;
-  },
+  }
 ) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
@@ -166,7 +162,7 @@ export async function updateUpsellItem(
   const targeting = normalizeTargeting(formData.targeting);
 
   const { error } = await supabase
-    .from("upsell_items")
+    .from('upsell_items')
     .update({
       name: formData.name,
       description: formData.description,
@@ -178,16 +174,16 @@ export async function updateUpsellItem(
       image_url: imageUrl, // Update with new or existing URL
       is_active: formData.isActive,
     })
-    .eq("id", id)
-    .eq("agency_id", agencyId);
+    .eq('id', id)
+    .eq('agency_id', agencyId);
 
   if (error) {
-    console.error("Error updating upsell item:", error);
-    throw new Error("Failed to update upsell item.");
+    console.error('Error updating upsell item:', error);
+    throw new Error('Failed to update upsell item.');
   }
 
-  revalidatePath("/admin/upsell-items");
-  redirect("/admin/upsell-items");
+  revalidatePath('/admin/upsell-items');
+  redirect('/admin/upsell-items');
 }
 
 export async function deleteUpsellItem(id: string) {
@@ -196,32 +192,31 @@ export async function deleteUpsellItem(id: string) {
 
   // Optional: Delete image from storage if it exists
   const { data: itemToDelete } = await supabase
-    .from("upsell_items")
-    .select("image_url")
-    .eq("id", id)
-    .eq("agency_id", agencyId)
+    .from('upsell_items')
+    .select('image_url')
+    .eq('id', id)
+    .eq('agency_id', agencyId)
     .single();
   if (itemToDelete?.image_url) {
-    const filePath = itemToDelete.image_url.split("public/")[1]; // Extract path after 'public/'
+    const filePath = itemToDelete.image_url.split('public/')[1]; // Extract path after 'public/'
     if (filePath) {
-      const { error: deleteError } = await supabase.storage
-        .from("tours")
-        .remove([filePath]);
+      const { error: deleteError } = await supabase.storage.from('tours').remove([filePath]);
       if (deleteError) {
-        console.warn(
-          "Failed to delete old upsell item image from storage:",
-          deleteError,
-        );
+        console.warn('Failed to delete old upsell item image from storage:', deleteError);
       }
     }
   }
 
-  const { error } = await supabase.from("upsell_items").delete().eq("id", id).eq("agency_id", agencyId);
+  const { error } = await supabase
+    .from('upsell_items')
+    .delete()
+    .eq('id', id)
+    .eq('agency_id', agencyId);
 
   if (error) {
-    console.error("Error deleting upsell item:", error);
-    throw new Error("Failed to delete upsell item.");
+    console.error('Error deleting upsell item:', error);
+    throw new Error('Failed to delete upsell item.');
   }
 
-  revalidatePath("/admin/upsell-items");
+  revalidatePath('/admin/upsell-items');
 }

@@ -1,14 +1,10 @@
-import { getUpsellItemById, updateUpsellItem } from "@/lib/supabase/upsell-items";
-import { notFound } from "next/navigation";
-import UpsellItemEditClient from "./upsell-item-edit-client";
+import { getUpsellItemById, updateUpsellItem } from '@/lib/supabase/upsell-items';
+import { notFound } from 'next/navigation';
+import UpsellItemEditClient from './upsell-item-edit-client';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-export default async function EditUpsellItemPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditUpsellItemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const upsellItem = await getUpsellItemById(id);
 
@@ -17,10 +13,6 @@ export default async function EditUpsellItemPage({
   }
 
   return (
-    <UpsellItemEditClient
-      initialData={upsellItem}
-      onSubmit={updateUpsellItem.bind(null, id)}
-    />
+    <UpsellItemEditClient initialData={upsellItem} onSubmit={updateUpsellItem.bind(null, id)} />
   );
 }
-

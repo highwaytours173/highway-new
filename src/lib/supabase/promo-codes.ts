@@ -1,10 +1,10 @@
-"use server";
+'use server';
 
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import type { PromoCode } from "@/types";
-import { toCamelCase } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import type { PromoCode } from '@/types';
+import { toCamelCase } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 
 type DbPromoCode = {
   id: string;
@@ -28,13 +28,13 @@ export async function getPromoCodes(): Promise<PromoCode[]> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("promo_codes")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
+    .from('promo_codes')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("Error fetching promo codes:", error);
+    console.error('Error fetching promo codes:', error);
     return [];
   }
 
@@ -46,10 +46,10 @@ export async function getPromoCodeById(id: string): Promise<PromoCode | null> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("promo_codes")
-    .select("*")
-    .eq("id", id)
-    .eq("agency_id", agencyId)
+    .from('promo_codes')
+    .select('*')
+    .eq('id', id)
+    .eq('agency_id', agencyId)
     .single();
 
   if (error) {
@@ -60,11 +60,11 @@ export async function getPromoCodeById(id: string): Promise<PromoCode | null> {
   return toCamelCase(data) as PromoCode;
 }
 
-export async function createPromoCode(input: Omit<PromoCode, "id" | "createdAt" | "usageCount">) {
+export async function createPromoCode(input: Omit<PromoCode, 'id' | 'createdAt' | 'usageCount'>) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
-  const { error } = await supabase.from("promo_codes").insert({
+  const { error } = await supabase.from('promo_codes').insert({
     agency_id: agencyId,
     code: input.code.toUpperCase(),
     type: input.type,
@@ -81,10 +81,13 @@ export async function createPromoCode(input: Omit<PromoCode, "id" | "createdAt" 
     throw new Error(`Failed to create promo code: ${error.message}`);
   }
 
-  revalidatePath("/admin/promotions");
+  revalidatePath('/admin/promotions');
 }
 
-export async function updatePromoCode(id: string, input: Partial<Omit<PromoCode, "id" | "createdAt" | "usageCount">>) {
+export async function updatePromoCode(
+  id: string,
+  input: Partial<Omit<PromoCode, 'id' | 'createdAt' | 'usageCount'>>
+) {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
@@ -93,25 +96,26 @@ export async function updatePromoCode(id: string, input: Partial<Omit<PromoCode,
   if (input.type !== undefined) updateData.type = input.type;
   if (input.value !== undefined) updateData.value = input.value;
   if (input.minOrderAmount !== undefined) updateData.min_order_amount = input.minOrderAmount;
-  if (input.maxDiscountAmount !== undefined) updateData.max_discount_amount = input.maxDiscountAmount;
+  if (input.maxDiscountAmount !== undefined)
+    updateData.max_discount_amount = input.maxDiscountAmount;
   if (input.startsAt !== undefined) updateData.starts_at = input.startsAt || null;
   if (input.expiresAt !== undefined) updateData.expires_at = input.expiresAt || null;
   if (input.usageLimit !== undefined) updateData.usage_limit = input.usageLimit;
   if (input.isActive !== undefined) updateData.is_active = input.isActive;
-  
+
   updateData.updated_at = new Date().toISOString();
 
   const { error } = await supabase
-    .from("promo_codes")
+    .from('promo_codes')
     .update(updateData)
-    .eq("id", id)
-    .eq("agency_id", agencyId);
+    .eq('id', id)
+    .eq('agency_id', agencyId);
 
   if (error) {
     throw new Error(`Failed to update promo code: ${error.message}`);
   }
 
-  revalidatePath("/admin/promotions");
+  revalidatePath('/admin/promotions');
 }
 
 export async function deletePromoCode(id: string) {
@@ -119,16 +123,16 @@ export async function deletePromoCode(id: string) {
   const agencyId = await getCurrentAgencyId();
 
   const { error } = await supabase
-    .from("promo_codes")
+    .from('promo_codes')
     .delete()
-    .eq("id", id)
-    .eq("agency_id", agencyId);
+    .eq('id', id)
+    .eq('agency_id', agencyId);
 
   if (error) {
-    throw new Error("Failed to delete promo code.");
+    throw new Error('Failed to delete promo code.');
   }
 
-  revalidatePath("/admin/promotions");
+  revalidatePath('/admin/promotions');
 }
 
 export async function validatePromoCode(code: string, cartTotal: number): Promise<PromoCode> {
@@ -137,33 +141,37 @@ export async function validatePromoCode(code: string, cartTotal: number): Promis
   const normalizedCode = code.toUpperCase().trim();
 
   const { data, error } = await supabase
-    .from("promo_codes")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .eq("code", normalizedCode)
+    .from('promo_codes')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .eq('code', normalizedCode)
     .single();
 
   if (error || !data) {
-    throw new Error("Invalid promo code.");
+    throw new Error('Invalid promo code.');
   }
 
   const promo = toCamelCase(data) as PromoCode;
 
   if (!promo.isActive) {
-    throw new Error("This promo code is inactive.");
+    throw new Error('This promo code is inactive.');
   }
 
   const now = new Date();
   if (promo.startsAt && new Date(promo.startsAt) > now) {
-    throw new Error("This promo code is not active yet.");
+    throw new Error('This promo code is not active yet.');
   }
 
   if (promo.expiresAt && new Date(promo.expiresAt) < now) {
-    throw new Error("This promo code has expired.");
+    throw new Error('This promo code has expired.');
   }
 
-  if (promo.usageLimit !== undefined && promo.usageLimit !== null && promo.usageCount >= promo.usageLimit) {
-    throw new Error("This promo code has reached its usage limit.");
+  if (
+    promo.usageLimit !== undefined &&
+    promo.usageLimit !== null &&
+    promo.usageCount >= promo.usageLimit
+  ) {
+    throw new Error('This promo code has reached its usage limit.');
   }
 
   if (promo.minOrderAmount && cartTotal < promo.minOrderAmount) {

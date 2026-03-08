@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
-import { getRoomTypeById, updateRoomType } from "@/lib/supabase/hotels";
-import { RoomTypeForm } from "../room-type-form";
+import { notFound } from 'next/navigation';
+import { getRoomTypeById, updateRoomType } from '@/lib/supabase/hotels';
+import { RoomTypeForm } from '../room-type-form';
 
 export default async function EditRoomTypePage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -11,9 +11,9 @@ export default async function EditRoomTypePage(props: { params: Promise<{ id: st
   }
 
   const update = async (formData: FormData) => {
-    "use server";
+    'use server';
 
-    const getStr = (key: string) => String(formData.get(key) || "").trim();
+    const getStr = (key: string) => String(formData.get(key) || '').trim();
     const getNum = (key: string) => {
       const raw = getStr(key);
       if (!raw) return null;
@@ -21,18 +21,18 @@ export default async function EditRoomTypePage(props: { params: Promise<{ id: st
       return Number.isFinite(val) ? val : null;
     };
 
-    const name = getStr("name");
-    const slug = getStr("slug");
-    const description = getStr("description");
-    const maxAdults = Number(getStr("maxAdults") || 0);
-    const maxChildren = Number(getStr("maxChildren") || 0);
-    const isActive = formData.get("isActive") === "on";
+    const name = getStr('name');
+    const slug = getStr('slug');
+    const description = getStr('description');
+    const maxAdults = Number(getStr('maxAdults') || 0);
+    const maxChildren = Number(getStr('maxChildren') || 0);
+    const isActive = formData.get('isActive') === 'on';
 
     if (!name) {
-      throw new Error("Room name is required.");
+      throw new Error('Room name is required.');
     }
 
-    const bedsJson = getStr("bedsJson") || "{}";
+    const bedsJson = getStr('bedsJson') || '{}';
     let beds: Record<string, unknown> = {};
     try {
       beds = JSON.parse(bedsJson) as Record<string, unknown>;
@@ -41,32 +41,32 @@ export default async function EditRoomTypePage(props: { params: Promise<{ id: st
     }
 
     const amenities = formData
-      .getAll("amenities")
+      .getAll('amenities')
       .map(String)
       .map((v) => v.trim())
       .filter(Boolean);
 
     const services = formData
-      .getAll("services")
+      .getAll('services')
       .map(String)
       .map((v) => v.trim())
       .filter(Boolean);
 
     const highlights = formData
-      .getAll("highlights")
+      .getAll('highlights')
       .map(String)
       .map((v) => v.trim())
       .filter(Boolean);
 
     const existingImages = formData
-      .getAll("existingImages")
+      .getAll('existingImages')
       .map(String)
       .map((v) => v.trim())
       .filter(Boolean);
 
     const images = formData
-      .getAll("images")
-      .filter((v): v is File => typeof v === "object" && "name" in v && "size" in v)
+      .getAll('images')
+      .filter((v): v is File => typeof v === 'object' && 'name' in v && 'size' in v)
       .filter((f) => f.size > 0);
 
     await updateRoomType({
@@ -77,20 +77,20 @@ export default async function EditRoomTypePage(props: { params: Promise<{ id: st
       description: description || undefined,
       maxAdults: Number.isFinite(maxAdults) ? maxAdults : 0,
       maxChildren: Number.isFinite(maxChildren) ? maxChildren : 0,
-      sizeSqm: getNum("sizeSqm"),
-      view: getStr("view") || null,
-      bathrooms: getNum("bathrooms"),
-      floor: getNum("floor"),
-      basePricePerNight: getNum("basePricePerNight"),
-      currency: getStr("currency") || null,
-      defaultUnits: getNum("defaultUnits"),
-      smokingAllowed: formData.get("smokingAllowed") === "on",
-      refundable: formData.get("refundable") === "on",
-      breakfastIncluded: formData.get("breakfastIncluded") === "on",
-      petsAllowed: formData.get("petsAllowed") === "on",
-      extraBedAllowed: formData.get("extraBedAllowed") === "on",
-      extraBedFee: getNum("extraBedFee"),
-      cancellationPolicy: getStr("cancellationPolicy") || undefined,
+      sizeSqm: getNum('sizeSqm'),
+      view: getStr('view') || null,
+      bathrooms: getNum('bathrooms'),
+      floor: getNum('floor'),
+      basePricePerNight: getNum('basePricePerNight'),
+      currency: getStr('currency') || null,
+      defaultUnits: getNum('defaultUnits'),
+      smokingAllowed: formData.get('smokingAllowed') === 'on',
+      refundable: formData.get('refundable') === 'on',
+      breakfastIncluded: formData.get('breakfastIncluded') === 'on',
+      petsAllowed: formData.get('petsAllowed') === 'on',
+      extraBedAllowed: formData.get('extraBedAllowed') === 'on',
+      extraBedFee: getNum('extraBedFee'),
+      cancellationPolicy: getStr('cancellationPolicy') || undefined,
       beds,
       amenities,
       services,
@@ -100,6 +100,7 @@ export default async function EditRoomTypePage(props: { params: Promise<{ id: st
     });
   };
 
-  return <RoomTypeForm mode="edit" backHref="/admin/hotels/rooms" action={update} initial={roomType} />;
+  return (
+    <RoomTypeForm mode="edit" backHref="/admin/hotels/rooms" action={update} initial={roomType} />
+  );
 }
-

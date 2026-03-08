@@ -1,8 +1,7 @@
+'use client';
 
-"use client";
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -11,11 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus, Loader2 } from "lucide-react";
-import { createAgency } from "@/app/super-admin/actions";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus, Loader2 } from 'lucide-react';
+import { createAgency } from '@/app/super-admin/actions';
 
 export function DeployTenantDialog() {
   const [open, setOpen] = useState(false);
@@ -53,12 +52,7 @@ export function DeployTenantDialog() {
         <form action={handleSubmit} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Agency Name</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="E.g. Pyramids Travel"
-              required
-            />
+            <Input id="name" name="name" placeholder="E.g. Pyramids Travel" required />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="slug">Unique Slug</Label>
@@ -72,11 +66,7 @@ export function DeployTenantDialog() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="domain">Custom Domain (Optional)</Label>
-            <Input
-              id="domain"
-              name="domain"
-              placeholder="travel.example.com"
-            />
+            <Input id="domain" name="domain" placeholder="travel.example.com" />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>

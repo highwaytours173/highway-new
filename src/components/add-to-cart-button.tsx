@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCart } from "@/hooks/use-cart";
-import type { Tour } from "@/types";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { useCart } from '@/hooks/use-cart';
+import type { Tour } from '@/types';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart } from 'lucide-react';
 
 interface AddToCartButtonProps {
   tour: Tour;
@@ -12,24 +12,23 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ tour }: AddToCartButtonProps) {
   const { addToCart, cartItems } = useCart();
   const isInCart = cartItems.some(
-    (item) => item.product.id === tour.id && item.productType === "tour",
+    (item) => item.product.id === tour.id && item.productType === 'tour'
   );
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    addToCart(tour, "tour");
+    addToCart(tour, 'tour');
   };
 
   return (
     <Button
       onClick={handleAddToCart}
       disabled={!tour.availability || isInCart}
-      aria-label={isInCart ? "Already in cart" : "Add to cart"}
+      aria-label={isInCart ? 'Already in cart' : 'Add to cart'}
       className="transition-all duration-200"
     >
       <ShoppingCart className="mr-2 h-4 w-4" />
-      {isInCart ? "In Cart" : "Add to Cart"}
+      {isInCart ? 'In Cart' : 'Add to Cart'}
     </Button>
   );
 }
-

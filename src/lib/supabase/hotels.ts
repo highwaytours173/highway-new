@@ -1,18 +1,18 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import { toCamelCase } from "@/lib/utils";
-import type { Hotel, HotelBooking, RoomInventory, RoomType } from "@/types";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import { toCamelCase } from '@/lib/utils';
+import type { Hotel, HotelBooking, RoomInventory, RoomType } from '@/types';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 function slugify(value: string) {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
 async function uploadRoomImages(params: {
@@ -25,11 +25,11 @@ async function uploadRoomImages(params: {
 
   for (const file of params.files) {
     if (!file?.name || !file.size) continue;
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-');
     const filePath = `public/hotels/${params.hotelId}/rooms/${params.roomSlug}/${Date.now()}-${safeFileName}`;
 
     const { error: uploadError } = await params.supabase.storage
-      .from("tours")
+      .from('tours')
       .upload(filePath, file, {
         contentType: file.type || undefined,
         upsert: true,
@@ -39,7 +39,7 @@ async function uploadRoomImages(params: {
       throw uploadError;
     }
 
-    const { data: urlData } = params.supabase.storage.from("tours").getPublicUrl(filePath);
+    const { data: urlData } = params.supabase.storage.from('tours').getPublicUrl(filePath);
     imageUrls.push(urlData.publicUrl);
   }
 
@@ -51,10 +51,10 @@ export async function getHotels(): Promise<Hotel[]> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("hotels")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: true });
+    .from('hotels')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: true });
 
   if (error) {
     throw error;
@@ -68,11 +68,11 @@ export async function getPublicHotels(): Promise<Hotel[]> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("hotels")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .eq("is_active", true)
-    .order("created_at", { ascending: true });
+    .from('hotels')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true });
 
   if (error) {
     throw error;
@@ -86,10 +86,10 @@ export async function getHotelBySlug(slug: string): Promise<Hotel | null> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("hotels")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .eq("slug", slug)
+    .from('hotels')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .eq('slug', slug)
     .maybeSingle();
 
   if (error) {
@@ -105,11 +105,11 @@ export async function getPublicHotelBySlug(slug: string): Promise<Hotel | null> 
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("hotels")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .eq("slug", slug)
-    .eq("is_active", true)
+    .from('hotels')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .eq('slug', slug)
+    .eq('is_active', true)
     .maybeSingle();
 
   if (error) {
@@ -124,10 +124,10 @@ export async function getRoomTypesByHotelId(hotelId: string): Promise<RoomType[]
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("room_types")
-    .select("*")
-    .eq("hotel_id", hotelId)
-    .order("created_at", { ascending: true });
+    .from('room_types')
+    .select('*')
+    .eq('hotel_id', hotelId)
+    .order('created_at', { ascending: true });
 
   if (error) {
     throw error;
@@ -140,11 +140,11 @@ export async function getPublicRoomTypesByHotelId(hotelId: string): Promise<Room
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("room_types")
-    .select("*")
-    .eq("hotel_id", hotelId)
-    .eq("is_active", true)
-    .order("created_at", { ascending: true });
+    .from('room_types')
+    .select('*')
+    .eq('hotel_id', hotelId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true });
 
   if (error) {
     throw error;
@@ -160,10 +160,10 @@ export async function getRoomTypeBySlug(params: {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("room_types")
-    .select("*")
-    .eq("hotel_id", params.hotelId)
-    .eq("slug", params.roomSlug)
+    .from('room_types')
+    .select('*')
+    .eq('hotel_id', params.hotelId)
+    .eq('slug', params.roomSlug)
     .maybeSingle();
 
   if (error) {
@@ -182,12 +182,12 @@ export async function getRoomInventory(params: {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("room_inventory")
-    .select("*")
-    .eq("room_type_id", params.roomTypeId)
-    .gte("date", params.from)
-    .lt("date", params.to)
-    .order("date", { ascending: true });
+    .from('room_inventory')
+    .select('*')
+    .eq('room_type_id', params.roomTypeId)
+    .gte('date', params.from)
+    .lt('date', params.to)
+    .order('date', { ascending: true });
 
   if (error) {
     throw error;
@@ -201,10 +201,10 @@ export async function getHotelBookings(): Promise<HotelBooking[]> {
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("hotel_bookings")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .order("created_at", { ascending: false });
+    .from('hotel_bookings')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .order('created_at', { ascending: false });
 
   if (error) {
     throw error;
@@ -247,9 +247,9 @@ export async function addRoomType(input: {
   const base = slugBase || `room-${crypto.randomUUID().slice(0, 8)}`;
 
   const fileUploads = (input.images || []).filter(
-    (img): img is File => typeof img === "object" && "name" in img && "size" in img,
+    (img): img is File => typeof img === 'object' && 'name' in img && 'size' in img
   );
-  const existingUrls = (input.images || []).filter((img): img is string => typeof img === "string");
+  const existingUrls = (input.images || []).filter((img): img is string => typeof img === 'string');
 
   const attemptInsert = async (slug: string) => {
     const uploadedUrls = await uploadRoomImages({
@@ -259,7 +259,7 @@ export async function addRoomType(input: {
       files: fileUploads,
     });
 
-    return supabase.from("room_types").insert({
+    return supabase.from('room_types').insert({
       hotel_id: input.hotelId,
       name: input.name,
       slug,
@@ -291,7 +291,7 @@ export async function addRoomType(input: {
   };
 
   let result = await attemptInsert(base);
-  if (result.error && result.error.code === "23505") {
+  if (result.error && result.error.code === '23505') {
     result = await attemptInsert(`${base}-${crypto.randomUUID().slice(0, 4)}`);
   }
 
@@ -299,15 +299,15 @@ export async function addRoomType(input: {
     throw result.error;
   }
 
-  revalidatePath("/admin/hotels/rooms");
-  revalidatePath("/hotels");
-  redirect("/admin/hotels/rooms");
+  revalidatePath('/admin/hotels/rooms');
+  revalidatePath('/hotels');
+  redirect('/admin/hotels/rooms');
 }
 
 export async function getRoomTypeById(id: string): Promise<RoomType | null> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("room_types").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from('room_types').select('*').eq('id', id).maybeSingle();
 
   if (error) {
     throw error;
@@ -352,9 +352,9 @@ export async function updateRoomType(input: {
   const slug = slugBase || `room-${crypto.randomUUID().slice(0, 8)}`;
 
   const fileUploads = (input.images || []).filter(
-    (img): img is File => typeof img === "object" && "name" in img && "size" in img,
+    (img): img is File => typeof img === 'object' && 'name' in img && 'size' in img
   );
-  const existingUrls = (input.images || []).filter((img): img is string => typeof img === "string");
+  const existingUrls = (input.images || []).filter((img): img is string => typeof img === 'string');
 
   const uploadedUrls = await uploadRoomImages({
     supabase,
@@ -364,7 +364,7 @@ export async function updateRoomType(input: {
   });
 
   const { error } = await supabase
-    .from("room_types")
+    .from('room_types')
     .update({
       name: input.name,
       slug,
@@ -393,17 +393,17 @@ export async function updateRoomType(input: {
       images: [...existingUrls, ...uploadedUrls],
       is_active: input.isActive,
     })
-    .eq("id", input.id)
-    .eq("hotel_id", input.hotelId);
+    .eq('id', input.id)
+    .eq('hotel_id', input.hotelId);
 
   if (error) {
     throw error;
   }
 
-  revalidatePath("/admin/hotels/rooms");
-  revalidatePath("/admin/hotels/availability");
-  revalidatePath("/hotels");
-  redirect("/admin/hotels/rooms");
+  revalidatePath('/admin/hotels/rooms');
+  revalidatePath('/admin/hotels/availability');
+  revalidatePath('/hotels');
+  redirect('/admin/hotels/rooms');
 }
 
 export async function createHotelProfile(input: {
@@ -427,7 +427,7 @@ export async function createHotelProfile(input: {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
-  const { error: ensureError } = await supabase.rpc("ensure_agency_membership", {
+  const { error: ensureError } = await supabase.rpc('ensure_agency_membership', {
     target_agency: agencyId,
   });
   if (ensureError) {
@@ -435,9 +435,9 @@ export async function createHotelProfile(input: {
   }
 
   const { data: existing, error: existingError } = await supabase
-    .from("hotels")
-    .select("id")
-    .eq("agency_id", agencyId)
+    .from('hotels')
+    .select('id')
+    .eq('agency_id', agencyId)
     .limit(1);
 
   if (existingError) {
@@ -445,14 +445,14 @@ export async function createHotelProfile(input: {
   }
 
   if (existing && existing.length > 0) {
-    redirect("/admin/hotels");
+    redirect('/admin/hotels');
   }
 
   const slugBase = slugify(input.slug?.trim() || input.name);
   const base = slugBase || `hotel-${crypto.randomUUID().slice(0, 8)}`;
 
   const attemptInsert = async (slug: string) => {
-    return supabase.from("hotels").insert({
+    return supabase.from('hotels').insert({
       agency_id: agencyId,
       slug,
       name: input.name,
@@ -476,7 +476,7 @@ export async function createHotelProfile(input: {
   };
 
   let result = await attemptInsert(base);
-  if (result.error && result.error.code === "23505") {
+  if (result.error && result.error.code === '23505') {
     result = await attemptInsert(`${base}-${crypto.randomUUID().slice(0, 4)}`);
   }
 
@@ -484,10 +484,10 @@ export async function createHotelProfile(input: {
     throw result.error;
   }
 
-  revalidatePath("/admin/hotels");
-  revalidatePath("/admin/hotels/rooms");
-  revalidatePath("/admin/hotels/availability");
-  redirect("/admin/hotels");
+  revalidatePath('/admin/hotels');
+  revalidatePath('/admin/hotels/rooms');
+  revalidatePath('/admin/hotels/availability');
+  redirect('/admin/hotels');
 }
 
 export async function updateHotelProfile(input: {
@@ -512,7 +512,7 @@ export async function updateHotelProfile(input: {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
-  const { error: ensureError } = await supabase.rpc("ensure_agency_membership", {
+  const { error: ensureError } = await supabase.rpc('ensure_agency_membership', {
     target_agency: agencyId,
   });
   if (ensureError) {
@@ -523,7 +523,7 @@ export async function updateHotelProfile(input: {
   const slug = slugBase || `hotel-${crypto.randomUUID().slice(0, 8)}`;
 
   const { error } = await supabase
-    .from("hotels")
+    .from('hotels')
     .update({
       slug,
       name: input.name,
@@ -542,18 +542,18 @@ export async function updateHotelProfile(input: {
       check_out_time: input.checkOutTime?.trim() || null,
       is_active: input.isActive,
     })
-    .eq("id", input.id)
-    .eq("agency_id", agencyId);
+    .eq('id', input.id)
+    .eq('agency_id', agencyId);
 
   if (error) {
     throw error;
   }
 
-  revalidatePath("/admin/hotels");
-  revalidatePath("/admin/hotels/rooms");
-  revalidatePath("/admin/hotels/availability");
-  revalidatePath("/hotels");
-  redirect("/admin/hotels");
+  revalidatePath('/admin/hotels');
+  revalidatePath('/admin/hotels/rooms');
+  revalidatePath('/admin/hotels/availability');
+  revalidatePath('/hotels');
+  redirect('/admin/hotels');
 }
 
 export async function upsertRoomInventoryRange(input: {
@@ -569,10 +569,10 @@ export async function upsertRoomInventoryRange(input: {
   const fromDate = new Date(`${input.from}T00:00:00Z`);
   const toDate = new Date(`${input.to}T00:00:00Z`);
   if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
-    throw new Error("Invalid date range.");
+    throw new Error('Invalid date range.');
   }
   if (toDate < fromDate) {
-    throw new Error("End date must be after start date.");
+    throw new Error('End date must be after start date.');
   }
 
   const rows: Array<Record<string, unknown>> = [];
@@ -588,17 +588,17 @@ export async function upsertRoomInventoryRange(input: {
   }
 
   const { error } = await supabase
-    .from("room_inventory")
-    .upsert(rows, { onConflict: "room_type_id,date" });
+    .from('room_inventory')
+    .upsert(rows, { onConflict: 'room_type_id,date' });
 
   if (error) {
     throw error;
   }
 
-  revalidatePath("/admin/hotels/availability");
+  revalidatePath('/admin/hotels/availability');
   redirect(
     `/admin/hotels/availability?roomTypeId=${encodeURIComponent(input.roomTypeId)}&from=${encodeURIComponent(
-      input.from,
-    )}&to=${encodeURIComponent(input.to)}`,
+      input.from
+    )}&to=${encodeURIComponent(input.to)}`
   );
 }

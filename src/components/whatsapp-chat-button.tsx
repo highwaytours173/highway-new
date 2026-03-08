@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 interface WhatsAppChatButtonProps {
   phone: string;
@@ -11,7 +11,7 @@ export function WhatsAppChatButton({ phone, message }: WhatsAppChatButtonProps) 
   const [hovered, setHovered] = useState(false);
 
   // Strip everything except digits and leading +
-  const cleanPhone = phone.replace(/[^\d+]/g, "");
+  const cleanPhone = phone.replace(/[^\d+]/g, '');
 
   const url = message
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
@@ -33,7 +33,7 @@ export function WhatsAppChatButton({ phone, message }: WhatsAppChatButtonProps) 
           hidden sm:flex items-center px-3 py-1.5 rounded-full bg-white text-sm font-medium text-gray-700
           shadow-md border border-gray-100 whitespace-nowrap
           transition-all duration-300
-          ${hovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 pointer-events-none"}
+          ${hovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'}
         `}
       >
         Chat with us

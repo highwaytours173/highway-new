@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Car, Luggage, PhoneCall } from "lucide-react";
-import { ServicesClient } from "./services-client";
-import { useLanguage } from "@/hooks/use-language";
-import type { UpsellItem } from "@/types";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Car, Luggage, PhoneCall } from 'lucide-react';
+import { ServicesClient } from './services-client';
+import { useLanguage } from '@/hooks/use-language';
+import type { UpsellItem } from '@/types';
 
 interface ServicesPageClientProps {
   services: UpsellItem[];
@@ -35,21 +35,21 @@ export function ServicesPageClient({ services, heroImageUrl }: ServicesPageClien
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit">
-                {t("services.badge")}
+                {t('services.badge')}
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                {t("services.title")}
+                {t('services.title')}
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                {t("services.subtitle")}
+                {t('services.subtitle')}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/cart">{t("services.viewCart")}</Link>
+                <Link href="/cart">{t('services.viewCart')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/tours">{t("services.browseTours")}</Link>
+                <Link href="/tours">{t('services.browseTours')}</Link>
               </Button>
             </div>
           </div>
@@ -63,8 +63,8 @@ export function ServicesPageClient({ services, heroImageUrl }: ServicesPageClien
               <Luggage className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("services.airportPickup")}</p>
-              <p className="text-sm text-muted-foreground">{t("services.airportPickupDesc")}</p>
+              <p className="text-base font-semibold">{t('services.airportPickup')}</p>
+              <p className="text-sm text-muted-foreground">{t('services.airportPickupDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -74,8 +74,8 @@ export function ServicesPageClient({ services, heroImageUrl }: ServicesPageClien
               <PhoneCall className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("services.stayConnected")}</p>
-              <p className="text-sm text-muted-foreground">{t("services.stayConnectedDesc")}</p>
+              <p className="text-base font-semibold">{t('services.stayConnected')}</p>
+              <p className="text-sm text-muted-foreground">{t('services.stayConnectedDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -85,8 +85,8 @@ export function ServicesPageClient({ services, heroImageUrl }: ServicesPageClien
               <Car className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-base font-semibold">{t("services.privateTransport")}</p>
-              <p className="text-sm text-muted-foreground">{t("services.privateTransportDesc")}</p>
+              <p className="text-base font-semibold">{t('services.privateTransport')}</p>
+              <p className="text-sm text-muted-foreground">{t('services.privateTransportDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -95,14 +95,14 @@ export function ServicesPageClient({ services, heroImageUrl }: ServicesPageClien
       {services.length === 0 ? (
         <Card className="rounded-3xl">
           <CardContent className="space-y-3">
-            <p className="text-lg font-semibold">{t("services.noServices")}</p>
-            <p className="text-sm text-muted-foreground">{t("services.noServicesDesc")}</p>
+            <p className="text-lg font-semibold">{t('services.noServices')}</p>
+            <p className="text-sm text-muted-foreground">{t('services.noServicesDesc')}</p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild className="w-full sm:w-auto">
-                <Link href="/tours">{t("services.browseTours")}</Link>
+                <Link href="/tours">{t('services.browseTours')}</Link>
               </Button>
               <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/contact">{t("services.requestService")}</Link>
+                <Link href="/contact">{t('services.requestService')}</Link>
               </Button>
             </div>
           </CardContent>

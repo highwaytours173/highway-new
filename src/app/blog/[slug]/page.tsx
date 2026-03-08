@@ -1,21 +1,21 @@
-import { notFound } from "next/navigation";
-import { getPostBySlug } from "@/lib/supabase/blog";
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
-import type { Metadata } from "next";
+import { notFound } from 'next/navigation';
+import { getPostBySlug } from '@/lib/supabase/blog';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, Calendar, Clock, User } from 'lucide-react';
+import type { Metadata } from 'next';
 
 type Props = { params: Promise<{ slug: string }> };
 
 function stripText(value: string) {
-  return value.replace(/\s+/g, " ").trim();
+  return value.replace(/\s+/g, ' ').trim();
 }
 
 function estimateReadingMinutes(text: string) {
-  const words = stripText(text).split(" ").filter(Boolean).length;
+  const words = stripText(text).split(' ').filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
 
@@ -25,14 +25,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!post) {
     return {
-      title: "Post Not Found",
+      title: 'Post Not Found',
     };
   }
 
   // Simple description extraction
   const description = post.content
-    .replace(/[#*`]/g, "") // Remove some common markdown chars
-    .replace(/\s+/g, " ")
+    .replace(/[#*`]/g, '') // Remove some common markdown chars
+    .replace(/\s+/g, ' ')
     .trim()
     .substring(0, 160);
 
@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: post.title,
       description: description,
-      type: "article",
+      type: 'article',
       publishedTime: post.createdAt,
       authors: [post.author],
       tags: post.tags,
       images: post.featuredImage ? [{ url: post.featuredImage }] : [],
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title: post.title,
       description: description,
       images: post.featuredImage ? [post.featuredImage] : [],

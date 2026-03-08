@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { ColumnDef, Row } from "@tanstack/react-table";
-import type { UpsellItem } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import type { ColumnDef, Row } from '@tanstack/react-table';
+import type { UpsellItem } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,9 +23,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import Link from "next/link";
+} from '@/components/ui/alert-dialog';
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import Link from 'next/link';
 
 interface ColumnsProps {
   onDelete: (id: string) => Promise<void>;
@@ -47,8 +47,8 @@ const ActionCell = ({ row, onDelete }: ActionCellProps) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              upsell item and remove its data from our servers.
+              This action cannot be undone. This will permanently delete the upsell item and remove
+              its data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -76,9 +76,7 @@ const ActionCell = ({ row, onDelete }: ActionCellProps) => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem asChild>
-            <Link href={`/admin/upsell-items/${upsellItem.id}/edit`}>
-              Edit
-            </Link>
+            <Link href={`/admin/upsell-items/${upsellItem.id}/edit`}>Edit</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -93,16 +91,13 @@ const ActionCell = ({ row, onDelete }: ActionCellProps) => {
   );
 };
 
-export const columns = ({
-  onDelete,
-}: ColumnsProps): ColumnDef<UpsellItem>[] => [
+export const columns = ({ onDelete }: ColumnsProps): ColumnDef<UpsellItem>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -119,12 +114,12 @@ export const columns = ({
     enableHiding: false,
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -133,69 +128,66 @@ export const columns = ({
     },
   },
   {
-    accessorKey: "type",
-    header: "Type",
+    accessorKey: 'type',
+    header: 'Type',
     cell: ({ row }) => {
-      const type = row.getValue("type") as string;
+      const type = row.getValue('type') as string;
       return (
         <Badge variant="outline" className="capitalize">
-          {type.replace("_", " ")}
+          {type.replace('_', ' ')}
         </Badge>
       );
     },
   },
   {
-    accessorKey: "price",
-    header: "Price",
+    accessorKey: 'price',
+    header: 'Price',
     cell: ({ row }) => {
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(row.getValue("price"));
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(row.getValue('price'));
 
       return <div className="font-mono">{formatted}</div>;
     },
   },
   {
-    id: "variants",
-    header: "Variants",
+    id: 'variants',
+    header: 'Variants',
     cell: ({ row }) => {
       const count = row.original.variants?.length ?? 0;
       return <div className="font-mono">{count}</div>;
     },
   },
   {
-    id: "rules",
-    header: "Rules",
+    id: 'rules',
+    header: 'Rules',
     cell: ({ row }) => {
       const targeting = row.original.targeting;
       if (!targeting) return <div className="text-muted-foreground">All</div>;
       const destinations = targeting.destinations?.length ?? 0;
       const tours = targeting.tourIds?.length ?? 0;
-      if (destinations === 0 && tours === 0) return <div className="text-muted-foreground">All</div>;
+      if (destinations === 0 && tours === 0)
+        return <div className="text-muted-foreground">All</div>;
       return (
         <div className="text-sm text-muted-foreground">
           {destinations > 0 ? `${destinations} dest` : null}
-          {destinations > 0 && tours > 0 ? " • " : null}
+          {destinations > 0 && tours > 0 ? ' • ' : null}
           {tours > 0 ? `${tours} tours` : null}
         </div>
       );
     },
   },
   {
-    accessorKey: "isActive",
-    header: "Active",
+    accessorKey: 'isActive',
+    header: 'Active',
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive") as boolean;
-      return (
-        <Badge variant={isActive ? "default" : "secondary"}>
-          {isActive ? "Yes" : "No"}
-        </Badge>
-      );
+      const isActive = row.getValue('isActive') as boolean;
+      return <Badge variant={isActive ? 'default' : 'secondary'}>{isActive ? 'Yes' : 'No'}</Badge>;
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => <ActionCell row={row} onDelete={onDelete} />,
   },
 ];

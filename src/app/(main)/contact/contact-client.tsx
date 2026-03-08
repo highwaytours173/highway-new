@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 interface ContactClientProps {
   sent: boolean;
@@ -52,21 +52,21 @@ export function ContactClient({
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-3">
               <Badge variant="secondary" className="w-fit">
-                {t("contact.badge")}
+                {t('contact.badge')}
               </Badge>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                {t("contact.badge")} {agencyName}
+                {t('contact.badge')} {agencyName}
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                {t("contact.subtitle")}
+                {t('contact.subtitle')}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/tours">{t("contact.exploreTours")}</Link>
+                <Link href="/tours">{t('contact.exploreTours')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/services">{t("contact.viewServices")}</Link>
+                <Link href="/services">{t('contact.viewServices')}</Link>
               </Button>
             </div>
           </div>
@@ -78,19 +78,15 @@ export function ContactClient({
           <Card className="rounded-3xl">
             <CardContent className="space-y-4">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("contact.details")}
-                </p>
-                <p className="text-xl font-semibold tracking-tight">
-                  {t("contact.quickWays")}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">{t('contact.details')}</p>
+                <p className="text-xl font-semibold tracking-tight">{t('contact.quickWays')}</p>
               </div>
               <div className="space-y-3">
                 {contactEmail ? (
                   <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
                     <Mail className="mt-0.5 h-5 w-5 text-primary" />
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">{t("contact.email")}</p>
+                      <p className="text-sm font-medium">{t('contact.email')}</p>
                       <a
                         className="text-sm text-muted-foreground hover:text-primary"
                         href={`mailto:${contactEmail}`}
@@ -104,10 +100,10 @@ export function ContactClient({
                   <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
                     <Phone className="mt-0.5 h-5 w-5 text-primary" />
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">{t("contact.phone")}</p>
+                      <p className="text-sm font-medium">{t('contact.phone')}</p>
                       <a
                         className="text-sm text-muted-foreground hover:text-primary"
-                        href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
+                        href={`tel:${phoneNumber.replace(/\s+/g, '')}`}
                       >
                         {phoneNumber}
                       </a>
@@ -118,7 +114,7 @@ export function ContactClient({
                   <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
                     <MapPin className="mt-0.5 h-5 w-5 text-primary" />
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">{t("contact.address")}</p>
+                      <p className="text-sm font-medium">{t('contact.address')}</p>
                       <p className="text-sm text-muted-foreground">{address}</p>
                     </div>
                   </div>
@@ -126,8 +122,8 @@ export function ContactClient({
                 <div className="flex items-start gap-3 rounded-2xl border bg-background/60 p-4">
                   <Clock className="mt-0.5 h-5 w-5 text-primary" />
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">{t("contact.hours")}</p>
-                    <p className="text-sm text-muted-foreground">{t("contact.hoursValue")}</p>
+                    <p className="text-sm font-medium">{t('contact.hours')}</p>
+                    <p className="text-sm text-muted-foreground">{t('contact.hoursValue')}</p>
                   </div>
                 </div>
               </div>
@@ -145,12 +141,8 @@ export function ContactClient({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-sm font-medium text-white/80">
-                  {t("contact.responseTime")}
-                </p>
-                <p className="text-lg font-semibold text-white">
-                  {t("contact.responseValue")}
-                </p>
+                <p className="text-sm font-medium text-white/80">{t('contact.responseTime')}</p>
+                <p className="text-lg font-semibold text-white">{t('contact.responseValue')}</p>
               </div>
             </div>
           </Card>
@@ -161,24 +153,20 @@ export function ContactClient({
             <CardContent className="space-y-6">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
-                  {t("contact.sendMessage")}
+                  {t('contact.sendMessage')}
                 </p>
-                <p className="text-2xl font-semibold tracking-tight">
-                  {t("contact.howHelp")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t("contact.formHint")}
-                </p>
+                <p className="text-2xl font-semibold tracking-tight">{t('contact.howHelp')}</p>
+                <p className="text-sm text-muted-foreground">{t('contact.formHint')}</p>
               </div>
 
               {sent && (
                 <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-green-900">
-                  {t("contact.successMsg")}
+                  {t('contact.successMsg')}
                 </div>
               )}
               {sentError && (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-900">
-                  {t("contact.errorMsg")}
+                  {t('contact.errorMsg')}
                 </div>
               )}
 
@@ -186,18 +174,18 @@ export function ContactClient({
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-name">
-                      {t("contact.nameLabel")}
+                      {t('contact.nameLabel')}
                     </label>
                     <Input
                       id="contact-name"
                       name="name"
-                      placeholder={t("contact.namePlaceholder")}
+                      placeholder={t('contact.namePlaceholder')}
                       required
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-email">
-                      {t("contact.emailLabel")}
+                      {t('contact.emailLabel')}
                     </label>
                     <Input
                       id="contact-email"
@@ -212,41 +200,39 @@ export function ContactClient({
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-phone">
-                      {t("contact.phoneLabel")}
+                      {t('contact.phoneLabel')}
                     </label>
                     <Input id="contact-phone" name="phone" placeholder="+20..." />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-subject">
-                      {t("contact.subjectLabel")}
+                      {t('contact.subjectLabel')}
                     </label>
                     <Input
                       id="contact-subject"
                       name="subject"
-                      placeholder={t("contact.subjectPlaceholder")}
+                      placeholder={t('contact.subjectPlaceholder')}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="contact-message">
-                    {t("contact.messageLabel")}
+                    {t('contact.messageLabel')}
                   </label>
                   <Textarea
                     id="contact-message"
                     name="message"
-                    placeholder={t("contact.messagePlaceholder")}
+                    placeholder={t('contact.messagePlaceholder')}
                     rows={7}
                     required
                   />
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    {t("contact.consent")}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('contact.consent')}</p>
                   <Button type="submit" className="w-full sm:w-auto">
-                    {t("contact.sendBtn")}
+                    {t('contact.sendBtn')}
                   </Button>
                 </div>
               </form>

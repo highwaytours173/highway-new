@@ -10,7 +10,7 @@ export type BookingStatusChangeData = {
   agencyPhone?: string;
   bookingId: string;
   customerName: string;
-  newStatus: "Confirmed" | "Cancelled";
+  newStatus: 'Confirmed' | 'Cancelled';
   totalPrice: number;
   currency?: string;
   items: Array<{
@@ -32,21 +32,21 @@ export function renderBookingStatusChangeEmail(data: BookingStatusChangeData): s
     customerName,
     newStatus,
     totalPrice,
-    currency = "USD",
+    currency = 'USD',
     items,
   } = data;
 
   const fmt = (amount: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+    new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 
-  const isConfirmed = newStatus === "Confirmed";
+  const isConfirmed = newStatus === 'Confirmed';
 
   const headerBg = isConfirmed
-    ? "linear-gradient(135deg,#14532d,#16a34a)"
-    : "linear-gradient(135deg,#7f1d1d,#dc2626)";
+    ? 'linear-gradient(135deg,#14532d,#16a34a)'
+    : 'linear-gradient(135deg,#7f1d1d,#dc2626)';
 
-  const statusIcon = isConfirmed ? "🎉" : "❌";
-  const statusTitle = isConfirmed ? "Your Booking is Confirmed!" : "Booking Cancelled";
+  const statusIcon = isConfirmed ? '🎉' : '❌';
+  const statusTitle = isConfirmed ? 'Your Booking is Confirmed!' : 'Booking Cancelled';
   const statusMessage = isConfirmed
     ? `Great news, ${customerName}! Your booking has been confirmed. We look forward to seeing you!`
     : `We're sorry, ${customerName}. Your booking has been cancelled. If you have any questions, please contact us.`;
@@ -54,20 +54,20 @@ export function renderBookingStatusChangeEmail(data: BookingStatusChangeData): s
   const itemsHtml = items
     .map((item) => {
       const pax = [
-        item.adults ? `${item.adults} adult${item.adults > 1 ? "s" : ""}` : "",
-        item.children ? `${item.children} child${item.children > 1 ? "ren" : ""}` : "",
+        item.adults ? `${item.adults} adult${item.adults > 1 ? 's' : ''}` : '',
+        item.children ? `${item.children} child${item.children > 1 ? 'ren' : ''}` : '',
       ]
         .filter(Boolean)
-        .join(", ");
+        .join(', ');
       return `
         <li style="padding:8px 0;border-bottom:1px solid #f0f0f0;color:#555;font-size:14px;">
           <strong style="color:#111;">${item.name}</strong>
-          ${item.packageName ? ` — ${item.packageName}` : ""}
-          ${pax ? `<br><small>${pax}</small>` : ""}
-          ${item.date ? `<br><small>📅 ${new Date(item.date).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "long", day: "numeric" })}</small>` : ""}
+          ${item.packageName ? ` — ${item.packageName}` : ''}
+          ${pax ? `<br><small>${pax}</small>` : ''}
+          ${item.date ? `<br><small>📅 ${new Date(item.date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</small>` : ''}
         </li>`;
     })
-    .join("");
+    .join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -83,7 +83,7 @@ export function renderBookingStatusChangeEmail(data: BookingStatusChangeData): s
         <!-- Header -->
         <tr>
           <td style="background:${headerBg};padding:32px 40px;text-align:center;">
-            ${agencyLogoUrl ? `<img src="${agencyLogoUrl}" alt="${agencyName}" style="max-height:44px;max-width:180px;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />` : ""}
+            ${agencyLogoUrl ? `<img src="${agencyLogoUrl}" alt="${agencyName}" style="max-height:44px;max-width:180px;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />` : ''}
             <div style="font-size:48px;margin-bottom:8px;">${statusIcon}</div>
             <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700;">${statusTitle}</h1>
             <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">${agencyName}</p>
@@ -99,7 +99,7 @@ export function renderBookingStatusChangeEmail(data: BookingStatusChangeData): s
             <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
               <span style="font-size:12px;text-transform:uppercase;color:#888;letter-spacing:0.5px;">Booking Reference</span>
               <br><strong style="font-size:18px;font-family:monospace;color:#111;">#${bookingId.substring(0, 8).toUpperCase()}</strong>
-              <span style="float:right;margin-top:4px;background:${isConfirmed ? "#16a34a" : "#dc2626"};color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">${newStatus}</span>
+              <span style="float:right;margin-top:4px;background:${isConfirmed ? '#16a34a' : '#dc2626'};color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">${newStatus}</span>
             </div>
 
             <!-- Items -->
@@ -116,19 +116,27 @@ export function renderBookingStatusChangeEmail(data: BookingStatusChangeData): s
               </tr></table>
             </div>
 
-            ${isConfirmed && (agencyEmail || agencyPhone) ? `
+            ${
+              isConfirmed && (agencyEmail || agencyPhone)
+                ? `
             <div style="margin-top:24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 18px;font-size:14px;color:#166534;">
               <strong>Need to reach us?</strong>
-              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#166534;">${agencyEmail}</a>` : ""}
-              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ""}
-            </div>` : ""}
+              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#166534;">${agencyEmail}</a>` : ''}
+              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ''}
+            </div>`
+                : ''
+            }
 
-            ${!isConfirmed && (agencyEmail || agencyPhone) ? `
+            ${
+              !isConfirmed && (agencyEmail || agencyPhone)
+                ? `
             <div style="margin-top:24px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px 18px;font-size:14px;color:#991b1b;">
               <strong>Questions about this cancellation?</strong>
-              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#991b1b;">${agencyEmail}</a>` : ""}
-              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ""}
-            </div>` : ""}
+              ${agencyEmail ? `<br>📧 <a href="mailto:${agencyEmail}" style="color:#991b1b;">${agencyEmail}</a>` : ''}
+              ${agencyPhone ? `<br>📞 ${agencyPhone}` : ''}
+            </div>`
+                : ''
+            }
 
           </td>
         </tr>

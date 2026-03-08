@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { TourForm, formSchema } from "@/components/admin/tour-form";
-import { addTour } from "@/lib/supabase/tours";
-import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { TourForm, formSchema } from '@/components/admin/tour-form';
+import { addTour } from '@/lib/supabase/tours';
+import { z } from 'zod';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface NewTourClientProps {
   categories: string[];
@@ -24,31 +24,31 @@ export function NewTourClient({ categories, destinations }: NewTourClientProps) 
         includes: data.includes?.map((i) => i.value),
         excludes: data.excludes?.map((e) => e.value),
       };
-      
+
       // @ts-expect-error - The images type in form is any[], but addTour expects any[] too. Types should match.
       await addTour(transformedData);
-      
+
       toast({
-        title: "Success",
-        description: "Tour created successfully.",
+        title: 'Success',
+        description: 'Tour created successfully.',
       });
-      
-      router.push("/admin/tours");
+
+      router.push('/admin/tours');
       router.refresh();
     } catch (error) {
-      console.error("Failed to save tour:", error);
+      console.error('Failed to save tour:', error);
       toast({
-        title: "Error",
-        description: "Failed to create tour. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to create tour. Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
   return (
-    <TourForm 
-      onSubmit={handleSave} 
-      formType="new" 
+    <TourForm
+      onSubmit={handleSave}
+      formType="new"
       categories={categories}
       destinations={destinations}
     />

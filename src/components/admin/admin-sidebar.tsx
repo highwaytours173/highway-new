@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { usePathname } from "next/navigation";
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +15,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 import {
   Home,
   Globe,
@@ -32,9 +32,9 @@ import {
   MessageCircle,
   Building2,
   Star,
-} from "lucide-react";
-import { Logo } from "@/components/logo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from 'lucide-react';
+import { Logo } from '@/components/logo';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,46 +42,46 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import type { User } from "@supabase/supabase-js";
-import { AgencySettings } from "@/types/agency";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import type { User } from '@supabase/supabase-js';
+import { AgencySettings } from '@/types/agency';
 
 // const menuItems = [
-  //   { href: "/admin/dashboard", label: "Dashboard", icon: Home },
-  //   { href: "/admin/tours", label: "Tours", icon: Globe },
-  //   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
-  //   { href: "/admin/customers", label: "Customers", icon: Users },
-  //   { href: "/admin/blog", label: "Blog", icon: Newspaper },
-  //   {
-  //     href: "/admin/home-page-editor",
-  //     label: "Home Page Editor",
-  //     icon: LayoutDashboard,
-  //   },
-  //   { href: "/admin/upsell-items", label: "Upsell Items", icon: Tag },
-  //   { href: "/admin/promotions", label: "Promotions", icon: Percent },
-  //   { href: "/admin/contact-messages", label: "Contact Messages", icon: Mail },
-  //   { href: "/admin/settings", label: "Settings", icon: Settings },
-  // ];
+//   { href: "/admin/dashboard", label: "Dashboard", icon: Home },
+//   { href: "/admin/tours", label: "Tours", icon: Globe },
+//   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
+//   { href: "/admin/customers", label: "Customers", icon: Users },
+//   { href: "/admin/blog", label: "Blog", icon: Newspaper },
+//   {
+//     href: "/admin/home-page-editor",
+//     label: "Home Page Editor",
+//     icon: LayoutDashboard,
+//   },
+//   { href: "/admin/upsell-items", label: "Upsell Items", icon: Tag },
+//   { href: "/admin/promotions", label: "Promotions", icon: Percent },
+//   { href: "/admin/contact-messages", label: "Contact Messages", icon: Mail },
+//   { href: "/admin/settings", label: "Settings", icon: Settings },
+// ];
 
 const getPageTitle = (pathname: string) => {
-  if (pathname.startsWith("/admin/dashboard")) return "Dashboard";
-  if (pathname.startsWith("/admin/tours")) return "Tours";
-  if (pathname.startsWith("/admin/bookings")) return "Bookings";
-  if (pathname.startsWith("/admin/hotels/bookings")) return "Hotel Bookings";
-  if (pathname.startsWith("/admin/hotels/rooms")) return "Room Types";
-  if (pathname.startsWith("/admin/hotels/availability")) return "Availability & Rates";
-  if (pathname.startsWith("/admin/hotels")) return "Hotels Dashboard";
-  if (pathname.startsWith("/admin/customers")) return "Customers";
-  if (pathname.startsWith("/admin/blog")) return "Blog";
-  if (pathname.startsWith("/admin/home-page-editor")) return "Home Page Editor";
-  if (pathname.startsWith("/admin/upsell-items")) return "Upsell Items";
-  if (pathname.startsWith("/admin/promotions")) return "Promotions";
-  if (pathname.startsWith("/admin/reviews")) return "Reviews";
-  if (pathname.startsWith("/admin/contact-messages")) return "Contact Messages";
-  if (pathname.startsWith("/admin/settings")) return "Settings";
-  return "Admin";
+  if (pathname.startsWith('/admin/dashboard')) return 'Dashboard';
+  if (pathname.startsWith('/admin/tours')) return 'Tours';
+  if (pathname.startsWith('/admin/bookings')) return 'Bookings';
+  if (pathname.startsWith('/admin/hotels/bookings')) return 'Hotel Bookings';
+  if (pathname.startsWith('/admin/hotels/rooms')) return 'Room Types';
+  if (pathname.startsWith('/admin/hotels/availability')) return 'Availability & Rates';
+  if (pathname.startsWith('/admin/hotels')) return 'Hotels Dashboard';
+  if (pathname.startsWith('/admin/customers')) return 'Customers';
+  if (pathname.startsWith('/admin/blog')) return 'Blog';
+  if (pathname.startsWith('/admin/home-page-editor')) return 'Home Page Editor';
+  if (pathname.startsWith('/admin/upsell-items')) return 'Upsell Items';
+  if (pathname.startsWith('/admin/promotions')) return 'Promotions';
+  if (pathname.startsWith('/admin/reviews')) return 'Reviews';
+  if (pathname.startsWith('/admin/contact-messages')) return 'Contact Messages';
+  if (pathname.startsWith('/admin/settings')) return 'Settings';
+  return 'Admin';
 };
 
 export function AdminSidebar({
@@ -100,63 +100,67 @@ export function AdminSidebar({
   const pathname = usePathname();
 
   // Filter menu items based on settings.modules
-  const modules = settings?.modules || { blog: true, upsell: true, contact: true, tours: true, hotels: true };
-  
+  const modules = settings?.modules || {
+    blog: true,
+    upsell: true,
+    contact: true,
+    tours: true,
+    hotels: true,
+  };
+
   // Menu items grouped by category
   const groups = [
     {
-      label: "Overview",
+      label: 'Overview',
+      items: [{ href: '/admin/dashboard', label: 'Dashboard', icon: Home }],
+    },
+    {
+      label: 'Management',
       items: [
-        { href: "/admin/dashboard", label: "Dashboard", icon: Home },
+        { href: '/admin/tours', label: 'Tours', icon: Globe },
+        { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
+        { href: '/admin/customers', label: 'Customers', icon: Users },
+        { href: '/admin/reviews', label: 'Reviews', icon: Star },
       ],
     },
     {
-      label: "Management",
+      label: 'Hotels',
       items: [
-        { href: "/admin/tours", label: "Tours", icon: Globe },
-        { href: "/admin/bookings", label: "Bookings", icon: Calendar },
-        { href: "/admin/customers", label: "Customers", icon: Users },
-        { href: "/admin/reviews", label: "Reviews", icon: Star },
+        { href: '/admin/hotels', label: 'Hotels Dashboard', icon: Building2 },
+        { href: '/admin/hotels/rooms', label: 'Room Types', icon: LayoutDashboard },
+        { href: '/admin/hotels/availability', label: 'Availability', icon: Calendar },
+        { href: '/admin/hotels/bookings', label: 'Bookings', icon: Calendar },
       ],
     },
     {
-      label: "Hotels",
+      label: 'Content',
       items: [
-        { href: "/admin/hotels", label: "Hotels Dashboard", icon: Building2 },
-        { href: "/admin/hotels/rooms", label: "Room Types", icon: LayoutDashboard },
-        { href: "/admin/hotels/availability", label: "Availability", icon: Calendar },
-        { href: "/admin/hotels/bookings", label: "Bookings", icon: Calendar },
+        { href: '/admin/blog', label: 'Blog', icon: Newspaper },
+        { href: '/admin/home-page-editor', label: 'Home Page Editor', icon: LayoutDashboard },
+        { href: '/admin/upsell-items', label: 'Upsell Items', icon: Tag },
+        { href: '/admin/promotions', label: 'Promotions', icon: Percent },
       ],
     },
     {
-      label: "Content",
+      label: 'System',
       items: [
-        { href: "/admin/blog", label: "Blog", icon: Newspaper },
-        { href: "/admin/home-page-editor", label: "Home Page Editor", icon: LayoutDashboard },
-        { href: "/admin/upsell-items", label: "Upsell Items", icon: Tag },
-        { href: "/admin/promotions", label: "Promotions", icon: Percent },
-      ],
-    },
-    {
-      label: "System",
-      items: [
-        { href: "/admin/contact-messages", label: "Contact Messages", icon: Mail },
-        { href: "/admin/settings", label: "Settings", icon: Settings },
+        { href: '/admin/contact-messages', label: 'Contact Messages', icon: Mail },
+        { href: '/admin/settings', label: 'Settings', icon: Settings },
       ],
     },
   ];
 
   const shouldShowItem = (label: string) => {
-    if (label === "Blog" && modules.blog === false) return false;
-    if (label === "Upsell Items" && modules.upsell === false) return false;
-    if (label === "Contact Messages" && modules.contact === false) return false;
-    if (label === "Reviews" && modules.reviews === false) return false;
-    if (label === "Tours" && modules.tours === false) return false;
+    if (label === 'Blog' && modules.blog === false) return false;
+    if (label === 'Upsell Items' && modules.upsell === false) return false;
+    if (label === 'Contact Messages' && modules.contact === false) return false;
+    if (label === 'Reviews' && modules.reviews === false) return false;
+    if (label === 'Tours' && modules.tours === false) return false;
     if (
-      (label === "Hotels Dashboard" ||
-        label === "Room Types" ||
-        label === "Availability" ||
-        label === "Bookings") &&
+      (label === 'Hotels Dashboard' ||
+        label === 'Room Types' ||
+        label === 'Availability' ||
+        label === 'Bookings') &&
       modules.hotels === false
     )
       return false;
@@ -170,9 +174,7 @@ export function AdminSidebar({
           <div className="flex items-center gap-3 px-1 py-2">
             <Logo />
             <div className="flex flex-col">
-              <span className="font-headline text-lg font-semibold text-foreground">
-                Tourista
-              </span>
+              <span className="font-headline text-lg font-semibold text-foreground">Tourista</span>
               <span className="text-xs text-muted-foreground">Admin Panel</span>
             </div>
           </div>
@@ -189,7 +191,7 @@ export function AdminSidebar({
                   <SidebarMenu>
                     {visibleItems.map((item) => {
                       const isPendingBookings =
-                        item.href === "/admin/bookings" &&
+                        item.href === '/admin/bookings' &&
                         !!pendingBookingsCount &&
                         pendingBookingsCount > 0;
                       return (
@@ -223,9 +225,7 @@ export function AdminSidebar({
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
           <div className="flex min-w-0 items-center gap-4">
             <SidebarTrigger className="md:hidden" />
-            <h1 className="truncate text-lg font-semibold">
-              {getPageTitle(pathname)}
-            </h1>
+            <h1 className="truncate text-lg font-semibold">{getPageTitle(pathname)}</h1>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -249,9 +249,9 @@ export function AdminSidebar({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <a 
-                  href="https://wa.me/201095280572" 
-                  target="_blank" 
+                <a
+                  href="https://wa.me/201095280572"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="cursor-pointer w-full flex items-center"
                 >
@@ -260,7 +260,7 @@ export function AdminSidebar({
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleSignOut}
                 className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
               >
@@ -275,4 +275,3 @@ export function AdminSidebar({
     </SidebarProvider>
   );
 }
-

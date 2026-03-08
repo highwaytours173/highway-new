@@ -1,4 +1,3 @@
-
 export type AgencyModules = {
   tours?: boolean;
   hotels?: boolean;
@@ -37,7 +36,7 @@ export type Agency = {
   slug: string;
   domain?: string;
   settings: AgencySettings;
-  status: "active" | "suspended";
+  status: 'active' | 'suspended';
   createdAt: string;
 };
 
@@ -45,6 +44,6 @@ export type AgencyUser = {
   id: string;
   userId: string;
   agencyId: string;
-  role: "owner" | "admin" | "editor";
+  role: 'owner' | 'admin' | 'editor';
   createdAt: string;
 };

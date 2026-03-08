@@ -1,18 +1,14 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { format, addDays } from "date-fns";
-import { Calendar as CalendarIcon, Users, Search, Minus, Plus } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useRouter } from "next/navigation";
+import * as React from 'react';
+import { format, addDays } from 'date-fns';
+import { Calendar as CalendarIcon, Users, Search, Minus, Plus } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useRouter } from 'next/navigation';
 
 interface HotelSearchBoxProps {
   className?: string;
@@ -20,59 +16,63 @@ interface HotelSearchBoxProps {
   maxGuests?: number;
 }
 
-export function HotelSearchBox({ 
+export function HotelSearchBox({
   className,
   defaultGuests = 2,
-  maxGuests = 10
+  maxGuests = 10,
 }: HotelSearchBoxProps) {
   const router = useRouter();
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 1),
   });
-  
+
   const [adults, setAdults] = React.useState(defaultGuests);
   const [children, setChildren] = React.useState(0);
   const [rooms, setRooms] = React.useState(1);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (date?.from) params.append("checkIn", format(date.from, "yyyy-MM-dd"));
-    if (date?.to) params.append("checkOut", format(date.to, "yyyy-MM-dd"));
-    params.append("adults", adults.toString());
-    params.append("children", children.toString());
-    params.append("rooms", rooms.toString());
-    
+    if (date?.from) params.append('checkIn', format(date.from, 'yyyy-MM-dd'));
+    if (date?.to) params.append('checkOut', format(date.to, 'yyyy-MM-dd'));
+    params.append('adults', adults.toString());
+    params.append('children', children.toString());
+    params.append('rooms', rooms.toString());
+
     router.push(`/hotels/default?${params.toString()}`);
   };
 
   return (
-    <div className={cn(
-      "grid grid-cols-1 md:grid-cols-12 gap-3 p-2 bg-white rounded-xl shadow-xl border border-gray-100", 
-      className
-    )}>
+    <div
+      className={cn(
+        'grid grid-cols-1 md:grid-cols-12 gap-3 p-2 bg-white rounded-xl shadow-xl border border-gray-100',
+        className
+      )}
+    >
       {/* Date Picker */}
       <div className="md:col-span-5 relative group">
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className={cn(
-                "w-full h-14 justify-start text-left font-normal border-0 bg-gray-50 hover:bg-gray-100 rounded-lg px-4 py-2",
-                !date && "text-muted-foreground"
+                'w-full h-14 justify-start text-left font-normal border-0 bg-gray-50 hover:bg-gray-100 rounded-lg px-4 py-2',
+                !date && 'text-muted-foreground'
               )}
             >
               <CalendarIcon className="mr-3 h-5 w-5 text-primary" />
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Check-in - Check-out</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Check-in - Check-out
+                </span>
                 <span className="text-sm font-medium text-foreground truncate">
                   {date?.from ? (
                     date.to ? (
                       <>
-                        {format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
+                        {format(date.from, 'MMM dd')} - {format(date.to, 'MMM dd')}
                       </>
                     ) : (
-                      format(date.from, "MMM dd")
+                      format(date.from, 'MMM dd')
                     )
                   ) : (
                     <span>Pick a date</span>
@@ -100,12 +100,14 @@ export function HotelSearchBox({
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className="w-full h-14 justify-start text-left font-normal border-0 bg-gray-50 hover:bg-gray-100 rounded-lg px-4 py-2"
             >
               <Users className="mr-3 h-5 w-5 text-primary" />
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Guests & Rooms</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Guests & Rooms
+                </span>
                 <span className="text-sm font-medium text-foreground">
                   {adults} Adults, {children} Children, {rooms} Room
                 </span>
@@ -209,9 +211,9 @@ export function HotelSearchBox({
 
       {/* Search Button */}
       <div className="md:col-span-2">
-        <Button 
-          size="lg" 
-          className="w-full h-14 text-base font-semibold shadow-lg hover:scale-[1.02] transition-transform rounded-lg" 
+        <Button
+          size="lg"
+          className="w-full h-14 text-base font-semibold shadow-lg hover:scale-[1.02] transition-transform rounded-lg"
           onClick={handleSearch}
         >
           <Search className="mr-2 h-5 w-5" />

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -7,29 +7,25 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
-} from "react";
-import { validatePromoCode } from "@/lib/supabase/promo-codes";
-import type { Tour, CartItem, UpsellItem, PromoCode } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+} from 'react';
+import { validatePromoCode } from '@/lib/supabase/promo-codes';
+import type { Tour, CartItem, UpsellItem, PromoCode } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface CartContextType {
   cartItems: CartItem[];
   promoCode: PromoCode | null;
   addToCart: (
     product: Tour | UpsellItem,
-    productType: "tour" | "upsell",
+    productType: 'tour' | 'upsell',
     adults?: number,
     children?: number,
     date?: Date,
     quantity?: number,
     packageId?: string,
-    packageName?: string,
+    packageName?: string
   ) => void;
-  removeFromCart: (
-    productId: string,
-    productType: "tour" | "upsell",
-    packageId?: string,
-  ) => void;
+  removeFromCart: (productId: string, productType: 'tour' | 'upsell', packageId?: string) => void;
   clearCart: () => void;
   getCartTotal: () => number;
   applyPromoCode: (code: string) => Promise<void>;
@@ -46,7 +42,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const host = typeof window === "undefined" ? "app" : window.location.host;
+    const host = typeof window === 'undefined' ? 'app' : window.location.host;
     const CART_STORAGE_KEY = `${host}-cart`;
     const PROMO_STORAGE_KEY = `${host}-promo`;
     try {
@@ -59,12 +55,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setPromoCode(JSON.parse(storedPromo));
       }
     } catch (error) {
-      console.error("Could not load cart from localStorage", error);
+      console.error('Could not load cart from localStorage', error);
     }
   }, []);
 
   useEffect(() => {
-    const host = typeof window === "undefined" ? "app" : window.location.host;
+    const host = typeof window === 'undefined' ? 'app' : window.location.host;
     const CART_STORAGE_KEY = `${host}-cart`;
     const PROMO_STORAGE_KEY = `${host}-promo`;
     try {
@@ -75,40 +71,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(PROMO_STORAGE_KEY);
       }
     } catch (error) {
-      console.error("Could not save cart to localStorage", error);
+      console.error('Could not save cart to localStorage', error);
     }
   }, [cartItems, promoCode]);
 
   const addToCart = useCallback(
     (
       product: Tour | UpsellItem,
-      productType: "tour" | "upsell",
+      productType: 'tour' | 'upsell',
       adults?: number,
       children?: number,
       date?: Date,
       quantity?: number,
       packageId?: string,
-      packageName?: string,
+      packageName?: string
     ) => {
       let toastMessage: { title: string; description: string } | null = null;
       setCartItems((prevItems) => {
         const existingItem = prevItems.find(
           (item) =>
-            item.product.id === product.id && 
+            item.product.id === product.id &&
             item.productType === productType &&
             // If packages are used, treat different packages as different items
-            (item.packageId ?? "base") === (packageId ?? "base"),
+            (item.packageId ?? 'base') === (packageId ?? 'base')
         );
         if (existingItem) {
           toastMessage = {
-            title: "Already in Cart",
-            description: `${product.name} ${packageName ? `(${packageName})` : ""} is already in your cart.`,
+            title: 'Already in Cart',
+            description: `${product.name} ${packageName ? `(${packageName})` : ''} is already in your cart.`,
           };
           return prevItems;
         }
         toastMessage = {
-          title: "Added to Cart",
-          description: `${product.name} ${packageName ? `(${packageName})` : ""} has been added to your cart.`,
+          title: 'Added to Cart',
+          description: `${product.name} ${packageName ? `(${packageName})` : ''} has been added to your cart.`,
         };
         return [
           ...prevItems,
@@ -119,18 +115,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         toast(toastMessage);
       }
     },
-    [toast],
+    [toast]
   );
 
   const removeFromCart = useCallback(
-    (productId: string, productType: "tour" | "upsell", packageId?: string) => {
+    (productId: string, productType: 'tour' | 'upsell', packageId?: string) => {
       let productName: string | undefined;
       setCartItems((prevItems) => {
         const itemToRemove = prevItems.find(
           (item) =>
-            item.product.id === productId && 
+            item.product.id === productId &&
             item.productType === productType &&
-            (item.packageId ?? "base") === (packageId ?? "base"),
+            (item.packageId ?? 'base') === (packageId ?? 'base')
         );
         if (itemToRemove) {
           productName = itemToRemove.product.name;
@@ -138,21 +134,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return prevItems.filter(
           (item) =>
             !(
-              item.product.id === productId && 
+              item.product.id === productId &&
               item.productType === productType &&
-              (item.packageId ?? "base") === (packageId ?? "base")
-            ),
+              (item.packageId ?? 'base') === (packageId ?? 'base')
+            )
         );
       });
 
       if (productName) {
         toast({
-          title: "Removed from Cart",
+          title: 'Removed from Cart',
           description: `"${productName}" has been removed from your cart.`,
         });
       }
     },
-    [toast],
+    [toast]
   );
 
   const clearCart = useCallback(() => {
@@ -161,15 +157,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const getCartTotal = useCallback(() => {
     return cartItems.reduce((total, item) => {
-      if (item.productType === "tour") {
+      if (item.productType === 'tour') {
         const tour = item.product as Tour;
         const totalPeople = (item.adults ?? 0) + (item.children ?? 0);
-        
+
         // Find specific package if selected
-        const selectedPackage = item.packageId && tour.packages 
-          ? tour.packages.find(p => p.id === item.packageId)
-          : null;
-          
+        const selectedPackage =
+          item.packageId && tour.packages
+            ? tour.packages.find((p) => p.id === item.packageId)
+            : null;
+
         // Use package tiers if available, otherwise fallback to tour tiers
         const tiers = selectedPackage ? selectedPackage.priceTiers : tour.priceTiers;
 
@@ -179,14 +176,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           tiers.find(
             (tier) =>
               totalPeople >= tier.minPeople &&
-              (tier.maxPeople === null || totalPeople <= tier.maxPeople),
+              (tier.maxPeople === null || totalPeople <= tier.maxPeople)
           ) || tiers[tiers.length - 1];
 
         const itemTotal =
           (item.adults ?? 0) * priceTier.pricePerAdult +
           (item.children ?? 0) * priceTier.pricePerChild;
         return total + itemTotal;
-      } else if (item.productType === "upsell") {
+      } else if (item.productType === 'upsell') {
         const upsellItem = item.product as UpsellItem;
         const variant =
           item.packageId && upsellItem.variants
@@ -202,14 +199,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getDiscountAmount = useCallback(() => {
     if (!promoCode) return 0;
     const subtotal = getCartTotal();
-    
+
     // Check minimum order amount
     if (promoCode.minOrderAmount && subtotal < promoCode.minOrderAmount) {
       return 0;
     }
 
     let discount = 0;
-    if (promoCode.type === "percentage") {
+    if (promoCode.type === 'percentage') {
       discount = (subtotal * promoCode.value) / 100;
       if (promoCode.maxDiscountAmount && discount > promoCode.maxDiscountAmount) {
         discount = promoCode.maxDiscountAmount;
@@ -226,47 +223,50 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return getCartTotal() - getDiscountAmount();
   }, [getCartTotal, getDiscountAmount]);
 
-  const applyPromoCode = useCallback(async (code: string) => {
-    try {
-      const subtotal = getCartTotal();
-      const promo = await validatePromoCode(code, subtotal);
-      setPromoCode(promo);
-      toast({
-        title: "Promo Code Applied",
-        description: `Discount of ${promo.type === "percentage" ? `${promo.value}%` : `$${promo.value}`} applied!`,
-      });
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Invalid Promo Code",
-        description: error instanceof Error ? error.message : "Could not apply promo code.",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  }, [getCartTotal, toast]);
+  const applyPromoCode = useCallback(
+    async (code: string) => {
+      try {
+        const subtotal = getCartTotal();
+        const promo = await validatePromoCode(code, subtotal);
+        setPromoCode(promo);
+        toast({
+          title: 'Promo Code Applied',
+          description: `Discount of ${promo.type === 'percentage' ? `${promo.value}%` : `$${promo.value}`} applied!`,
+        });
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: 'Invalid Promo Code',
+          description: error instanceof Error ? error.message : 'Could not apply promo code.',
+          variant: 'destructive',
+        });
+        throw error;
+      }
+    },
+    [getCartTotal, toast]
+  );
 
   const removePromoCode = useCallback(() => {
     setPromoCode(null);
     toast({
-      title: "Promo Code Removed",
-      description: "The promo code has been removed from your cart.",
+      title: 'Promo Code Removed',
+      description: 'The promo code has been removed from your cart.',
     });
   }, [toast]);
 
   return (
     <CartContext.Provider
-      value={{ 
-        cartItems, 
+      value={{
+        cartItems,
         promoCode,
-        addToCart, 
-        removeFromCart, 
-        clearCart, 
+        addToCart,
+        removeFromCart,
+        clearCart,
         getCartTotal,
         applyPromoCode,
         removePromoCode,
         getDiscountAmount,
-        getFinalTotal
+        getFinalTotal,
       }}
     >
       {children}
@@ -277,7 +277,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };

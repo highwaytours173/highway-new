@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from '@tanstack/react-table';
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { PromoCode } from "@/types";
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { PromoCode } from '@/types';
 
 interface ColumnsProps {
   onDelete: (id: string) => void;
@@ -21,12 +21,11 @@ interface ColumnsProps {
 
 export const columns = ({ onDelete }: ColumnsProps): ColumnDef<PromoCode>[] => [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -43,40 +42,44 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<PromoCode>[] => [
     enableHiding: false,
   },
   {
-    accessorKey: "code",
+    accessorKey: 'code',
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Code
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <span className="font-mono font-bold">{row.getValue("code")}</span>,
+    cell: ({ row }) => <span className="font-mono font-bold">{row.getValue('code')}</span>,
   },
   {
-    accessorKey: "type",
-    header: "Type",
+    accessorKey: 'type',
+    header: 'Type',
     cell: ({ row }) => {
-      const type = row.getValue("type") as string;
-      return <Badge variant="outline" className="capitalize">{type}</Badge>;
+      const type = row.getValue('type') as string;
+      return (
+        <Badge variant="outline" className="capitalize">
+          {type}
+        </Badge>
+      );
     },
   },
   {
-    accessorKey: "value",
-    header: "Value",
+    accessorKey: 'value',
+    header: 'Value',
     cell: ({ row }) => {
       const type = row.original.type;
       const value = row.original.value;
-      return type === "percentage" ? `${value}%` : `$${value}`;
+      return type === 'percentage' ? `${value}%` : `$${value}`;
     },
   },
   {
-    accessorKey: "usage",
-    header: "Usage",
+    accessorKey: 'usage',
+    header: 'Usage',
     cell: ({ row }) => {
       const count = row.original.usageCount;
       const limit = row.original.usageLimit;
@@ -84,19 +87,19 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<PromoCode>[] => [
     },
   },
   {
-    accessorKey: "isActive",
-    header: "Status",
+    accessorKey: 'isActive',
+    header: 'Status',
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive");
+      const isActive = row.getValue('isActive');
       return (
-        <Badge variant={isActive ? "default" : "secondary"}>
-          {isActive ? "Active" : "Inactive"}
+        <Badge variant={isActive ? 'default' : 'secondary'}>
+          {isActive ? 'Active' : 'Inactive'}
         </Badge>
       );
     },
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const promo = row.original;
 
@@ -118,7 +121,7 @@ export const columns = ({ onDelete }: ColumnsProps): ColumnDef<PromoCode>[] => [
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                if (confirm("Are you sure you want to delete this promo code?")) {
+                if (confirm('Are you sure you want to delete this promo code?')) {
                   onDelete(promo.id);
                 }
               }}

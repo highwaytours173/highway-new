@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -13,28 +13,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { createPromoCode, updatePromoCode } from "@/lib/supabase/promo-codes";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import type { PromoCode } from "@/types";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { createPromoCode, updatePromoCode } from '@/lib/supabase/promo-codes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import type { PromoCode } from '@/types';
 
 const formSchema = z.object({
   code: z
     .string()
-    .min(3, "Code must be at least 3 characters.")
-    .regex(/^[a-zA-Z0-9]+$/, "Code must be alphanumeric."),
-  type: z.enum(["percentage", "fixed"]),
-  value: z.coerce.number().min(0.01, "Value must be greater than 0."),
+    .min(3, 'Code must be at least 3 characters.')
+    .regex(/^[a-zA-Z0-9]+$/, 'Code must be alphanumeric.'),
+  type: z.enum(['percentage', 'fixed']),
+  value: z.coerce.number().min(0.01, 'Value must be greater than 0.'),
   minOrderAmount: z.coerce.number().optional(),
   maxDiscountAmount: z.coerce.number().optional(),
   startsAt: z.string().optional(),
@@ -45,7 +45,7 @@ const formSchema = z.object({
 
 interface PromoCodeFormProps {
   initialData?: PromoCode;
-  formType: "new" | "edit";
+  formType: 'new' | 'edit';
 }
 
 export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
@@ -53,13 +53,17 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultValues = {
-    code: initialData?.code ?? "",
-    type: initialData?.type ?? "percentage",
+    code: initialData?.code ?? '',
+    type: initialData?.type ?? 'percentage',
     value: initialData?.value ?? 0,
     minOrderAmount: initialData?.minOrderAmount ?? 0,
     maxDiscountAmount: initialData?.maxDiscountAmount ?? undefined,
-    startsAt: initialData?.startsAt ? new Date(initialData.startsAt).toISOString().slice(0, 16) : "",
-    expiresAt: initialData?.expiresAt ? new Date(initialData.expiresAt).toISOString().slice(0, 16) : "",
+    startsAt: initialData?.startsAt
+      ? new Date(initialData.startsAt).toISOString().slice(0, 16)
+      : '',
+    expiresAt: initialData?.expiresAt
+      ? new Date(initialData.expiresAt).toISOString().slice(0, 16)
+      : '',
     usageLimit: initialData?.usageLimit ?? undefined,
     isActive: initialData?.isActive ?? true,
   };
@@ -84,15 +88,17 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
         isActive: values.isActive,
       };
 
-      if (formType === "edit" && initialData) {
+      if (formType === 'edit' && initialData) {
         await updatePromoCode(initialData.id, payload);
       } else {
-        await createPromoCode(payload as Omit<PromoCode, "id" | "createdAt" | "usageCount" | "agency_id">);
+        await createPromoCode(
+          payload as Omit<PromoCode, 'id' | 'createdAt' | 'usageCount' | 'agency_id'>
+        );
       }
-      router.push("/admin/promotions");
+      router.push('/admin/promotions');
     } catch (error) {
       console.error(error);
-      alert("Failed to save promo code.");
+      alert('Failed to save promo code.');
     } finally {
       setIsSubmitting(false);
     }
@@ -110,9 +116,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
               <FormControl>
                 <Input placeholder="SUMMER2025" {...field} className="uppercase" />
               </FormControl>
-              <FormDescription>
-                Unique code that customers will enter at checkout.
-              </FormDescription>
+              <FormDescription>Unique code that customers will enter at checkout.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -151,7 +155,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
                   <Input type="number" step="0.01" {...field} />
                 </FormControl>
                 <FormDescription>
-                  {form.watch("type") === "percentage" ? "e.g. 10 for 10%" : "e.g. 50 for $50"}
+                  {form.watch('type') === 'percentage' ? 'e.g. 10 for 10%' : 'e.g. 50 for $50'}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -182,7 +186,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
               <FormItem>
                 <FormLabel>Max Discount Amount</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" {...field} value={field.value || ""} />
+                  <Input type="number" step="0.01" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormDescription>Optional limit for percentage discounts.</FormDescription>
                 <FormMessage />
@@ -199,7 +203,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
               <FormItem>
                 <FormLabel>Starts At</FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} value={field.value || ""} />
+                  <Input type="datetime-local" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,7 +217,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
               <FormItem>
                 <FormLabel>Expires At</FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} value={field.value || ""} />
+                  <Input type="datetime-local" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -228,7 +232,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
             <FormItem>
               <FormLabel>Usage Limit</FormLabel>
               <FormControl>
-                <Input type="number" {...field} value={field.value || ""} />
+                <Input type="number" {...field} value={field.value || ''} />
               </FormControl>
               <FormDescription>Total number of times this code can be used.</FormDescription>
               <FormMessage />
@@ -243,15 +247,10 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Active</FormLabel>
-                <FormDescription>
-                  Enable or disable this promo code.
-                </FormDescription>
+                <FormDescription>Enable or disable this promo code.</FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
@@ -259,7 +258,7 @@ export function PromoCodeForm({ initialData, formType }: PromoCodeFormProps) {
 
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {formType === "new" ? "Create Promo Code" : "Update Promo Code"}
+          {formType === 'new' ? 'Create Promo Code' : 'Update Promo Code'}
         </Button>
       </form>
     </Form>

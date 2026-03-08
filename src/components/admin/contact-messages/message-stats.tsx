@@ -1,7 +1,6 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ContactMessage } from "@/types";
-import { Mail, MailOpen, Archive, Inbox } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ContactMessage } from '@/types';
+import { Mail, MailOpen, Archive, Inbox } from 'lucide-react';
 
 interface MessageStatsProps {
   messages: ContactMessage[];
@@ -9,9 +8,9 @@ interface MessageStatsProps {
 
 export function MessageStats({ messages }: MessageStatsProps) {
   const totalMessages = messages.length;
-  const newMessages = messages.filter((m) => m.status === "new").length;
-  const readMessages = messages.filter((m) => m.status === "read").length;
-  const archivedMessages = messages.filter((m) => m.status === "archived").length;
+  const newMessages = messages.filter((m) => m.status === 'new').length;
+  const readMessages = messages.filter((m) => m.status === 'read').length;
+  const archivedMessages = messages.filter((m) => m.status === 'archived').length;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -22,9 +21,7 @@ export function MessageStats({ messages }: MessageStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalMessages}</div>
-          <p className="text-xs text-muted-foreground">
-            All time messages
-          </p>
+          <p className="text-xs text-muted-foreground">All time messages</p>
         </CardContent>
       </Card>
       <Card>
@@ -34,9 +31,7 @@ export function MessageStats({ messages }: MessageStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{newMessages}</div>
-          <p className="text-xs text-muted-foreground">
-            Awaiting response
-          </p>
+          <p className="text-xs text-muted-foreground">Awaiting response</p>
         </CardContent>
       </Card>
       <Card>
@@ -46,9 +41,7 @@ export function MessageStats({ messages }: MessageStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{readMessages}</div>
-          <p className="text-xs text-muted-foreground">
-            Processed messages
-          </p>
+          <p className="text-xs text-muted-foreground">Processed messages</p>
         </CardContent>
       </Card>
       <Card>
@@ -58,9 +51,7 @@ export function MessageStats({ messages }: MessageStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{archivedMessages}</div>
-          <p className="text-xs text-muted-foreground">
-            Stored for reference
-          </p>
+          <p className="text-xs text-muted-foreground">Stored for reference</p>
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { TourCardSkeleton } from "@/components/tour-card-skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
+import { TourCardSkeleton } from '@/components/tour-card-skeleton';
 
 export default function ToursLoading() {
   return (

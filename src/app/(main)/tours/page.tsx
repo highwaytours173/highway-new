@@ -1,8 +1,8 @@
-import { getTours } from "@/lib/supabase/tours";
-import { ToursPageClient } from "./tours-page-client";
-import type { Metadata } from "next";
-import { getAgencySettings, getPageMetadata } from "@/lib/supabase/agency-content";
-import { getToursAvailableOnDate } from "@/lib/supabase/tour-availability";
+import { getTours } from '@/lib/supabase/tours';
+import { ToursPageClient } from './tours-page-client';
+import type { Metadata } from 'next';
+import { getAgencySettings, getPageMetadata } from '@/lib/supabase/agency-content';
+import { getToursAvailableOnDate } from '@/lib/supabase/tour-availability';
 
 export async function generateMetadata({
   searchParams,
@@ -10,21 +10,21 @@ export async function generateMetadata({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const resolved = await searchParams;
-  const destination = typeof resolved?.destination === "string" ? resolved.destination : "";
-  const type = typeof resolved?.type === "string" ? resolved.type : "";
+  const destination = typeof resolved?.destination === 'string' ? resolved.destination : '';
+  const type = typeof resolved?.type === 'string' ? resolved.type : '';
 
-  let agencyName = "";
+  let agencyName = '';
   try {
     const settings = await getAgencySettings();
-    agencyName = settings?.data?.agencyName || "";
+    agencyName = settings?.data?.agencyName || '';
   } catch {
-    agencyName = "";
+    agencyName = '';
   }
-  const brand = agencyName.trim() || "our agency";
+  const brand = agencyName.trim() || 'our agency';
 
   if (destination || type) {
-    let title = "All Tours";
-    let description = "Browse our selection of tours and travel experiences.";
+    let title = 'All Tours';
+    let description = 'Browse our selection of tours and travel experiences.';
 
     if (destination) {
       title = `${destination} Tours`;
@@ -40,9 +40,9 @@ export async function generateMetadata({
     };
   }
 
-  return getPageMetadata("tours", {
-    title: "Tours",
-    description: "Browse our selection of tours and travel experiences.",
+  return getPageMetadata('tours', {
+    title: 'Tours',
+    description: 'Browse our selection of tours and travel experiences.',
   });
 }
 
@@ -52,13 +52,13 @@ export default async function AllToursPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const q = typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q : "";
+  const q = typeof resolvedSearchParams?.q === 'string' ? resolvedSearchParams.q : '';
   const destination =
-    typeof resolvedSearchParams?.destination === "string" ? resolvedSearchParams.destination : "";
-  const type = typeof resolvedSearchParams?.type === "string" ? resolvedSearchParams.type : "";
-  const sort = typeof resolvedSearchParams?.sort === "string" ? resolvedSearchParams.sort : "";
+    typeof resolvedSearchParams?.destination === 'string' ? resolvedSearchParams.destination : '';
+  const type = typeof resolvedSearchParams?.type === 'string' ? resolvedSearchParams.type : '';
+  const sort = typeof resolvedSearchParams?.sort === 'string' ? resolvedSearchParams.sort : '';
   const travelDate =
-    typeof resolvedSearchParams?.travelDate === "string" ? resolvedSearchParams.travelDate : "";
+    typeof resolvedSearchParams?.travelDate === 'string' ? resolvedSearchParams.travelDate : '';
   const settings = await getAgencySettings();
   const destinationOptions = settings?.data?.tourDestinations ?? [];
   const typeOptions = settings?.data?.tourCategories ?? [];
@@ -101,11 +101,11 @@ export default async function AllToursPage({
   }) => {
     const prices: number[] = [];
     for (const tier of tour.priceTiers ?? []) {
-      if (typeof tier?.pricePerAdult === "number") prices.push(tier.pricePerAdult);
+      if (typeof tier?.pricePerAdult === 'number') prices.push(tier.pricePerAdult);
     }
     for (const pkg of tour.packages ?? []) {
       for (const tier of pkg.priceTiers ?? []) {
-        if (typeof tier?.pricePerAdult === "number") prices.push(tier.pricePerAdult);
+        if (typeof tier?.pricePerAdult === 'number') prices.push(tier.pricePerAdult);
       }
     }
     if (prices.length === 0) return Number.POSITIVE_INFINITY;
@@ -114,22 +114,22 @@ export default async function AllToursPage({
 
   const sortedTours = [...tours];
   switch (sort) {
-    case "price_asc":
+    case 'price_asc':
       sortedTours.sort((a, b) => getMinAdultPrice(a) - getMinAdultPrice(b));
       break;
-    case "price_desc":
+    case 'price_desc':
       sortedTours.sort((a, b) => getMinAdultPrice(b) - getMinAdultPrice(a));
       break;
-    case "duration_asc":
+    case 'duration_asc':
       sortedTours.sort((a, b) => (a.duration ?? 0) - (b.duration ?? 0));
       break;
-    case "duration_desc":
+    case 'duration_desc':
       sortedTours.sort((a, b) => (b.duration ?? 0) - (a.duration ?? 0));
       break;
-    case "rating_desc":
+    case 'rating_desc':
       sortedTours.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
       break;
-    case "name_asc":
+    case 'name_asc':
       sortedTours.sort((a, b) => a.name.localeCompare(b.name));
       break;
   }
@@ -149,4 +149,3 @@ export default async function AllToursPage({
     />
   );
 }
-

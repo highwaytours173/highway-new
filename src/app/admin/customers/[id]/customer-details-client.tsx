@@ -1,24 +1,12 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Mail,
-  ShoppingBag,
-  Newspaper,
-  DollarSign,
-} from "lucide-react";
-import { format } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Mail, ShoppingBag, Newspaper, DollarSign } from 'lucide-react';
+import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Table,
   TableBody,
@@ -26,8 +14,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { Customer } from "@/types";
+} from '@/components/ui/table';
+import type { Customer } from '@/types';
 
 interface CustomerDetailsClientProps {
   customer: Customer;
@@ -35,9 +23,9 @@ interface CustomerDetailsClientProps {
 
 export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) {
   const customerNameInitial = customer.name
-    .split(" ")
+    .split(' ')
     .map((n) => n[0])
-    .join("");
+    .join('');
 
   return (
     <div className="space-y-6">
@@ -61,9 +49,7 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${customer.totalSpent.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold">${customer.totalSpent.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -81,9 +67,7 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
             <Newspaper className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {customer.posts?.length ?? 0}
-            </div>
+            <div className="text-2xl font-bold">{customer.posts?.length ?? 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -92,17 +76,13 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
         <Card>
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
-            <CardDescription>
-              Customer&apos;s personal and contact details.
-            </CardDescription>
+            <CardDescription>Customer&apos;s personal and contact details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-                <AvatarFallback className="text-lg">
-                  {customerNameInitial}
-                </AvatarFallback>
+                <AvatarFallback className="text-lg">{customerNameInitial}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-medium text-lg">{customer.name}</p>
@@ -115,21 +95,17 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
             <div className="grid gap-2">
               <div className="flex justify-between border-b pb-2">
                 <span className="font-medium">Status</span>
-                <Badge
-                  variant={
-                    customer.status === "active" ? "default" : "secondary"
-                  }
-                >
-                  {customer.status || "Unknown"}
+                <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
+                  {customer.status || 'Unknown'}
                 </Badge>
               </div>
               <div className="flex justify-between border-b pb-2">
                 <span className="font-medium">Joined</span>
-                <span>{format(new Date(customer.createdAt), "PPP")}</span>
+                <span>{format(new Date(customer.createdAt), 'PPP')}</span>
               </div>
               <div className="flex justify-between border-b pb-2">
                 <span className="font-medium">Last Active</span>
-                <span>{format(new Date(customer.lastActive || customer.createdAt), "PPP")}</span>
+                <span>{format(new Date(customer.lastActive || customer.createdAt), 'PPP')}</span>
               </div>
             </div>
           </CardContent>
@@ -139,9 +115,7 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
       <Card>
         <CardHeader>
           <CardTitle>Recent Bookings</CardTitle>
-          <CardDescription>
-            A history of bookings made by this customer.
-          </CardDescription>
+          <CardDescription>A history of bookings made by this customer.</CardDescription>
         </CardHeader>
         <CardContent>
           {customer.bookings.length > 0 ? (
@@ -159,12 +133,8 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
                 {customer.bookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.id}</TableCell>
-                    <TableCell>
-                      {booking.bookingItems[0]?.tours?.name || "Unknown Tour"}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(booking.bookingDate), "MMM d, yyyy")}
-                    </TableCell>
+                    <TableCell>{booking.bookingItems[0]?.tours?.name || 'Unknown Tour'}</TableCell>
+                    <TableCell>{format(new Date(booking.bookingDate), 'MMM d, yyyy')}</TableCell>
                     <TableCell>${booking.totalPrice}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{booking.status}</Badge>
@@ -181,7 +151,3 @@ export function CustomerDetailsClient({ customer }: CustomerDetailsClientProps) 
     </div>
   );
 }
-
-
-
-

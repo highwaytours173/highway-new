@@ -1,17 +1,15 @@
-import type { MetadataRoute } from "next";
-import { getCurrentAgency } from "@/lib/supabase/agencies";
+import type { MetadataRoute } from 'next';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
 
 function toBaseUrl(agency: Awaited<ReturnType<typeof getCurrentAgency>>): string {
   const raw =
-    agency?.domain?.trim() ||
-    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
-    "http://localhost:3000";
+    agency?.domain?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000';
 
   try {
-    const url = new URL(raw.startsWith("http") ? raw : `https://${raw}`);
+    const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
     return url.origin;
   } catch {
-    return "http://localhost:3000";
+    return 'http://localhost:3000';
   }
 }
 
@@ -24,8 +22,8 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     // Block all crawlers while site is under maintenance
     return {
       rules: {
-        userAgent: "*",
-        disallow: "/",
+        userAgent: '*',
+        disallow: '/',
       },
     };
   }
@@ -33,13 +31,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   return {
     rules: [
       {
-        userAgent: "*",
-        allow: "/",
-        disallow: [
-          "/admin/",
-          "/super-admin/",
-          "/api/",
-        ],
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin/', '/super-admin/', '/api/'],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

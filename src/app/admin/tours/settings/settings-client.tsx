@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -10,21 +10,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { X, Plus, Loader2, Save, MapPin, Tag, ArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { X, Plus, Loader2, Save, MapPin, Tag, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import {
   AgencySettingsData,
   DestinationFallbackImage,
   updateAgencySettings,
   updateTourTaxonomy,
-} from "@/lib/supabase/agency-content";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import { createClient } from "@/lib/supabase/client";
+} from '@/lib/supabase/agency-content';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import { createClient } from '@/lib/supabase/client';
 
 function ManageListSection({
   title,
@@ -41,7 +41,7 @@ function ManageListSection({
   setItems: React.Dispatch<React.SetStateAction<string[]>>;
   placeholder: string;
 }) {
-  const [newItem, setNewItem] = useState("");
+  const [newItem, setNewItem] = useState('');
 
   const handleAddItem = () => {
     if (
@@ -49,7 +49,7 @@ function ManageListSection({
       !items.find((item) => item.toLowerCase() === newItem.trim().toLowerCase())
     ) {
       setItems((prev) => [...prev, newItem.trim()].sort());
-      setNewItem("");
+      setNewItem('');
     }
   };
 
@@ -100,7 +100,7 @@ function ManageListSection({
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleAddItem();
+            if (e.key === 'Enter') handleAddItem();
           }}
           className="bg-background"
         />
@@ -124,15 +124,15 @@ type DestinationCardDraft = {
 };
 
 function normalizeDestinationKey(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
+  return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 function slugifyDestination(value: string) {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
 async function uploadSingleImage(input: {
@@ -143,48 +143,38 @@ async function uploadSingleImage(input: {
 }): Promise<string | undefined> {
   const first = input.value?.[0];
   if (!first) return input.fallbackUrl;
-  if (typeof first === "string") return first;
+  if (typeof first === 'string') return first;
   if (!(first instanceof File)) return input.fallbackUrl;
 
-  const ext = first.name.split(".").pop() || "png";
+  const ext = first.name.split('.').pop() || 'png';
   const path = `page-images/${input.pathPrefix}-${Date.now()}.${ext}`;
-  const { error: uploadError } = await input.supabase.storage
-    .from("cms")
-    .upload(path, first, {
-      contentType: first.type || "image/png",
-      upsert: true,
-    });
+  const { error: uploadError } = await input.supabase.storage.from('cms').upload(path, first, {
+    contentType: first.type || 'image/png',
+    upsert: true,
+  });
 
   if (uploadError) return input.fallbackUrl;
-  const { data: publicUrlData } = input.supabase.storage
-    .from("cms")
-    .getPublicUrl(path);
+  const { data: publicUrlData } = input.supabase.storage.from('cms').getPublicUrl(path);
   return publicUrlData.publicUrl;
 }
 
 export function SettingsClient({ initialSettings }: SettingsClientProps) {
   const [destinations, setDestinations] = useState<string[]>(
-    initialSettings?.tourDestinations ?? [],
+    initialSettings?.tourDestinations ?? []
   );
-  const [categories, setCategories] = useState<string[]>(
-    initialSettings?.tourCategories ?? [],
-  );
+  const [categories, setCategories] = useState<string[]>(initialSettings?.tourCategories ?? []);
   const [destinationHeroImage, setDestinationHeroImage] = useState<(File | string)[]>(
-    initialSettings?.images?.destinationHeroUrl
-      ? [initialSettings.images.destinationHeroUrl]
-      : [],
+    initialSettings?.images?.destinationHeroUrl ? [initialSettings.images.destinationHeroUrl] : []
   );
   const [destinationHeroTitle, setDestinationHeroTitle] = useState(
-    initialSettings?.destinationPage?.heroTitle ?? "",
+    initialSettings?.destinationPage?.heroTitle ?? ''
   );
   const [destinationHeroSubtitle, setDestinationHeroSubtitle] = useState(
-    initialSettings?.destinationPage?.heroSubtitle ?? "",
+    initialSettings?.destinationPage?.heroSubtitle ?? ''
   );
   const [destinationCards, setDestinationCards] = useState<DestinationCardDraft[]>(() => {
-    const initialImages =
-      initialSettings?.images?.destinationFallbackImages ?? [];
-    const initialDescriptions =
-      initialSettings?.destinationPage?.cards ?? [];
+    const initialImages = initialSettings?.images?.destinationFallbackImages ?? [];
+    const initialDescriptions = initialSettings?.destinationPage?.cards ?? [];
 
     const imageByDestination = new Map<string, string>();
     for (const entry of initialImages) {
@@ -194,12 +184,9 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
 
     const descriptionByDestination = new Map<string, string>();
     for (const entry of initialDescriptions) {
-      if (!entry?.destination || typeof entry.destination !== "string") continue;
-      if (!entry?.description || typeof entry.description !== "string") continue;
-      descriptionByDestination.set(
-        normalizeDestinationKey(entry.destination),
-        entry.description,
-      );
+      if (!entry?.destination || typeof entry.destination !== 'string') continue;
+      if (!entry?.description || typeof entry.description !== 'string') continue;
+      descriptionByDestination.set(normalizeDestinationKey(entry.destination), entry.description);
     }
 
     const result = (initialSettings?.tourDestinations ?? []).map((destination) => {
@@ -209,7 +196,7 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
       return {
         destination,
         image: existingImageUrl ? [existingImageUrl] : [],
-        description: existingDescription ?? "",
+        description: existingDescription ?? '',
       };
     });
 
@@ -224,12 +211,10 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
     setDestinations(initialSettings?.tourDestinations ?? []);
     setCategories(initialSettings?.tourCategories ?? []);
     setDestinationHeroImage(
-      initialSettings?.images?.destinationHeroUrl
-        ? [initialSettings.images.destinationHeroUrl]
-        : [],
+      initialSettings?.images?.destinationHeroUrl ? [initialSettings.images.destinationHeroUrl] : []
     );
-    setDestinationHeroTitle(initialSettings?.destinationPage?.heroTitle ?? "");
-    setDestinationHeroSubtitle(initialSettings?.destinationPage?.heroSubtitle ?? "");
+    setDestinationHeroTitle(initialSettings?.destinationPage?.heroTitle ?? '');
+    setDestinationHeroSubtitle(initialSettings?.destinationPage?.heroSubtitle ?? '');
   }, [initialSettings]);
 
   useEffect(() => {
@@ -244,12 +229,9 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
 
     const descriptionByDestination = new Map<string, string>();
     for (const entry of descriptions) {
-      if (!entry?.destination || typeof entry.destination !== "string") continue;
-      if (!entry?.description || typeof entry.description !== "string") continue;
-      descriptionByDestination.set(
-        normalizeDestinationKey(entry.destination),
-        entry.description,
-      );
+      if (!entry?.destination || typeof entry.destination !== 'string') continue;
+      if (!entry?.description || typeof entry.description !== 'string') continue;
+      descriptionByDestination.set(normalizeDestinationKey(entry.destination), entry.description);
     }
 
     setDestinationCards((prev) => {
@@ -269,7 +251,7 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
         return {
           destination,
           image: existingImageUrl ? [existingImageUrl] : [],
-          description: existingDescription ?? "",
+          description: existingDescription ?? '',
         };
       });
     });
@@ -286,34 +268,34 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
       const destinationHeroUrl = await uploadSingleImage({
         supabase,
         value: destinationHeroImage,
-        pathPrefix: "destination-hero",
+        pathPrefix: 'destination-hero',
         fallbackUrl: initialSettings?.images?.destinationHeroUrl,
       });
 
       const destinationFallbackImages = (
         await Promise.all(
           destinationCards.map(async (card) => {
-            const destination = typeof card.destination === "string" ? card.destination.trim() : "";
+            const destination = typeof card.destination === 'string' ? card.destination.trim() : '';
             if (!destination) return null;
             const key = normalizeDestinationKey(destination);
             const existingUrl = initialSettings?.images?.destinationFallbackImages?.find(
-              (e) => normalizeDestinationKey(e.destination) === key,
+              (e) => normalizeDestinationKey(e.destination) === key
             )?.imageUrl;
             const imageUrl = await uploadSingleImage({
               supabase,
               value: card.image,
-              pathPrefix: `destination-card-${slugifyDestination(destination) || "destination"}`,
+              pathPrefix: `destination-card-${slugifyDestination(destination) || 'destination'}`,
               fallbackUrl: existingUrl,
             });
             if (!imageUrl) return null;
             return { destination, imageUrl };
-          }),
+          })
         )
       ).filter((value): value is DestinationFallbackImage => value !== null);
 
       const destinationPageCards: { destination: string; description: string }[] = [];
       for (const card of destinationCards) {
-        const destination = typeof card.destination === "string" ? card.destination.trim() : "";
+        const destination = typeof card.destination === 'string' ? card.destination.trim() : '';
         if (!destination) continue;
         const description = card.description.trim();
         if (!description) continue;
@@ -338,17 +320,17 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
       await updateAgencySettings(mergedSettingsData);
 
       toast({
-        title: "Settings saved",
-        description: "Your tour settings have been successfully updated.",
+        title: 'Settings saved',
+        description: 'Your tour settings have been successfully updated.',
       });
-      
+
       router.refresh();
     } catch (error) {
-      console.error("Failed to save settings:", error);
+      console.error('Failed to save settings:', error);
       toast({
-        title: "Error",
-        description: "Failed to save settings. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -367,7 +349,8 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tours Settings</h1>
           <p className="text-muted-foreground mt-1">
-            Configure global options for your tours, including available destinations and categories.
+            Configure global options for your tours, including available destinations and
+            categories.
           </p>
         </div>
         <div className="ml-auto">
@@ -443,16 +426,14 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
             <div className="space-y-1">
               <p className="text-sm font-medium">Destination Cards</p>
               <p className="text-sm text-muted-foreground">
-                Set a custom image and description for each destination. Custom images override tour cover images.
+                Set a custom image and description for each destination. Custom images override tour
+                cover images.
               </p>
             </div>
 
             <div className="grid gap-4">
               {destinationCards.map((card) => (
-                <div
-                  key={card.destination}
-                  className="rounded-2xl border bg-card p-4"
-                >
+                <div key={card.destination} className="rounded-2xl border bg-card p-4">
                   <div className="grid gap-4 md:grid-cols-3 md:items-start">
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Destination</p>
@@ -468,8 +449,8 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
                               normalizeDestinationKey(p.destination) ===
                               normalizeDestinationKey(card.destination)
                                 ? { ...p, image: next }
-                                : p,
-                            ),
+                                : p
+                            )
                           );
                         }}
                       />
@@ -485,8 +466,8 @@ export function SettingsClient({ initialSettings }: SettingsClientProps) {
                               normalizeDestinationKey(p.destination) ===
                               normalizeDestinationKey(card.destination)
                                 ? { ...p, description: nextValue }
-                                : p,
-                            ),
+                                : p
+                            )
                           );
                         }}
                         placeholder={`Browse tours in ${card.destination}.`}

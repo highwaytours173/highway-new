@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useCallback, useState, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
-import { UploadCloud, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import React, { useCallback, useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { UploadCloud, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface ImageUploaderProps {
   value: (File | string)[];
@@ -19,13 +19,13 @@ export function ImageUploader({ value, onChange, maxFiles }: ImageUploaderProps)
   useEffect(() => {
     if (value && value.length > 0) {
       const newPreviews = value.map((file) =>
-        typeof file === "string" ? file : URL.createObjectURL(file)
+        typeof file === 'string' ? file : URL.createObjectURL(file)
       );
       setPreviews(newPreviews);
 
       return () => {
         newPreviews.forEach((preview) => {
-          if (preview.startsWith("blob:")) {
+          if (preview.startsWith('blob:')) {
             URL.revokeObjectURL(preview);
           }
         });
@@ -39,16 +39,14 @@ export function ImageUploader({ value, onChange, maxFiles }: ImageUploaderProps)
     (acceptedFiles: File[]) => {
       const currentFiles = value || [];
       const newFiles = [...currentFiles, ...acceptedFiles];
-      
+
       // Enforce maxFiles limit if provided
       const finalFiles = maxFiles ? newFiles.slice(0, maxFiles) : newFiles;
-      
+
       onChange(finalFiles);
 
-      const newPreviews = acceptedFiles.map((file) =>
-        URL.createObjectURL(file),
-      );
-      
+      const newPreviews = acceptedFiles.map((file) => URL.createObjectURL(file));
+
       // Update previews based on the limited files
       // This is a bit tricky because we're mixing old previews with new ones
       // and we need to make sure we're keeping the right ones if we truncated
@@ -57,16 +55,16 @@ export function ImageUploader({ value, onChange, maxFiles }: ImageUploaderProps)
         return maxFiles ? allPreviews.slice(0, maxFiles) : allPreviews;
       });
     },
-    [value, onChange, maxFiles],
+    [value, onChange, maxFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/jpeg": [],
-      "image/png": [],
-      "image/gif": [],
-      "image/webp": [],
+      'image/jpeg': [],
+      'image/png': [],
+      'image/gif': [],
+      'image/webp': [],
     },
     multiple: true,
     maxFiles: maxFiles,
@@ -77,9 +75,7 @@ export function ImageUploader({ value, onChange, maxFiles }: ImageUploaderProps)
     URL.revokeObjectURL(previews[indexToRemove]);
 
     const updatedFiles = value.filter((_, index) => index !== indexToRemove);
-    const updatedPreviews = previews.filter(
-      (_, index) => index !== indexToRemove,
-    );
+    const updatedPreviews = previews.filter((_, index) => index !== indexToRemove);
 
     onChange(updatedFiles);
     setPreviews(updatedPreviews);
@@ -90,16 +86,15 @@ export function ImageUploader({ value, onChange, maxFiles }: ImageUploaderProps)
       <div
         {...getRootProps()}
         className={cn(
-          "flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/75 transition-colors",
-          isDragActive && "border-primary bg-primary/10",
+          'flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/75 transition-colors',
+          isDragActive && 'border-primary bg-primary/10'
         )}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
           <UploadCloud className="w-10 h-10 mb-4 text-muted-foreground" />
           <p className="mb-2 text-sm text-muted-foreground">
-            <span className="font-semibold">Click to upload</span> or drag and
-            drop
+            <span className="font-semibold">Click to upload</span> or drag and drop
           </p>
           <p className="text-xs text-muted-foreground">PNG, JPG, GIF or WEBP</p>
         </div>

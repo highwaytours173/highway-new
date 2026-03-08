@@ -1,52 +1,52 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentAgencyId } from "@/lib/supabase/agencies";
-import { toCamelCase } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
-import type { TourDateAvailability } from "@/types";
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentAgencyId } from '@/lib/supabase/agencies';
+import { toCamelCase } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
+import type { TourDateAvailability } from '@/types';
 
 // ─── Admin: Get all availability records for a tour ─────────────────────────
-export async function getTourAvailability(
-  tourId: string
-): Promise<TourDateAvailability[]> {
+export async function getTourAvailability(tourId: string): Promise<TourDateAvailability[]> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
-    .from("tour_availability")
-    .select("*")
-    .eq("agency_id", agencyId)
-    .eq("tour_id", tourId)
-    .order("date", { ascending: true });
+    .from('tour_availability')
+    .select('*')
+    .eq('agency_id', agencyId)
+    .eq('tour_id', tourId)
+    .order('date', { ascending: true });
 
   if (error) {
-    console.error("Error fetching tour availability:", error);
+    console.error('Error fetching tour availability:', error);
     return [];
   }
 
-  return (data || []).map((row: Record<string, unknown>) => toCamelCase(row)) as TourDateAvailability[];
+  return (data || []).map((row: Record<string, unknown>) =>
+    toCamelCase(row)
+  ) as TourDateAvailability[];
 }
 
 // ─── Public: Get availability for a tour (customer-facing) ──────────────────
-export async function getPublicTourAvailability(
-  tourId: string
-): Promise<TourDateAvailability[]> {
+export async function getPublicTourAvailability(tourId: string): Promise<TourDateAvailability[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("tour_availability")
-    .select("*")
-    .eq("tour_id", tourId)
-    .gte("date", new Date().toISOString().split("T")[0]) // only future dates
-    .order("date", { ascending: true });
+    .from('tour_availability')
+    .select('*')
+    .eq('tour_id', tourId)
+    .gte('date', new Date().toISOString().split('T')[0]) // only future dates
+    .order('date', { ascending: true });
 
   if (error) {
-    console.error("Error fetching public tour availability:", error);
+    console.error('Error fetching public tour availability:', error);
     return [];
   }
 
-  return (data || []).map((row: Record<string, unknown>) => toCamelCase(row)) as TourDateAvailability[];
+  return (data || []).map((row: Record<string, unknown>) =>
+    toCamelCase(row)
+  ) as TourDateAvailability[];
 }
 
 // ─── Admin: Set availability for a single date ──────────────────────────────
@@ -60,26 +60,24 @@ export async function setDateAvailability(data: {
   const agencyId = await getCurrentAgencyId();
 
   // Upsert: insert or update if tour_id+date already exists
-  const { error } = await supabase
-    .from("tour_availability")
-    .upsert(
-      {
-        agency_id: agencyId,
-        tour_id: data.tourId,
-        date: data.date,
-        available_spots: data.availableSpots,
-        is_blocked: data.isBlocked,
-      },
-      { onConflict: "tour_id,date" }
-    );
+  const { error } = await supabase.from('tour_availability').upsert(
+    {
+      agency_id: agencyId,
+      tour_id: data.tourId,
+      date: data.date,
+      available_spots: data.availableSpots,
+      is_blocked: data.isBlocked,
+    },
+    { onConflict: 'tour_id,date' }
+  );
 
   if (error) {
-    console.error("Error setting date availability:", error);
-    throw new Error("Failed to set date availability.");
+    console.error('Error setting date availability:', error);
+    throw new Error('Failed to set date availability.');
   }
 
-  revalidatePath("/admin/tours");
-  revalidatePath("/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/tours');
 }
 
 // ─── Admin: Bulk set availability for multiple dates ────────────────────────
@@ -103,16 +101,16 @@ export async function bulkSetAvailability(data: {
   }));
 
   const { error } = await supabase
-    .from("tour_availability")
-    .upsert(rows, { onConflict: "tour_id,date" });
+    .from('tour_availability')
+    .upsert(rows, { onConflict: 'tour_id,date' });
 
   if (error) {
-    console.error("Error bulk setting availability:", error);
-    throw new Error("Failed to set availability.");
+    console.error('Error bulk setting availability:', error);
+    throw new Error('Failed to set availability.');
   }
 
-  revalidatePath("/admin/tours");
-  revalidatePath("/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/tours');
 }
 
 // ─── Admin: Remove availability record (resets to default/unlimited) ────────
@@ -121,19 +119,19 @@ export async function removeDateAvailability(tourId: string, date: string) {
   const agencyId = await getCurrentAgencyId();
 
   const { error } = await supabase
-    .from("tour_availability")
+    .from('tour_availability')
     .delete()
-    .eq("agency_id", agencyId)
-    .eq("tour_id", tourId)
-    .eq("date", date);
+    .eq('agency_id', agencyId)
+    .eq('tour_id', tourId)
+    .eq('date', date);
 
   if (error) {
-    console.error("Error removing date availability:", error);
-    throw new Error("Failed to remove date availability.");
+    console.error('Error removing date availability:', error);
+    throw new Error('Failed to remove date availability.');
   }
 
-  revalidatePath("/admin/tours");
-  revalidatePath("/tours");
+  revalidatePath('/admin/tours');
+  revalidatePath('/tours');
 }
 
 // ─── Checkout: Check availability for a tour on a specific date ─────────────
@@ -145,10 +143,10 @@ export async function checkTourDateAvailability(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("tour_availability")
-    .select("*")
-    .eq("tour_id", tourId)
-    .eq("date", date)
+    .from('tour_availability')
+    .select('*')
+    .eq('tour_id', tourId)
+    .eq('date', date)
     .single();
 
   // No record = no restrictions = available
@@ -157,13 +155,13 @@ export async function checkTourDateAvailability(
   }
 
   if (data.is_blocked) {
-    return { available: false, reason: "This date is blocked and not available for booking." };
+    return { available: false, reason: 'This date is blocked and not available for booking.' };
   }
 
   if (data.available_spots !== null && data.available_spots < requiredSpots) {
     return {
       available: false,
-      reason: `Only ${data.available_spots} spot${data.available_spots === 1 ? "" : "s"} remaining on this date.`,
+      reason: `Only ${data.available_spots} spot${data.available_spots === 1 ? '' : 's'} remaining on this date.`,
     };
   }
 
@@ -171,18 +169,14 @@ export async function checkTourDateAvailability(
 }
 
 // ─── Checkout: Decrement available spots after a successful booking ─────────
-export async function decrementAvailableSpots(
-  tourId: string,
-  date: string,
-  count: number
-) {
+export async function decrementAvailableSpots(tourId: string, date: string, count: number) {
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("tour_availability")
-    .select("available_spots")
-    .eq("tour_id", tourId)
-    .eq("date", date)
+    .from('tour_availability')
+    .select('available_spots')
+    .eq('tour_id', tourId)
+    .eq('date', date)
     .single();
 
   // No record or unlimited spots — nothing to decrement
@@ -191,10 +185,10 @@ export async function decrementAvailableSpots(
   const newSpots = Math.max(0, data.available_spots - count);
 
   await supabase
-    .from("tour_availability")
+    .from('tour_availability')
     .update({ available_spots: newSpots })
-    .eq("tour_id", tourId)
-    .eq("date", date);
+    .eq('tour_id', tourId)
+    .eq('date', date);
 }
 
 // ─── Search: Get tour IDs that are available on a specific date ─────────────
@@ -208,14 +202,14 @@ export async function getToursAvailableOnDate(
 
   // Get all blocked tour IDs for this date
   const { data: blocked, error } = await supabase
-    .from("tour_availability")
-    .select("tour_id")
-    .in("tour_id", tourIds)
-    .eq("date", date)
-    .eq("is_blocked", true);
+    .from('tour_availability')
+    .select('tour_id')
+    .in('tour_id', tourIds)
+    .eq('date', date)
+    .eq('is_blocked', true);
 
   if (error) {
-    console.error("Error checking tour date availability:", error);
+    console.error('Error checking tour date availability:', error);
     return null; // null = skip filtering
   }
 
@@ -223,12 +217,12 @@ export async function getToursAvailableOnDate(
 
   // Also check for sold-out dates (available_spots = 0)
   const { data: soldOut } = await supabase
-    .from("tour_availability")
-    .select("tour_id")
-    .in("tour_id", tourIds)
-    .eq("date", date)
-    .eq("is_blocked", false)
-    .eq("available_spots", 0);
+    .from('tour_availability')
+    .select('tour_id')
+    .in('tour_id', tourIds)
+    .eq('date', date)
+    .eq('is_blocked', false)
+    .eq('available_spots', 0);
 
   for (const s of soldOut || []) {
     blockedIds.add((s as { tour_id: string }).tour_id);

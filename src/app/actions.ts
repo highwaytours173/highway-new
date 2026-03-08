@@ -1,19 +1,19 @@
-"use server";
+'use server';
 
-import { ai } from "@/ai/genkit";
-import { suggestAlternativeTours } from "@/ai/flows/suggest-alternative-tours";
-import { generateBlogPost } from "@/ai/flows/generate-blog-post";
-import { generateTourFlow } from "@/ai/flows/generateTour";
-import { createClient } from "@/lib/supabase/server";
-import { TourInputSchema, TourOutput } from "@/types/tour-schemas";
-import { z as genkitZ } from "genkit";
-import { z } from "zod";
+import { ai } from '@/ai/genkit';
+import { suggestAlternativeTours } from '@/ai/flows/suggest-alternative-tours';
+import { generateBlogPost } from '@/ai/flows/generate-blog-post';
+import { generateTourFlow } from '@/ai/flows/generateTour';
+import { createClient } from '@/lib/supabase/server';
+import { TourInputSchema, TourOutput } from '@/types/tour-schemas';
+import { z as genkitZ } from 'genkit';
+import { z } from 'zod';
 
 // For AI Suggestions in Cart
 const SuggestionActionInputSchema = z.object({
   tourDescriptions: z
     .array(z.string())
-    .min(1, { message: "At least one tour description is required." }),
+    .min(1, { message: 'At least one tour description is required.' }),
 });
 
 type SuggestionsState = {
@@ -23,11 +23,11 @@ type SuggestionsState = {
 
 export async function getAiSuggestions(
   prevState: SuggestionsState,
-  formData: FormData,
+  formData: FormData
 ): Promise<SuggestionsState> {
   try {
     const rawInput = {
-      tourDescriptions: formData.getAll("descriptions") as string[],
+      tourDescriptions: formData.getAll('descriptions') as string[],
     };
 
     const validatedInput = SuggestionActionInputSchema.safeParse(rawInput);
@@ -42,14 +42,14 @@ export async function getAiSuggestions(
     const result = await suggestAlternativeTours(validatedInput.data);
 
     if (result.alternativeTours.length === 0) {
-      return { message: "No alternative tours found.", suggestions: [] };
+      return { message: 'No alternative tours found.', suggestions: [] };
     }
 
-    return { message: "Success", suggestions: result.alternativeTours };
+    return { message: 'Success', suggestions: result.alternativeTours };
   } catch (error) {
     console.error(error);
     return {
-      message: "An unexpected error occurred. Please try again.",
+      message: 'An unexpected error occurred. Please try again.',
       suggestions: [],
     };
   }
@@ -57,9 +57,7 @@ export async function getAiSuggestions(
 
 // For AI Blog Post Generation
 const BlogPostActionInputSchema = z.object({
-  topic: z
-    .string()
-    .min(5, { message: "Please enter a topic with at least 5 characters." }),
+  topic: z.string().min(5, { message: 'Please enter a topic with at least 5 characters.' }),
   keywords: z.string().optional(),
 });
 
@@ -74,31 +72,31 @@ export async function generateBlogPostAction(
 ): Promise<BlogPostState> {
   try {
     const rawInput = {
-      topic: formData.get("topic") as string,
-      keywords: formData.get("keywords") as string,
+      topic: formData.get('topic') as string,
+      keywords: formData.get('keywords') as string,
     };
 
     const validatedInput = BlogPostActionInputSchema.safeParse(rawInput);
 
     if (!validatedInput.success) {
-      return { message: validatedInput.error.errors[0].message, content: "" };
+      return { message: validatedInput.error.errors[0].message, content: '' };
     }
 
     const result = await generateBlogPost(validatedInput.data);
 
     if (!result.content) {
       return {
-        message: "Could not generate content based on the topic.",
-        content: "",
+        message: 'Could not generate content based on the topic.',
+        content: '',
       };
     }
 
-    return { message: "Success", content: result.content };
+    return { message: 'Success', content: result.content };
   } catch (error) {
     console.error(error);
     return {
-      message: "An unexpected error occurred. Please try again.",
-      content: "",
+      message: 'An unexpected error occurred. Please try again.',
+      content: '',
     };
   }
 }
@@ -125,10 +123,10 @@ export async function generateTailorMadeTourAction(
       data: result,
     };
   } catch (error) {
-    console.error("Error generating tour:", error);
+    console.error('Error generating tour:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate tour",
+      message: error instanceof Error ? error.message : 'Failed to generate tour',
     };
   }
 }
@@ -136,15 +134,15 @@ export async function generateTailorMadeTourAction(
 const SeoAssistInputSchema = z.object({
   prompt: z.string().min(3),
   scope: z.enum([
-    "site",
-    "home",
-    "about",
-    "contact",
-    "tours",
-    "services",
-    "destination",
-    "tailorMade",
-    "blog",
+    'site',
+    'home',
+    'about',
+    'contact',
+    'tours',
+    'services',
+    'destination',
+    'tailorMade',
+    'blog',
   ]),
   agencyName: z.string().optional(),
   siteName: z.string().optional(),
@@ -161,7 +159,9 @@ const SeoAssistOutputSchema = genkitZ.object({
 
 export type SeoAssistResult = genkitZ.infer<typeof SeoAssistOutputSchema>;
 
-export async function generateSeoAssistAction(input: z.infer<typeof SeoAssistInputSchema>): Promise<{
+export async function generateSeoAssistAction(
+  input: z.infer<typeof SeoAssistInputSchema>
+): Promise<{
   success: boolean;
   data?: SeoAssistResult;
   message?: string;
@@ -172,18 +172,16 @@ export async function generateSeoAssistAction(input: z.infer<typeof SeoAssistInp
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return { success: false, message: "Unauthorized" };
+      return { success: false, message: 'Unauthorized' };
     }
 
     const validated = SeoAssistInputSchema.safeParse(input);
     if (!validated.success) {
-      return { success: false, message: validated.error.errors[0]?.message ?? "Invalid input." };
+      return { success: false, message: validated.error.errors[0]?.message ?? 'Invalid input.' };
     }
 
     const scopeLabel =
-      validated.data.scope === "site"
-        ? "Site Defaults"
-        : `${validated.data.scope} Page`;
+      validated.data.scope === 'site' ? 'Site Defaults' : `${validated.data.scope} Page`;
     const prompt = `You are an SEO expert for a travel agency website.
 
 Generate SEO metadata based on the user's request.
@@ -195,11 +193,11 @@ Requirements:
 
 Context:
 - Scope: ${scopeLabel}
-- Agency Name: ${validated.data.agencyName ?? ""}
-- Site Name: ${validated.data.siteName ?? ""}
-- Existing Title: ${validated.data.existingTitle ?? ""}
-- Existing Description: ${validated.data.existingDescription ?? ""}
-- Existing Keywords: ${validated.data.existingKeywords ?? ""}
+- Agency Name: ${validated.data.agencyName ?? ''}
+- Site Name: ${validated.data.siteName ?? ''}
+- Existing Title: ${validated.data.existingTitle ?? ''}
+- Existing Description: ${validated.data.existingDescription ?? ''}
+- Existing Keywords: ${validated.data.existingKeywords ?? ''}
 
 User request: ${validated.data.prompt}`;
 
@@ -209,7 +207,7 @@ User request: ${validated.data.prompt}`;
     });
 
     if (!output) {
-      return { success: false, message: "Failed to generate SEO content." };
+      return { success: false, message: 'Failed to generate SEO content.' };
     }
 
     return { success: true, data: output };
@@ -217,7 +215,7 @@ User request: ${validated.data.prompt}`;
     console.error(error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate SEO content.",
+      message: error instanceof Error ? error.message : 'Failed to generate SEO content.',
     };
   }
 }

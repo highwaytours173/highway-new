@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+'use client';
 
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -15,171 +15,204 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { PlusCircle, Trash2, Layout, Image as ImageIcon, MapPin, Tag, Video, Newspaper, MessageSquare, Eye, Save, Sparkles, ShieldCheck, Gift, Zap, RefreshCw, X } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+  PlusCircle,
+  Trash2,
+  Layout,
+  Image as ImageIcon,
+  MapPin,
+  Tag,
+  Video,
+  Newspaper,
+  MessageSquare,
+  Eye,
+  Save,
+  Sparkles,
+  ShieldCheck,
+  Package,
+  Landmark,
+} from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { ImageUploader } from "@/components/admin/image-uploader";
-import Image from "next/image";
-import { browseCategoryIconKeys } from "@/types";
-import type { BrowseCategoryItem, HomeContent } from "@/types";
-import { Separator } from "@/components/ui/separator";
-import { updateHomePageContent } from "@/lib/supabase/agency-content";
+} from '@/components/ui/select';
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { ImageUploader } from '@/components/admin/image-uploader';
+import Image from 'next/image';
+import { browseCategoryIconKeys } from '@/types';
+import type { BrowseCategoryItem, HomeContent } from '@/types';
+import { Separator } from '@/components/ui/separator';
+import { updateHomePageContent } from '@/lib/supabase/agency-content';
 
 const defaultBrowseCategories: BrowseCategoryItem[] = [];
 
 const defaultHomePageData = {
   hero: {
-    title: "",
-    subtitle: "",
-    imageUrl: "",
-    imageAlt: "",
-    searchType: "tours",
-    videoUrl: "",
+    title: '',
+    subtitle: '',
+    imageUrl: '',
+    imageAlt: '',
+    searchType: 'tours',
+    videoUrl: '',
   },
   whyChooseUs: {
-    pretitle: "",
-    title: "",
-    imageUrl: "",
-    imageAlt: "",
-    badgeValue: "",
-    badgeLabel: "",
+    pretitle: '',
+    title: '',
+    imageUrl: '',
+    imageAlt: '',
+    badgeValue: '',
+    badgeLabel: '',
     feature1: {
-      title: "",
-      description: "",
+      title: '',
+      description: '',
     },
     feature2: {
-      title: "",
-      description: "",
+      title: '',
+      description: '',
     },
     feature3: {
-      title: "",
-      description: "",
+      title: '',
+      description: '',
     },
   },
   browseCategory: {
-    title: "",
-    subtitle: "",
+    title: '',
+    subtitle: '',
     categories: defaultBrowseCategories,
   },
   popularDestinations: {
-    pretitle: "",
-    title: "",
+    pretitle: '',
+    title: '',
     count: 0,
   },
   discountBanners: {
     banner1: {
-      title: "",
-      description: "",
-      imageUrl: "",
-      buttonText: "",
-      buttonLink: "",
+      title: '',
+      description: '',
+      imageUrl: '',
+      buttonText: '',
+      buttonLink: '',
     },
     banner2: {
-      title: "",
-      description: "",
-      imageUrl: "",
-      buttonText: "",
-      buttonLink: "",
+      title: '',
+      description: '',
+      imageUrl: '',
+      buttonText: '',
+      buttonLink: '',
     },
   },
   lastMinuteOffers: {
-    discount: "",
-    pretitle: "",
-    title: "",
+    discount: '',
+    pretitle: '',
+    title: '',
     count: 0,
   },
   testimonials: [],
   testimonialCount: 0,
   videoSection: {
-    pretitle: "",
-    title: "",
-    backgroundImageUrl: "",
-    button1Text: "",
-    button1Link: "",
-    button2Text: "",
-    button2Link: "",
+    pretitle: '',
+    title: '',
+    backgroundImageUrl: '',
+    button1Text: '',
+    button1Link: '',
+    button2Text: '',
+    button2Link: '',
   },
   newsSection: {
-    pretitle: "",
-    title: "",
+    pretitle: '',
+    title: '',
     count: 0,
   },
   // Hotel Defaults
   hotelFeatures: {
-    title: "",
-    subtitle: "",
+    title: '',
+    subtitle: '',
     features: [],
   },
   featuredRooms: {
-    title: "",
-    subtitle: "",
+    title: '',
+    subtitle: '',
     roomIds: [],
   },
   hotelStory: {
-    title: "",
-    description: "",
-    imageUrl: "",
-    imageAlt: "",
-    buttonText: "",
-    buttonLink: "",
+    title: '',
+    description: '',
+    imageUrl: '',
+    imageAlt: '',
+    buttonText: '',
+    buttonLink: '',
   },
   // H2 Hotel Sections
   amenitiesSection: {
-    title: "",
-    subtitle: "",
-    items: ["wifi", "pool", "spa", "restaurant", "gym", "parking"],
+    title: '',
+    subtitle: '',
+    items: ['wifi', 'pool', 'spa', 'restaurant', 'gym', 'parking'],
   },
   gallerySection: {
-    title: "",
-    subtitle: "",
+    title: '',
+    subtitle: '',
     images: [],
   },
   whyBookDirect: {
-    title: "",
-    subtitle: "",
+    title: '',
+    subtitle: '',
     benefits: [
-      { icon: "ShieldCheck", title: "Best Price Guarantee", description: "We match any price you find elsewhere." },
-      { icon: "RefreshCw", title: "Free Cancellation", description: "Cancel up to 24h before check-in for free." },
-      { icon: "Zap", title: "Instant Confirmation", description: "Your booking is confirmed immediately." },
-      { icon: "Gift", title: "Exclusive Perks", description: "Complimentary upgrades & welcome gifts for direct guests." },
+      {
+        icon: 'ShieldCheck',
+        title: 'Best Price Guarantee',
+        description: 'We match any price you find elsewhere.',
+      },
+      {
+        icon: 'RefreshCw',
+        title: 'Free Cancellation',
+        description: 'Cancel up to 24h before check-in for free.',
+      },
+      {
+        icon: 'Zap',
+        title: 'Instant Confirmation',
+        description: 'Your booking is confirmed immediately.',
+      },
+      {
+        icon: 'Gift',
+        title: 'Exclusive Perks',
+        description: 'Complimentary upgrades & welcome gifts for direct guests.',
+      },
     ],
   },
   locationSection: {
-    title: "",
-    subtitle: "",
-    address: "",
-    mapEmbedUrl: "",
-    directionsUrl: "",
+    title: '',
+    subtitle: '',
+    address: '',
+    mapEmbedUrl: '',
+    directionsUrl: '',
   },
   socialSection: {
-    title: "",
-    subtitle: "",
-    handle: "",
-    profileUrl: "",
-    platform: "Instagram",
+    title: '',
+    subtitle: '',
+    handle: '',
+    profileUrl: '',
+    platform: 'Instagram',
     images: [],
+  },
+  // H3.7 Seasonal Packages
+  seasonalPackagesSection: {
+    title: '',
+    subtitle: '',
+    packages: [],
+  },
+  // H3.8 Nearby Attractions
+  nearbyAttractionsSection: {
+    title: '',
+    subtitle: '',
+    attractions: [],
   },
   visibility: {
     hero: true,
@@ -197,46 +230,46 @@ const defaultHomePageData = {
     whyBookDirect: true,
     locationSection: true,
     socialSection: true,
+    seasonalPackages: true,
+    nearbyAttractions: true,
   },
 };
 
 const testimonialSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  role: z.string().min(1, "Role is required"),
-  avatar: z.string().url("Must be a valid URL").or(z.literal("")),
-  content: z.string().min(10, "Testimonial text is too short"),
+  name: z.string().min(1, 'Name is required'),
+  role: z.string().min(1, 'Role is required'),
+  avatar: z.string().url('Must be a valid URL').or(z.literal('')),
+  content: z.string().min(10, 'Testimonial text is too short'),
 });
 
 const featureSchema = z.object({
-  title: z.string().min(1, "Feature title is required"),
-  description: z.string().min(1, "Feature description is required"),
+  title: z.string().min(1, 'Feature title is required'),
+  description: z.string().min(1, 'Feature description is required'),
 });
 
 const browseCategoryItemSchema = z.object({
-  label: z.string().min(1, "Label is required"),
-  type: z.string().min(1, "Type is required"),
+  label: z.string().min(1, 'Label is required'),
+  type: z.string().min(1, 'Type is required'),
   icon: z.enum(browseCategoryIconKeys),
 });
 
 // Safe File check for SSR
 const fileSchema =
-  typeof window !== "undefined" && typeof File !== "undefined"
-    ? z.instanceof(File)
-    : z.any();
+  typeof window !== 'undefined' && typeof File !== 'undefined' ? z.instanceof(File) : z.any();
 
 const formSchema = z.object({
   hero: z.object({
-    title: z.string().min(1, "Hero title is required"),
-    subtitle: z.string().min(1, "Hero subtitle is required"),
+    title: z.string().min(1, 'Hero title is required'),
+    subtitle: z.string().min(1, 'Hero subtitle is required'),
     image: z.array(fileSchema).optional(),
     imageAlt: z.string().optional(),
-    searchType: z.enum(["tours", "hotels"]).optional().default("tours"),
+    searchType: z.enum(['tours', 'hotels']).optional().default('tours'),
     bookDirectBadge: z.string().optional(),
     videoUrl: z.string().optional(),
   }),
   whyChooseUs: z.object({
-    pretitle: z.string().min(1, "Pre-title is required"),
-    title: z.string().min(1, "Title is required"),
+    pretitle: z.string().min(1, 'Pre-title is required'),
+    title: z.string().min(1, 'Title is required'),
     image: z.array(fileSchema).optional(),
     imageAlt: z.string().optional(),
     badgeValue: z.string().optional(),
@@ -246,8 +279,8 @@ const formSchema = z.object({
     feature3: featureSchema,
   }),
   browseCategory: z.object({
-    title: z.string().min(1, "Title is required"),
-    subtitle: z.string().min(1, "Subtitle is required"),
+    title: z.string().min(1, 'Title is required'),
+    subtitle: z.string().min(1, 'Subtitle is required'),
     categories: z.array(browseCategoryItemSchema).optional(),
   }),
   popularDestinations: z.object({
@@ -257,31 +290,31 @@ const formSchema = z.object({
   }),
   discountBanners: z.object({
     banner1: z.object({
-      title: z.string().min(1, "Title is required"),
-      description: z.string().min(1, "Description is required"),
+      title: z.string().min(1, 'Title is required'),
+      description: z.string().min(1, 'Description is required'),
       image: z.array(fileSchema).optional(),
       buttonText: z.string().optional(),
       buttonLink: z.string().optional(),
     }),
     banner2: z.object({
-      title: z.string().min(1, "Title is required"),
-      description: z.string().min(1, "Description is required"),
+      title: z.string().min(1, 'Title is required'),
+      description: z.string().min(1, 'Description is required'),
       image: z.array(fileSchema).optional(),
       buttonText: z.string().optional(),
       buttonLink: z.string().optional(),
     }),
   }),
   lastMinuteOffers: z.object({
-    discount: z.string().min(1, "Discount is required"),
-    pretitle: z.string().min(1, "Pre-title is required"),
-    title: z.string().min(1, "Title is required"),
+    discount: z.string().min(1, 'Discount is required'),
+    pretitle: z.string().min(1, 'Pre-title is required'),
+    title: z.string().min(1, 'Title is required'),
     count: z.coerce.number().min(2).max(10).optional(),
   }),
   testimonials: z.array(testimonialSchema),
   testimonialCount: z.coerce.number().min(1).max(20).optional(),
   videoSection: z.object({
-    pretitle: z.string().min(1, "Pre-title is required"),
-    title: z.string().min(1, "Title is required"),
+    pretitle: z.string().min(1, 'Pre-title is required'),
+    title: z.string().min(1, 'Title is required'),
     backgroundImage: z.array(fileSchema).optional(),
     button1Text: z.string().optional(),
     button1Link: z.string().optional(),
@@ -289,8 +322,8 @@ const formSchema = z.object({
     button2Link: z.string().optional(),
   }),
   newsSection: z.object({
-    pretitle: z.string().min(1, "Pre-title is required"),
-    title: z.string().min(1, "Title is required"),
+    pretitle: z.string().min(1, 'Pre-title is required'),
+    title: z.string().min(1, 'Title is required'),
     count: z.coerce.number().min(1).max(9).optional(),
   }),
   visibility: z.object({
@@ -312,121 +345,149 @@ const formSchema = z.object({
     whyBookDirect: z.boolean().default(true).optional(),
     locationSection: z.boolean().default(true).optional(),
     socialSection: z.boolean().default(true).optional(),
+    seasonalPackages: z.boolean().default(true).optional(),
+    nearbyAttractions: z.boolean().default(true).optional(),
   }),
 });
 
 export function HomePageEditorForm({ initialContent }: { initialContent: HomeContent | null }) {
   // Merge initial content with defaults
-  const mergedValues = initialContent ? {
-      ...defaultHomePageData,
-      ...initialContent,
-      hero: { 
-          ...defaultHomePageData.hero, 
-          ...initialContent.hero, 
-          image: undefined 
-      },
-      whyChooseUs: { 
-          ...defaultHomePageData.whyChooseUs, 
-          ...initialContent.whyChooseUs, 
-          image: undefined 
-      },
-      browseCategory: {
+  const mergedValues = initialContent
+    ? {
+        ...defaultHomePageData,
+        ...initialContent,
+        hero: {
+          ...defaultHomePageData.hero,
+          ...initialContent.hero,
+          image: undefined,
+        },
+        whyChooseUs: {
+          ...defaultHomePageData.whyChooseUs,
+          ...initialContent.whyChooseUs,
+          image: undefined,
+        },
+        browseCategory: {
           ...defaultHomePageData.browseCategory,
           ...initialContent.browseCategory,
-          categories: initialContent.browseCategory?.categories || defaultHomePageData.browseCategory.categories,
-      },
-      popularDestinations: {
+          categories:
+            initialContent.browseCategory?.categories ||
+            defaultHomePageData.browseCategory.categories,
+        },
+        popularDestinations: {
           ...defaultHomePageData.popularDestinations,
           ...initialContent.popularDestinations,
-      },
-      discountBanners: {
-          banner1: { 
-              ...defaultHomePageData.discountBanners.banner1, 
-              ...initialContent.discountBanners?.banner1, 
-              image: undefined 
+        },
+        discountBanners: {
+          banner1: {
+            ...defaultHomePageData.discountBanners.banner1,
+            ...initialContent.discountBanners?.banner1,
+            image: undefined,
           },
-          banner2: { 
-              ...defaultHomePageData.discountBanners.banner2, 
-              ...initialContent.discountBanners?.banner2, 
-              image: undefined 
+          banner2: {
+            ...defaultHomePageData.discountBanners.banner2,
+            ...initialContent.discountBanners?.banner2,
+            image: undefined,
           },
-      },
-      lastMinuteOffers: {
+        },
+        lastMinuteOffers: {
           ...defaultHomePageData.lastMinuteOffers,
           ...initialContent.lastMinuteOffers,
-      },
-      videoSection: { 
-          ...defaultHomePageData.videoSection, 
-          ...initialContent.videoSection, 
-          backgroundImage: undefined 
-      },
-      newsSection: {
+        },
+        videoSection: {
+          ...defaultHomePageData.videoSection,
+          ...initialContent.videoSection,
+          backgroundImage: undefined,
+        },
+        newsSection: {
           ...defaultHomePageData.newsSection,
           ...initialContent.newsSection,
-      },
-      hotelFeatures: {
+        },
+        hotelFeatures: {
           ...defaultHomePageData.hotelFeatures,
           ...initialContent.hotelFeatures,
-      },
-      featuredRooms: {
+        },
+        featuredRooms: {
           ...defaultHomePageData.featuredRooms,
           ...initialContent.featuredRooms,
-      },
-      hotelStory: {
+        },
+        hotelStory: {
           ...defaultHomePageData.hotelStory,
           ...initialContent.hotelStory,
-      },
-      amenitiesSection: {
+        },
+        amenitiesSection: {
           ...defaultHomePageData.amenitiesSection,
           ...initialContent.amenitiesSection,
-      },
-      gallerySection: {
+        },
+        gallerySection: {
           ...defaultHomePageData.gallerySection,
           ...initialContent.gallerySection,
-      },
-      whyBookDirect: {
+        },
+        whyBookDirect: {
           ...defaultHomePageData.whyBookDirect,
           ...initialContent.whyBookDirect,
-      },
-      locationSection: {
+        },
+        locationSection: {
           ...defaultHomePageData.locationSection,
           ...initialContent.locationSection,
-      },
-      socialSection: {
+        },
+        socialSection: {
           ...defaultHomePageData.socialSection,
           ...initialContent.socialSection,
-      },
-      visibility: {
+        },
+        seasonalPackagesSection: {
+          ...defaultHomePageData.seasonalPackagesSection,
+          ...initialContent.seasonalPackagesSection,
+        },
+        nearbyAttractionsSection: {
+          ...defaultHomePageData.nearbyAttractionsSection,
+          ...initialContent.nearbyAttractionsSection,
+        },
+        visibility: {
           ...defaultHomePageData.visibility,
           ...initialContent.visibility,
-      },
-      testimonials: (initialContent.testimonials || defaultHomePageData.testimonials).map(t => ({
-          name: t.name,
-          role: t.role,
-          avatar: t.avatar,
-          content: t.content || t.text || "",
-      })),
-      testimonialCount: initialContent.testimonialCount ?? defaultHomePageData.testimonialCount,
-  } : defaultHomePageData;
+        },
+        testimonials: (initialContent.testimonials || defaultHomePageData.testimonials).map(
+          (t) => ({
+            name: t.name,
+            role: t.role,
+            avatar: t.avatar,
+            content: t.content || t.text || '',
+          })
+        ),
+        testimonialCount: initialContent.testimonialCount ?? defaultHomePageData.testimonialCount,
+      }
+    : defaultHomePageData;
 
   const [existingHeroUrls, setExistingHeroUrls] = useState<string[]>(() => {
     const hero = initialContent?.hero;
     const fromArray = Array.isArray(hero?.imageUrls)
       ? hero.imageUrls.filter(
-          (value): value is string => typeof value === "string" && value.trim().length > 0,
+          (value): value is string => typeof value === 'string' && value.trim().length > 0
         )
       : [];
     if (fromArray.length > 0) return fromArray;
-    const single = typeof hero?.imageUrl === "string" ? hero.imageUrl.trim() : "";
+    const single = typeof hero?.imageUrl === 'string' ? hero.imageUrl.trim() : '';
     return single ? [single] : [];
   });
-  const [existingBanner1Url] = useState<string | null>(initialContent?.discountBanners?.banner1?.imageUrl || null);
-  const [existingBanner2Url] = useState<string | null>(initialContent?.discountBanners?.banner2?.imageUrl || null);
-  const [existingVideoBgUrl] = useState<string | null>(initialContent?.videoSection?.backgroundImageUrl || null);
-  const [existingWhyChooseUsUrl] = useState<string | null>(initialContent?.whyChooseUs?.imageUrl || null);
-  const [existingGalleryImages, setExistingGalleryImages] = useState<(File | string)[]>(initialContent?.gallerySection?.images || []);
-  const [existingSocialImages, setExistingSocialImages] = useState<(File | string)[]>(initialContent?.socialSection?.images || []);
-  const [activeTab, setActiveTab] = useState("visibility");
+  const [existingBanner1Url] = useState<string | null>(
+    initialContent?.discountBanners?.banner1?.imageUrl || null
+  );
+  const [existingBanner2Url] = useState<string | null>(
+    initialContent?.discountBanners?.banner2?.imageUrl || null
+  );
+  const [existingVideoBgUrl] = useState<string | null>(
+    initialContent?.videoSection?.backgroundImageUrl || null
+  );
+  const [existingWhyChooseUsUrl] = useState<string | null>(
+    initialContent?.whyChooseUs?.imageUrl || null
+  );
+  const [existingGalleryImages, setExistingGalleryImages] = useState<(File | string)[]>(
+    initialContent?.gallerySection?.images || []
+  );
+  const [existingSocialImages, setExistingSocialImages] = useState<(File | string)[]>(
+    initialContent?.socialSection?.images || []
+  );
+  const [activeTab, setActiveTab] = useState('visibility');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -435,7 +496,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "testimonials",
+    name: 'testimonials',
   });
 
   const {
@@ -444,69 +505,88 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
     remove: removeCategory,
   } = useFieldArray({
     control: form.control,
-    name: "browseCategory.categories",
+    name: 'browseCategory.categories',
   });
 
+  const {
+    fields: packageFields,
+    append: appendPackage,
+    remove: removePackage,
+  } = useFieldArray({
+    control: form.control,
+    name: 'seasonalPackagesSection.packages' as any,
+  });
 
+  const {
+    fields: attractionFields,
+    append: appendAttraction,
+    remove: removeAttraction,
+  } = useFieldArray({
+    control: form.control,
+    name: 'nearbyAttractionsSection.attractions' as any,
+  });
 
-  async function handleImageUpload(file: File | undefined | null, pathPrefix: string): Promise<string | null> {
-      if (!file || typeof File === "undefined" || !(file instanceof File)) return null;
-      const supabase = createClient();
-      const ext = file.name.split(".").pop() || "png";
-      const path = `home/${pathPrefix}-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("cms")
-        .upload(path, file, {
-          contentType: file.type || "image/png",
-          upsert: true,
-        });
-      if (!uploadError) {
-        const { data: publicUrlData } = supabase.storage
-          .from("cms")
-          .getPublicUrl(path);
-        return publicUrlData.publicUrl;
-      }
-      return null;
+  async function handleImageUpload(
+    file: File | undefined | null,
+    pathPrefix: string
+  ): Promise<string | null> {
+    if (!file || typeof File === 'undefined' || !(file instanceof File)) return null;
+    const supabase = createClient();
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `home/${pathPrefix}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('cms').upload(path, file, {
+      contentType: file.type || 'image/png',
+      upsert: true,
+    });
+    if (!uploadError) {
+      const { data: publicUrlData } = supabase.storage.from('cms').getPublicUrl(path);
+      return publicUrlData.publicUrl;
+    }
+    return null;
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    
     // Handle uploads
     const heroFiles = Array.isArray(values.hero?.image) ? values.hero.image : [];
     const whyChooseUsFile = values.whyChooseUs?.image && values.whyChooseUs.image[0];
-    const banner1File = values.discountBanners?.banner1?.image && values.discountBanners.banner1.image[0];
-    const banner2File = values.discountBanners?.banner2?.image && values.discountBanners.banner2.image[0];
-    const videoBgFile = values.videoSection?.backgroundImage && values.videoSection.backgroundImage[0];
+    const banner1File =
+      values.discountBanners?.banner1?.image && values.discountBanners.banner1.image[0];
+    const banner2File =
+      values.discountBanners?.banner2?.image && values.discountBanners.banner2.image[0];
+    const videoBgFile =
+      values.videoSection?.backgroundImage && values.videoSection.backgroundImage[0];
 
     const uploadedHeroUrls = (
       await Promise.all(
-        heroFiles.map((file, idx) => handleImageUpload(file as any, `hero-${idx + 1}`)),
+        heroFiles.map((file, idx) => handleImageUpload(file as any, `hero-${idx + 1}`))
       )
-    ).filter((value): value is string => typeof value === "string" && value.trim().length > 0);
-    const newWhyChooseUsUrl = await handleImageUpload(whyChooseUsFile, "why-choose-us");
-    const newBanner1Url = await handleImageUpload(banner1File, "banner1");
-    const newBanner2Url = await handleImageUpload(banner2File, "banner2");
-    const newVideoBgUrl = await handleImageUpload(videoBgFile, "video-bg");
+    ).filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+    const newWhyChooseUsUrl = await handleImageUpload(whyChooseUsFile, 'why-choose-us');
+    const newBanner1Url = await handleImageUpload(banner1File, 'banner1');
+    const newBanner2Url = await handleImageUpload(banner2File, 'banner2');
+    const newVideoBgUrl = await handleImageUpload(videoBgFile, 'video-bg');
 
     // Gallery images — upload any File objects, keep existing URLs
-    const galleryStringUrls = existingGalleryImages.filter((f): f is string => typeof f === "string");
+    const galleryStringUrls = existingGalleryImages.filter(
+      (f): f is string => typeof f === 'string'
+    );
     const galleryFileObjects = existingGalleryImages.filter((f): f is File => f instanceof File);
     const uploadedGalleryUrls = (
       await Promise.all(galleryFileObjects.map((f, i) => handleImageUpload(f, `gallery-${i}`)))
-    ).filter((u): u is string => typeof u === "string" && u.trim().length > 0);
+    ).filter((u): u is string => typeof u === 'string' && u.trim().length > 0);
     const allGalleryUrls = [...galleryStringUrls, ...uploadedGalleryUrls];
 
     // Social images
-    const socialStringUrls = existingSocialImages.filter((f): f is string => typeof f === "string");
+    const socialStringUrls = existingSocialImages.filter((f): f is string => typeof f === 'string');
     const socialFileObjects = existingSocialImages.filter((f): f is File => f instanceof File);
     const uploadedSocialUrls = (
       await Promise.all(socialFileObjects.map((f, i) => handleImageUpload(f, `social-${i}`)))
-    ).filter((u): u is string => typeof u === "string" && u.trim().length > 0);
+    ).filter((u): u is string => typeof u === 'string' && u.trim().length > 0);
     const allSocialUrls = [...socialStringUrls, ...uploadedSocialUrls];
 
     const seenHeroUrls = new Set<string>();
     const nextHeroUrls = [...existingHeroUrls, ...uploadedHeroUrls].filter((url) => {
-      const normalized = typeof url === "string" ? url.trim() : "";
+      const normalized = typeof url === 'string' ? url.trim() : '';
       if (!normalized) return false;
       if (seenHeroUrls.has(normalized)) return false;
       seenHeroUrls.add(normalized);
@@ -521,9 +601,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
     const banner2Url =
       newBanner2Url || existingBanner2Url || defaultHomePageData.discountBanners.banner2.imageUrl;
     const videoBgUrl =
-      newVideoBgUrl ||
-      existingVideoBgUrl ||
-      defaultHomePageData.videoSection.backgroundImageUrl;
+      newVideoBgUrl || existingVideoBgUrl || defaultHomePageData.videoSection.backgroundImageUrl;
 
     // Build content payload excluding transient file field
     const {
@@ -533,7 +611,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
       videoSection: _videoSection,
       ...rest
     } = values;
-    
+
     const contentToSave = {
       ...rest,
       hero: {
@@ -558,29 +636,29 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
         feature3: values.whyChooseUs.feature3,
       },
       discountBanners: {
-          banner1: {
-              title: values.discountBanners.banner1.title,
-              description: values.discountBanners.banner1.description,
-              imageUrl: banner1Url,
-              buttonText: values.discountBanners.banner1.buttonText,
-              buttonLink: values.discountBanners.banner1.buttonLink,
-          },
-          banner2: {
-              title: values.discountBanners.banner2.title,
-              description: values.discountBanners.banner2.description,
-              imageUrl: banner2Url,
-              buttonText: values.discountBanners.banner2.buttonText,
-              buttonLink: values.discountBanners.banner2.buttonLink,
-          },
+        banner1: {
+          title: values.discountBanners.banner1.title,
+          description: values.discountBanners.banner1.description,
+          imageUrl: banner1Url,
+          buttonText: values.discountBanners.banner1.buttonText,
+          buttonLink: values.discountBanners.banner1.buttonLink,
+        },
+        banner2: {
+          title: values.discountBanners.banner2.title,
+          description: values.discountBanners.banner2.description,
+          imageUrl: banner2Url,
+          buttonText: values.discountBanners.banner2.buttonText,
+          buttonLink: values.discountBanners.banner2.buttonLink,
+        },
       },
       videoSection: {
-          pretitle: values.videoSection.pretitle,
-          title: values.videoSection.title,
-          backgroundImageUrl: videoBgUrl,
-          button1Text: values.videoSection.button1Text,
-          button1Link: values.videoSection.button1Link,
-          button2Text: values.videoSection.button2Text,
-          button2Link: values.videoSection.button2Link,
+        pretitle: values.videoSection.pretitle,
+        title: values.videoSection.title,
+        backgroundImageUrl: videoBgUrl,
+        button1Text: values.videoSection.button1Text,
+        button1Link: values.videoSection.button1Link,
+        button2Text: values.videoSection.button2Text,
+        button2Link: values.videoSection.button2Link,
       },
       // Pass through hotel specific data
       hotelFeatures: (values as any).hotelFeatures,
@@ -597,18 +675,23 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
         ...((values as any).socialSection || {}),
         images: allSocialUrls,
       },
+      seasonalPackagesSection: (values as any).seasonalPackagesSection,
+      nearbyAttractionsSection: (values as any).nearbyAttractionsSection,
     };
 
     try {
       await updateHomePageContent(contentToSave as HomeContent);
-      alert("Home page content updated successfully!");
+      alert('Home page content updated successfully!');
     } catch (error) {
-      console.error("Failed to save content:", error);
-      alert("Failed to update content.");
+      console.error('Failed to save content:', error);
+      alert('Failed to update content.');
     }
   }
 
-  const renderFeatureFields = (featureName: "feature1" | "feature2" | "feature3", label: string) => (
+  const renderFeatureFields = (
+    featureName: 'feature1' | 'feature2' | 'feature3',
+    label: string
+  ) => (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{label}</CardTitle>
@@ -646,13 +729,21 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-        console.error("Form validation errors:", errors);
-        alert("Please check the form for errors. Some required fields might be missing.");
-      })} className="space-y-8 pb-20">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error('Form validation errors:', errors);
+          alert('Please check the form for errors. Some required fields might be missing.');
+        })}
+        className="space-y-8 pb-20"
+      >
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Navigation */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="w-full lg:w-auto flex-1 lg:flex-none lg:min-w-[250px]">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            orientation="vertical"
+            className="w-full lg:w-auto flex-1 lg:flex-none lg:min-w-[250px]"
+          >
             <TabsList className="flex flex-col h-auto w-full items-start justify-start gap-1 bg-muted/20 p-2 rounded-lg">
               <TabsTrigger value="visibility" className="w-full justify-start gap-2">
                 <Eye className="h-4 w-4" /> Visibility
@@ -705,6 +796,12 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
               <TabsTrigger value="social" className="w-full justify-start gap-2">
                 <Sparkles className="h-4 w-4" /> Social Feed
               </TabsTrigger>
+              <TabsTrigger value="seasonal-packages" className="w-full justify-start gap-2">
+                <Package className="h-4 w-4" /> Seasonal Packages
+              </TabsTrigger>
+              <TabsTrigger value="nearby-attractions" className="w-full justify-start gap-2">
+                <Landmark className="h-4 w-4" /> Nearby Attractions
+              </TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -716,58 +813,67 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Section Visibility</CardTitle>
-                    <CardDescription>Toggle sections on or off to customize your home page layout.</CardDescription>
+                    <CardDescription>
+                      Toggle sections on or off to customize your home page layout.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {Object.keys(defaultHomePageData.visibility).map((key) => {
                       // Skip hotel sections if not in single hotel mode - simplified check for now
-                      if (['hotelFeatures', 'featuredRooms', 'hotelStory', 'roomsSection', 'amenitiesSection', 'gallerySection', 'whyBookDirect', 'locationSection', 'socialSection'].includes(key)) {
-                         return (
-                            <FormField
-                              key={key}
-                              control={form.control}
-                              name={`visibility.${key}` as any}
-                              render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/50">
-                                  <div className="space-y-0.5">
-                                    <FormLabel className="text-base capitalize">
-                                      {key.replace(/([A-Z])/g, " $1").trim()} (Hotel Mode)
-                                    </FormLabel>
-                                  </div>
-                                  <FormControl>
-                                    <Switch
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                         );
+                      if (
+                        [
+                          'hotelFeatures',
+                          'featuredRooms',
+                          'hotelStory',
+                          'roomsSection',
+                          'amenitiesSection',
+                          'gallerySection',
+                          'whyBookDirect',
+                          'locationSection',
+                          'socialSection',
+                        ].includes(key)
+                      ) {
+                        return (
+                          <FormField
+                            key={key}
+                            control={form.control}
+                            name={`visibility.${key}` as any}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/50">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base capitalize">
+                                    {key.replace(/([A-Z])/g, ' $1').trim()} (Hotel Mode)
+                                  </FormLabel>
+                                </div>
+                                <FormControl>
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        );
                       }
 
                       return (
-                      <FormField
-                        key={key}
-                        control={form.control}
-                        name={`visibility.${key}` as any}
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base capitalize">
-                                {key.replace(/([A-Z])/g, " $1").trim()}
-                              </FormLabel>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    )})}
+                        <FormField
+                          key={key}
+                          control={form.control}
+                          name={`visibility.${key}` as any}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base capitalize">
+                                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                                </FormLabel>
+                              </div>
+                              <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      );
+                    })}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -787,12 +893,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                             key={url}
                             className="relative aspect-video overflow-hidden rounded-md border bg-muted"
                           >
-                            <Image
-                              src={url}
-                              alt="Hero Preview"
-                              fill
-                              className="object-cover"
-                            />
+                            <Image src={url} alt="Hero Preview" fill className="object-cover" />
                             <Button
                               type="button"
                               variant="destructive"
@@ -826,7 +927,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                           <FormControl>
                             <ImageUploader value={field.value || []} onChange={field.onChange} />
                           </FormControl>
-                          <FormDescription>Upload multiple images for the auto slider.</FormDescription>
+                          <FormDescription>
+                            Upload multiple images for the auto slider.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -883,15 +986,20 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"hero.videoUrl" as any}
+                      name={'hero.videoUrl' as any}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Background Video URL <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                          <FormLabel>
+                            Background Video URL{' '}
+                            <span className="text-muted-foreground font-normal">(optional)</span>
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="https://example.com/hero-video.mp4" />
                           </FormControl>
                           <FormDescription>
-                            Direct link to an .mp4 file. When set, plays as a looping silent background instead of the image slider. Host on Cloudinary, S3, or similar.
+                            Direct link to an .mp4 file. When set, plays as a looping silent
+                            background instead of the image slider. Host on Cloudinary, S3, or
+                            similar.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -912,10 +1020,10 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"hero.bookDirectBadge" as any}
+                      name={'hero.bookDirectBadge' as any}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>"Book Direct" Badge Text (Hotel Mode)</FormLabel>
+                          <FormLabel>&quot;Book Direct&quot; Badge Text (Hotel Mode)</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="e.g. Book Direct & Save Up to 15%" />
                           </FormControl>
@@ -966,9 +1074,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         )}
                       />
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium">Categories List</h4>
@@ -978,9 +1086,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                           size="sm"
                           onClick={() =>
                             appendCategory({
-                              label: "New Category",
-                              type: "adventure",
-                              icon: "mountain",
+                              label: 'New Category',
+                              type: 'adventure',
+                              icon: 'mountain',
                             })
                           }
                         >
@@ -989,7 +1097,10 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                       </div>
                       <div className="grid gap-4">
                         {categoryFields.map((field, index) => (
-                          <div key={field.id} className="flex gap-4 items-start border p-4 rounded-lg bg-card">
+                          <div
+                            key={field.id}
+                            className="flex gap-4 items-start border p-4 rounded-lg bg-card"
+                          >
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
                               <FormField
                                 control={form.control}
@@ -1023,7 +1134,10 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs">Icon</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      defaultValue={field.value}
+                                    >
                                       <FormControl>
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select icon" />
@@ -1031,7 +1145,11 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                                       </FormControl>
                                       <SelectContent>
                                         {browseCategoryIconKeys.map((icon) => (
-                                          <SelectItem key={icon} value={icon} className="capitalize">
+                                          <SelectItem
+                                            key={icon}
+                                            value={icon}
+                                            className="capitalize"
+                                          >
                                             {icon}
                                           </SelectItem>
                                         ))}
@@ -1064,14 +1182,12 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Hotel Features</CardTitle>
-                    <CardDescription>
-                      Highlight your hotel amenities and services.
-                    </CardDescription>
+                    <CardDescription>Highlight your hotel amenities and services.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <FormField
                       control={form.control}
-                      name={"hotelFeatures.title" as any}
+                      name={'hotelFeatures.title' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Section Title</FormLabel>
@@ -1084,94 +1200,113 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"hotelFeatures.subtitle" as any}
+                      name={'hotelFeatures.subtitle' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Section Subtitle</FormLabel>
                           <FormControl>
-                            <Textarea {...field} rows={2} placeholder="Brief description of your amenities" />
+                            <Textarea
+                              {...field}
+                              rows={2}
+                              placeholder="Brief description of your amenities"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium">Features List</h4>
-                         <Button
+                        <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            const currentFeatures = form.getValues("hotelFeatures.features" as any) || [];
-                            form.setValue("hotelFeatures.features" as any, [
-                              ...currentFeatures,
-                              { title: "New Feature", description: "Description", icon: "wifi" }
-                            ] as any);
+                            const currentFeatures =
+                              form.getValues('hotelFeatures.features' as any) || [];
+                            form.setValue(
+                              'hotelFeatures.features' as any,
+                              [
+                                ...currentFeatures,
+                                { title: 'New Feature', description: 'Description', icon: 'wifi' },
+                              ] as any
+                            );
                           }}
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Feature
                         </Button>
                       </div>
                       <div className="grid gap-4">
-                        {(form.watch("hotelFeatures.features" as any) || []).map((feature: any, index: number) => (
-                          <div key={index} className="flex gap-4 items-start border p-4 rounded-lg bg-card relative group">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-                              <FormField
-                                control={form.control}
-                                name={`hotelFeatures.features.${index}.title` as any}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-xs">Title</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`hotelFeatures.features.${index}.description` as any}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-xs">Description</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`hotelFeatures.features.${index}.icon` as any}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-xs">Icon (Lucide Name)</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} placeholder="e.g. wifi, coffee, pool" />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute top-2 right-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => {
-                                const currentFeatures = form.getValues("hotelFeatures.features" as any) || [];
-                                form.setValue("hotelFeatures.features" as any, currentFeatures.filter((_: any, i: number) => i !== index) as any);
-                              }}
+                        {(form.watch('hotelFeatures.features' as any) || []).map(
+                          (feature: any, index: number) => (
+                            <div
+                              key={index}
+                              className="flex gap-4 items-start border p-4 rounded-lg bg-card relative group"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                                <FormField
+                                  control={form.control}
+                                  name={`hotelFeatures.features.${index}.title` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Title</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`hotelFeatures.features.${index}.description` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Description</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`hotelFeatures.features.${index}.icon` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Icon (Lucide Name)</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="e.g. wifi, coffee, pool" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-2 right-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => {
+                                  const currentFeatures =
+                                    form.getValues('hotelFeatures.features' as any) || [];
+                                  form.setValue(
+                                    'hotelFeatures.features' as any,
+                                    currentFeatures.filter(
+                                      (_: any, i: number) => i !== index
+                                    ) as any
+                                  );
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -1190,7 +1325,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                   <CardContent className="grid gap-6">
                     <FormField
                       control={form.control}
-                      name={"hotelStory.title" as any}
+                      name={'hotelStory.title' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Title</FormLabel>
@@ -1203,7 +1338,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"hotelStory.description" as any}
+                      name={'hotelStory.description' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Description</FormLabel>
@@ -1217,7 +1352,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"hotelStory.buttonText" as any}
+                        name={'hotelStory.buttonText' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Button Text</FormLabel>
@@ -1230,7 +1365,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                       />
                       <FormField
                         control={form.control}
-                        name={"hotelStory.buttonLink" as any}
+                        name={'hotelStory.buttonLink' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Button Link</FormLabel>
@@ -1245,8 +1380,14 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     <div className="space-y-2">
                       <FormLabel>Story Image</FormLabel>
                       <ImageUploader
-                        value={form.watch("hotelStory.imageUrl" as any) ? [form.watch("hotelStory.imageUrl" as any) as string] : []}
-                        onChange={(urls) => form.setValue("hotelStory.imageUrl" as any, urls[0] || "")}
+                        value={
+                          form.watch('hotelStory.imageUrl' as any)
+                            ? [form.watch('hotelStory.imageUrl' as any) as string]
+                            : []
+                        }
+                        onChange={(urls) =>
+                          form.setValue('hotelStory.imageUrl' as any, urls[0] || '')
+                        }
                         maxFiles={1}
                       />
                     </div>
@@ -1259,28 +1400,34 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Amenities Showcase</CardTitle>
-                    <CardDescription>Select which hotel amenities to display on the home page.</CardDescription>
+                    <CardDescription>
+                      Select which hotel amenities to display on the home page.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"amenitiesSection.title" as any}
+                        name={'amenitiesSection.title' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section Title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Our Amenities" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Our Amenities" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"amenitiesSection.subtitle" as any}
+                        name={'amenitiesSection.subtitle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pre-title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. What We Offer" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. What We Offer" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1288,37 +1435,40 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     </div>
                     <Separator />
                     <div>
-                      <FormLabel className="text-base mb-3 block">Select Amenities to Display</FormLabel>
+                      <FormLabel className="text-base mb-3 block">
+                        Select Amenities to Display
+                      </FormLabel>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {[
-                          { id: "wifi", label: "Free WiFi" },
-                          { id: "pool", label: "Swimming Pool" },
-                          { id: "spa", label: "Spa & Wellness" },
-                          { id: "restaurant", label: "Restaurant" },
-                          { id: "gym", label: "Fitness Center" },
-                          { id: "parking", label: "Free Parking" },
-                          { id: "bar", label: "Bar & Lounge" },
-                          { id: "shuttle", label: "Airport Shuttle" },
-                          { id: "roomService", label: "Room Service" },
-                          { id: "pets", label: "Pet Friendly" },
-                          { id: "kids", label: "Kids Club" },
-                          { id: "meetings", label: "Meeting Rooms" },
-                          { id: "ac", label: "Air Conditioning" },
-                          { id: "beach", label: "Beach Access" },
-                          { id: "laundry", label: "Laundry" },
-                          { id: "concierge", label: "Concierge" },
+                          { id: 'wifi', label: 'Free WiFi' },
+                          { id: 'pool', label: 'Swimming Pool' },
+                          { id: 'spa', label: 'Spa & Wellness' },
+                          { id: 'restaurant', label: 'Restaurant' },
+                          { id: 'gym', label: 'Fitness Center' },
+                          { id: 'parking', label: 'Free Parking' },
+                          { id: 'bar', label: 'Bar & Lounge' },
+                          { id: 'shuttle', label: 'Airport Shuttle' },
+                          { id: 'roomService', label: 'Room Service' },
+                          { id: 'pets', label: 'Pet Friendly' },
+                          { id: 'kids', label: 'Kids Club' },
+                          { id: 'meetings', label: 'Meeting Rooms' },
+                          { id: 'ac', label: 'Air Conditioning' },
+                          { id: 'beach', label: 'Beach Access' },
+                          { id: 'laundry', label: 'Laundry' },
+                          { id: 'concierge', label: 'Concierge' },
                         ].map((amenity) => {
-                          const currentItems: string[] = form.watch("amenitiesSection.items" as any) || [];
+                          const currentItems: string[] =
+                            form.watch('amenitiesSection.items' as any) || [];
                           const isActive = currentItems.includes(amenity.id);
                           return (
                             <div
                               key={amenity.id}
-                              className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${isActive ? "bg-primary/5 border-primary/40" : "hover:bg-muted/50"}`}
+                              className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${isActive ? 'bg-primary/5 border-primary/40' : 'hover:bg-muted/50'}`}
                               onClick={() => {
                                 const next = isActive
                                   ? currentItems.filter((i) => i !== amenity.id)
                                   : [...currentItems, amenity.id];
-                                form.setValue("amenitiesSection.items" as any, next);
+                                form.setValue('amenitiesSection.items' as any, next);
                               }}
                             >
                               <span className="text-sm font-medium">{amenity.label}</span>
@@ -1337,28 +1487,34 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Photo Gallery</CardTitle>
-                    <CardDescription>Upload hotel photos for the home page gallery with lightbox.</CardDescription>
+                    <CardDescription>
+                      Upload hotel photos for the home page gallery with lightbox.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"gallerySection.title" as any}
+                        name={'gallerySection.title' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section Title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Our Hotel in Photos" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Our Hotel in Photos" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"gallerySection.subtitle" as any}
+                        name={'gallerySection.subtitle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pre-title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Gallery" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Gallery" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1372,7 +1528,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         onChange={(files) => setExistingGalleryImages(files)}
                         maxFiles={20}
                       />
-                      <p className="text-xs text-muted-foreground">Upload up to 20 photos. Guests can click to enlarge.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Upload up to 20 photos. Guests can click to enlarge.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1383,28 +1541,34 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Why Book Direct</CardTitle>
-                    <CardDescription>4 benefit cards that persuade guests to book directly.</CardDescription>
+                    <CardDescription>
+                      4 benefit cards that persuade guests to book directly.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"whyBookDirect.title" as any}
+                        name={'whyBookDirect.title' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section Title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Why Book Direct?" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Why Book Direct?" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"whyBookDirect.subtitle" as any}
+                        name={'whyBookDirect.subtitle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pre-title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Direct Booking Benefits" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Direct Booking Benefits" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1424,7 +1588,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs">Icon</FormLabel>
-                                  <FormControl><Input {...field} placeholder="ShieldCheck" /></FormControl>
+                                  <FormControl>
+                                    <Input {...field} placeholder="ShieldCheck" />
+                                  </FormControl>
                                 </FormItem>
                               )}
                             />
@@ -1435,7 +1601,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs">Title</FormLabel>
-                                    <FormControl><Input {...field} placeholder="e.g. Best Price Guarantee" /></FormControl>
+                                    <FormControl>
+                                      <Input {...field} placeholder="e.g. Best Price Guarantee" />
+                                    </FormControl>
                                   </FormItem>
                                 )}
                               />
@@ -1447,7 +1615,13 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs">Description</FormLabel>
-                                <FormControl><Textarea {...field} rows={2} placeholder="Short benefit description..." /></FormControl>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    rows={2}
+                                    placeholder="Short benefit description..."
+                                  />
+                                </FormControl>
                               </FormItem>
                             )}
                           />
@@ -1463,28 +1637,34 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Location & Map</CardTitle>
-                    <CardDescription>Show the hotel location with an embedded map on the home page.</CardDescription>
+                    <CardDescription>
+                      Show the hotel location with an embedded map on the home page.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"locationSection.title" as any}
+                        name={'locationSection.title' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section Title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Find Us" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Find Us" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"locationSection.subtitle" as any}
+                        name={'locationSection.subtitle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pre-title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Our Location" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Our Location" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1492,12 +1672,16 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     </div>
                     <FormField
                       control={form.control}
-                      name={"locationSection.address" as any}
+                      name={'locationSection.address' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Address</FormLabel>
                           <FormControl>
-                            <Textarea {...field} rows={2} placeholder="123 Beach Road, Sharm El-Sheikh, Egypt" />
+                            <Textarea
+                              {...field}
+                              rows={2}
+                              placeholder="123 Beach Road, Sharm El-Sheikh, Egypt"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1505,15 +1689,19 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"locationSection.mapEmbedUrl" as any}
+                      name={'locationSection.mapEmbedUrl' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Google Maps Embed URL</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="https://www.google.com/maps/embed?pb=..." />
+                            <Input
+                              {...field}
+                              placeholder="https://www.google.com/maps/embed?pb=..."
+                            />
                           </FormControl>
                           <FormDescription>
-                            In Google Maps: Share → Embed a map → copy the <code>src</code> URL from the &lt;iframe&gt;.
+                            In Google Maps: Share → Embed a map → copy the <code>src</code> URL from
+                            the &lt;iframe&gt;.
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -1521,14 +1709,16 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     />
                     <FormField
                       control={form.control}
-                      name={"locationSection.directionsUrl" as any}
+                      name={'locationSection.directionsUrl' as any}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>&quot;Get Directions&quot; Link</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="https://maps.google.com/?q=..." />
                           </FormControl>
-                          <FormDescription>Regular Google Maps link for the &quot;Get Directions&quot; button.</FormDescription>
+                          <FormDescription>
+                            Regular Google Maps link for the &quot;Get Directions&quot; button.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1542,28 +1732,34 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                 <Card>
                   <CardHeader>
                     <CardTitle>Social Media Feed</CardTitle>
-                    <CardDescription>A &quot;Follow Us&quot; photo grid with your social handle and link.</CardDescription>
+                    <CardDescription>
+                      A &quot;Follow Us&quot; photo grid with your social handle and link.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={"socialSection.title" as any}
+                        name={'socialSection.title' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Section Title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Follow Our Journey" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Follow Our Journey" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"socialSection.subtitle" as any}
+                        name={'socialSection.subtitle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pre-title</FormLabel>
-                            <FormControl><Input {...field} placeholder="e.g. Instagram" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Instagram" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1572,33 +1768,39 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
-                        name={"socialSection.platform" as any}
+                        name={'socialSection.platform' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Platform</FormLabel>
-                            <FormControl><Input {...field} placeholder="Instagram" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="Instagram" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"socialSection.handle" as any}
+                        name={'socialSection.handle' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Handle</FormLabel>
-                            <FormControl><Input {...field} placeholder="@myhotel" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="@myhotel" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                       <FormField
                         control={form.control}
-                        name={"socialSection.profileUrl" as any}
+                        name={'socialSection.profileUrl' as any}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Profile Link</FormLabel>
-                            <FormControl><Input {...field} placeholder="https://instagram.com/myhotel" /></FormControl>
+                            <FormControl>
+                              <Input {...field} placeholder="https://instagram.com/myhotel" />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -1612,13 +1814,358 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         onChange={(files) => setExistingSocialImages(files)}
                         maxFiles={9}
                       />
-                      <p className="text-xs text-muted-foreground">Upload up to 9 square photos to simulate an Instagram feed grid.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Upload up to 9 square photos to simulate an Instagram feed grid.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Why Choose Us Tab */}
+              {/* ─── H3.7 Seasonal Packages Tab ─── */}
+              <TabsContent value="seasonal-packages" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Seasonal Packages</CardTitle>
+                    <CardDescription>
+                      Time-limited hotel packages with countdown timers. Shown on the home page as
+                      prominent booking cards.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={'seasonalPackagesSection.title' as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Section Title</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Seasonal Packages" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={'seasonalPackagesSection.subtitle' as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pre-title</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Special Offers" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">Packages List</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            appendPackage({
+                              id: Date.now().toString(),
+                              title: 'New Package',
+                              description: '',
+                              price: 0,
+                              nights: 3,
+                              expiresAt: '',
+                              imageUrl: '',
+                              buttonText: 'Book Now',
+                              buttonLink: '',
+                              includes: '',
+                            } as any)
+                          }
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Package
+                        </Button>
+                      </div>
+                      <div className="grid gap-4">
+                        {packageFields.map((field, index) => (
+                          <Card key={field.id} className="bg-muted/30">
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                              <CardTitle className="text-sm">Package {index + 1}</CardTitle>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => removePackage(index)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </CardHeader>
+                            <CardContent className="grid gap-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`seasonalPackagesSection.packages.${index}.title` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Package Name</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="e.g. Summer Escape" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`seasonalPackagesSection.packages.${index}.price` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Price</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" {...field} placeholder="299" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <FormField
+                                control={form.control}
+                                name={
+                                  `seasonalPackagesSection.packages.${index}.description` as any
+                                }
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Description</FormLabel>
+                                    <FormControl>
+                                      <Textarea
+                                        {...field}
+                                        rows={2}
+                                        placeholder="A short pitch for this package..."
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`seasonalPackagesSection.packages.${index}.nights` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Nights</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" {...field} placeholder="3" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <div className="md:col-span-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={
+                                      `seasonalPackagesSection.packages.${index}.expiresAt` as any
+                                    }
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel className="text-xs">
+                                          Offer Expires (date)
+                                        </FormLabel>
+                                        <FormControl>
+                                          <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormDescription className="text-[11px]">
+                                          Leave blank to hide the countdown timer.
+                                        </FormDescription>
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                              <FormField
+                                control={form.control}
+                                name={`seasonalPackagesSection.packages.${index}.includes` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">
+                                      What&apos;s Included (comma-separated)
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        placeholder="3 Nights, Breakfast, Airport Transfer, Spa Session"
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-[11px]">
+                                      Each item separated by a comma will appear as a badge chip.
+                                    </FormDescription>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`seasonalPackagesSection.packages.${index}.imageUrl` as any}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Image URL</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="https://..." />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name={
+                                    `seasonalPackagesSection.packages.${index}.buttonText` as any
+                                  }
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Button Text</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="Book Package" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={
+                                    `seasonalPackagesSection.packages.${index}.buttonLink` as any
+                                  }
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Button Link</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="/checkout?room=deluxe" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ─── H3.8 Nearby Attractions Tab ─── */}
+              <TabsContent value="nearby-attractions" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Nearby Attractions</CardTitle>
+                    <CardDescription>
+                      List landmarks and distances so guests can research the location before
+                      booking.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={'nearbyAttractionsSection.title' as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Section Title</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Nearby Attractions" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={'nearbyAttractionsSection.subtitle' as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pre-title</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="e.g. Explore Nearby" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">Attractions List</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            appendAttraction({ name: '', distance: '', category: '' } as any)
+                          }
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Attraction
+                        </Button>
+                      </div>
+                      <div className="grid gap-3">
+                        {attractionFields.map((field, index) => (
+                          <div
+                            key={field.id}
+                            className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30"
+                          >
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 flex-1">
+                              <div className="md:col-span-2">
+                                <FormField
+                                  control={form.control}
+                                  name={`nearbyAttractionsSection.attractions.${index}.name` as any}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-xs">Attraction Name</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="e.g. Pyramids of Giza" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <FormField
+                                control={form.control}
+                                name={
+                                  `nearbyAttractionsSection.attractions.${index}.distance` as any
+                                }
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs">Distance</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="e.g. 12 km" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 mt-5 text-destructive hover:text-destructive shrink-0"
+                              onClick={() => removeAttraction(index)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {attractionFields.length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-6">
+                            No attractions added yet. Click &quot;Add Attraction&quot; to start.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ─── H2.8 Social Feed Tab ─── */}
               <TabsContent value="why-choose-us" className="mt-0">
                 <Card>
                   <CardHeader>
@@ -1663,7 +2210,10 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                             <FormItem>
                               <FormLabel>Section Image</FormLabel>
                               <FormControl>
-                                <ImageUploader value={field.value || []} onChange={field.onChange} />
+                                <ImageUploader
+                                  value={field.value || []}
+                                  onChange={field.onChange}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1672,7 +2222,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         {(existingWhyChooseUsUrl || defaultHomePageData.whyChooseUs.imageUrl) && (
                           <div className="relative w-full h-40 rounded-md overflow-hidden border bg-muted">
                             <Image
-                              src={existingWhyChooseUsUrl || defaultHomePageData.whyChooseUs.imageUrl}
+                              src={
+                                existingWhyChooseUsUrl || defaultHomePageData.whyChooseUs.imageUrl
+                              }
                               alt="Why choose us preview"
                               fill
                               className="object-cover"
@@ -1726,9 +2278,9 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                     </div>
 
                     <div className="grid gap-4">
-                      {renderFeatureFields("feature1", "Feature 1")}
-                      {renderFeatureFields("feature2", "Feature 2")}
-                      {renderFeatureFields("feature3", "Feature 3")}
+                      {renderFeatureFields('feature1', 'Feature 1')}
+                      {renderFeatureFields('feature2', 'Feature 2')}
+                      {renderFeatureFields('feature3', 'Feature 3')}
                     </div>
                   </CardContent>
                 </Card>
@@ -1788,11 +2340,12 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
               {/* Discount Banners Tab */}
               <TabsContent value="banners" className="mt-0">
                 <div className="grid gap-6">
-                  {["banner1", "banner2"].map((bannerKey, idx) => {
+                  {['banner1', 'banner2'].map((bannerKey, idx) => {
                     // @ts-expect-error - iterating over keys
                     const banner = form.watch(`discountBanners.${bannerKey}`);
-                    const existingUrl = bannerKey === "banner1" ? existingBanner1Url : existingBanner2Url;
-                    
+                    const existingUrl =
+                      bannerKey === 'banner1' ? existingBanner1Url : existingBanner2Url;
+
                     return (
                       <Card key={bannerKey}>
                         <CardHeader>
@@ -1860,7 +2413,10 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                               <FormItem>
                                 <FormLabel>Banner Image</FormLabel>
                                 <FormControl>
-                                  <ImageUploader value={field.value || []} onChange={field.onChange} />
+                                  <ImageUploader
+                                    value={field.value || []}
+                                    onChange={field.onChange}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1981,7 +2537,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         )}
                       />
                     </div>
-                    
+
                     <div className="space-y-4">
                       <FormField
                         control={form.control}
@@ -1996,10 +2552,14 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                           </FormItem>
                         )}
                       />
-                      {(existingVideoBgUrl || defaultHomePageData.videoSection.backgroundImageUrl) && (
+                      {(existingVideoBgUrl ||
+                        defaultHomePageData.videoSection.backgroundImageUrl) && (
                         <div className="relative w-full h-40 rounded-md overflow-hidden border bg-muted">
                           <Image
-                            src={existingVideoBgUrl || defaultHomePageData.videoSection.backgroundImageUrl}
+                            src={
+                              existingVideoBgUrl ||
+                              defaultHomePageData.videoSection.backgroundImageUrl
+                            }
                             alt="Video background preview"
                             fill
                             className="object-cover"
@@ -2143,7 +2703,7 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium">Reviews List</h4>
@@ -2153,20 +2713,23 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
                           size="sm"
                           onClick={() =>
                             append({
-                              name: "Happy Customer",
-                              role: "Traveler",
-                              avatar: "",
-                              content: "Great experience!",
+                              name: 'Happy Customer',
+                              role: 'Traveler',
+                              avatar: '',
+                              content: 'Great experience!',
                             })
                           }
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Review
                         </Button>
                       </div>
-                      
+
                       <div className="grid gap-4">
                         {fields.map((field, index) => (
-                          <div key={field.id} className="flex gap-4 items-start border p-4 rounded-lg bg-card relative">
+                          <div
+                            key={field.id}
+                            className="flex gap-4 items-start border p-4 rounded-lg bg-card relative"
+                          >
                             <div className="grid gap-4 flex-1">
                               <div className="grid md:grid-cols-2 gap-4">
                                 <FormField
@@ -2251,5 +2814,3 @@ export function HomePageEditorForm({ initialContent }: { initialContent: HomeCon
     </Form>
   );
 }
-
-

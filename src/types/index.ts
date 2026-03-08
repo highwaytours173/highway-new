@@ -1,5 +1,5 @@
-export * from "./agency";
-export * from "./hotel";
+export * from './agency';
+export * from './hotel';
 
 export type Review = {
   id: string;
@@ -10,7 +10,7 @@ export type Review = {
   customerEmail: string;
   rating: number;
   content: string | null;
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
   // Joined relations (from admin queries)
   tours?: { name: string; slug: string } | null;
@@ -65,7 +65,7 @@ export type UpsellVariant = {
 };
 
 export type UpsellTargeting = {
-  match?: "any" | "all";
+  match?: 'any' | 'all';
   destinations?: string[];
   tourIds?: string[];
 };
@@ -77,7 +77,7 @@ export type UpsellItem = {
   price: number;
   variants?: UpsellVariant[];
   targeting?: UpsellTargeting | null;
-  type: "service" | "tour_addon";
+  type: 'service' | 'tour_addon';
   relatedTourId?: string | null; // uuid
   imageUrl?: string; // New: URL for the upsell item image
   isActive: boolean;
@@ -120,7 +120,7 @@ export type BookingItem = {
 
 export type CartItem = {
   product: Tour | UpsellItem;
-  productType: "tour" | "upsell";
+  productType: 'tour' | 'upsell';
   packageId?: string; // New: selected package ID
   packageName?: string; // New: selected package name
   adults?: number; // Only for tours
@@ -137,8 +137,8 @@ export type Booking = {
   nationality?: string;
   bookingDate: string; // ISO string format for dates
   totalPrice: number;
-  status: "Confirmed" | "Pending" | "Cancelled";
-  paymentMethod?: "cash" | "online";
+  status: 'Confirmed' | 'Pending' | 'Cancelled';
+  paymentMethod?: 'cash' | 'online';
   bookingItems: BookingItem[];
 };
 
@@ -146,8 +146,8 @@ export type Customer = {
   id: string;
   name: string;
   email: string;
-  source: "Booking" | "Newsletter" | "Contact";
-  status?: "active" | "inactive";
+  source: 'Booking' | 'Newsletter' | 'Contact';
+  status?: 'active' | 'inactive';
   totalBookings: number;
   totalSpent: number;
   createdAt: string; // ISO string format for dates
@@ -165,7 +165,7 @@ export type Post = {
   title: string;
   content: string;
   author: string;
-  status: "Published" | "Draft";
+  status: 'Published' | 'Draft';
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
   featuredImage: string;
@@ -173,12 +173,12 @@ export type Post = {
 };
 
 export const browseCategoryIconKeys = [
-  "mountain",
-  "sailboat",
-  "building2",
-  "utensils",
-  "ferrisWheel",
-  "plane",
+  'mountain',
+  'sailboat',
+  'building2',
+  'utensils',
+  'ferrisWheel',
+  'plane',
 ] as const;
 
 export type BrowseCategoryIconKey = (typeof browseCategoryIconKeys)[number];
@@ -206,7 +206,7 @@ export type HeroSection = {
   videoUrl?: string; // H2.1 — looping background video URL
   title: string;
   subtitle: string;
-  searchType?: "tours" | "hotels";
+  searchType?: 'tours' | 'hotels';
   bookDirectBadge?: string;
 };
 
@@ -343,10 +343,43 @@ export type LocationSectionContent = {
 export type SocialSectionContent = {
   title?: string;
   subtitle?: string;
-  handle?: string;         // e.g. "@myhotel"
-  profileUrl?: string;     // link to profile
-  platform?: string;       // e.g. "Instagram", "TikTok"
-  images?: string[];       // up to 9 uploaded photos
+  handle?: string; // e.g. "@myhotel"
+  profileUrl?: string; // link to profile
+  platform?: string; // e.g. "Instagram", "TikTok"
+  images?: string[]; // up to 9 uploaded photos
+};
+
+// H3.7 — Seasonal Packages
+export type SeasonalPackage = {
+  id: string;
+  title: string;
+  description?: string;
+  price: number;
+  nights?: number;
+  expiresAt?: string; // ISO date string for countdown timer
+  imageUrl?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  includes?: string; // comma-separated, e.g. "3 Nights, Breakfast, Airport Transfer"
+};
+
+export type SeasonalPackagesSection = {
+  title?: string;
+  subtitle?: string;
+  packages?: SeasonalPackage[];
+};
+
+// H3.8 — Nearby Attractions
+export type NearbyAttraction = {
+  name: string;
+  distance: string; // e.g. "12 km"
+  category?: string; // e.g. "landmark", "transport", "dining"
+};
+
+export type NearbyAttractionsSection = {
+  title?: string;
+  subtitle?: string;
+  attractions?: NearbyAttraction[];
 };
 
 export type HomeContent = {
@@ -370,6 +403,8 @@ export type HomeContent = {
   whyBookDirect?: WhyBookDirectSection;
   locationSection?: LocationSectionContent;
   socialSection?: SocialSectionContent;
+  seasonalPackagesSection?: SeasonalPackagesSection;
+  nearbyAttractionsSection?: NearbyAttractionsSection;
   visibility?: {
     hero?: boolean;
     browseCategory?: boolean;
@@ -390,10 +425,12 @@ export type HomeContent = {
     whyBookDirect?: boolean;
     locationSection?: boolean;
     socialSection?: boolean;
+    seasonalPackages?: boolean;
+    nearbyAttractions?: boolean;
   };
 };
 
-export type ContactMessageStatus = "new" | "read" | "archived";
+export type ContactMessageStatus = 'new' | 'read' | 'archived';
 
 export type ContactMessage = {
   id: string;
@@ -409,7 +446,7 @@ export type ContactMessage = {
 export type PromoCode = {
   id: string;
   code: string;
-  type: "percentage" | "fixed";
+  type: 'percentage' | 'fixed';
   value: number;
   minOrderAmount?: number;
   maxDiscountAmount?: number;

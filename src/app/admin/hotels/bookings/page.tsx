@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { getHotelBookings } from "@/lib/supabase/hotels";
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { getHotelBookings } from '@/lib/supabase/hotels';
 
 export default async function AdminHotelBookingsPage() {
   const bookings = await getHotelBookings();
@@ -11,9 +11,7 @@ export default async function AdminHotelBookingsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Hotel Bookings</h1>
-          <p className="text-sm text-muted-foreground">
-            Review and manage room bookings.
-          </p>
+          <p className="text-sm text-muted-foreground">Review and manage room bookings.</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
@@ -39,9 +37,7 @@ export default async function AdminHotelBookingsPage() {
                   className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-medium">
-                      {b.guestName || b.guestEmail || "Guest"}
-                    </p>
+                    <p className="truncate font-medium">{b.guestName || b.guestEmail || 'Guest'}</p>
                     <p className="truncate text-sm text-muted-foreground">
                       {b.checkIn} → {b.checkOut} · {b.units} room(s) · {b.status}
                     </p>
@@ -60,4 +56,3 @@ export default async function AdminHotelBookingsPage() {
     </div>
   );
 }
-

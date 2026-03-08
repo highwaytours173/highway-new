@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type { Tour } from "@/types";
-import { TourCard } from "@/components/tour-card";
+import type { Tour } from '@/types';
+import { TourCard } from '@/components/tour-card';
 
 interface ToursClientProps {
   tours: Tour[];

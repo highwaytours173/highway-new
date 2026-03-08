@@ -1,12 +1,11 @@
-
-import { cookies } from "next/headers";
-import { resetAgency } from "@/app/super-admin/actions";
-import { Button } from "@/components/ui/button";
-import { Power } from "lucide-react";
+import { cookies } from 'next/headers';
+import { resetAgency } from '@/app/super-admin/actions';
+import { Button } from '@/components/ui/button';
+import { Power } from 'lucide-react';
 
 export async function ImpersonationBanner() {
   const cookieStore = await cookies();
-  const overrideSlug = cookieStore.get("admin_agency_override")?.value;
+  const overrideSlug = cookieStore.get('admin_agency_override')?.value;
 
   if (!overrideSlug) {
     return null;
@@ -26,9 +25,9 @@ export async function ImpersonationBanner() {
       </div>
       <div className="flex items-center gap-2">
         <form action={resetAgency}>
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="h-7 text-xs hover:bg-amber-200 hover:text-amber-900 text-amber-800"
           >
             Exit Context
