@@ -223,6 +223,26 @@ const styles = StyleSheet.create({
     marginTop: 2,
     letterSpacing: 0.5,
   },
+
+  // Paid stamp
+  paidStamp: {
+    position: 'absolute',
+    top: 120,
+    right: 50,
+    borderWidth: 3,
+    borderColor: colors.green,
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    transform: 'rotate(-22deg)',
+    opacity: 0.55,
+  },
+  paidStampText: {
+    fontSize: 28,
+    fontFamily: 'Helvetica-Bold',
+    color: colors.green,
+    letterSpacing: 4,
+  },
 });
 
 // ─── Helper ────────────────────────────────────────────────────────────────
@@ -252,10 +272,18 @@ function formatDate(dateStr: string) {
 // ─── PDF Document ──────────────────────────────────────────────────────────
 export function BookingVoucherDocument({ data }: { data: VoucherData }) {
   const statusStyle = getStatusStyle(data.status);
+  const showPaidStamp =
+    data.status.toLowerCase() === 'confirmed' && data.paymentMethod === 'online';
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Paid stamp — absolute overlay, only for confirmed online payments */}
+        {showPaidStamp && (
+          <View style={styles.paidStamp}>
+            <Text style={styles.paidStampText}>PAID</Text>
+          </View>
+        )}
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

@@ -161,16 +161,16 @@ Work on features in this order — each should be built, tested, and committed b
 
 ### Feature 1 — Email Notifications
 
-- [ ] 1.1 — "Send Test Email" button in settings UI
-- [ ] 1.2 — `sendTestEmail` server action
-- [ ] 1.3 — Pending payment email variant
-- [ ] 1.4 — Warning banner if email not configured
+- [x] 1.1 — "Send Test Email" button in settings UI
+- [x] 1.2 — `sendTestEmail` server action
+- [x] 1.3 — Pending payment email variant
+- [x] 1.4 — Warning banner if email not configured
 
 ### Feature 2 — PDF Invoice
 
-- [ ] 2.1 — Verify `@react-pdf/renderer` installed & API route works
-- [ ] 2.2 — Download Invoice in bookings table action dropdown
-- [ ] 2.3 — "Paid" stamp on PDF when confirmed
+- [x] 2.1 — Verify `@react-pdf/renderer` installed & API route works
+- [x] 2.2 — Download Invoice in bookings table action dropdown
+- [x] 2.3 — "Paid" stamp on PDF when confirmed
 
 ### Feature 3 — CSV Export
 
@@ -180,16 +180,16 @@ Work on features in this order — each should be built, tested, and committed b
 
 ### Feature 4 — In-App Notifications
 
-- [ ] 4.1 — `getPendingBookingsCount()` function
-- [ ] 4.2 — Fetch count in admin layout
-- [ ] 4.3 — Pending badge on sidebar Bookings nav item
-- [ ] 4.4 — Suspense boundary for non-blocking render
+- [x] 4.1 — `getPendingBookingsCount()` function
+- [x] 4.2 — Fetch count in admin layout
+- [x] 4.3 — Pending badge on sidebar Bookings nav item
+- [x] 4.4 — Suspense boundary for non-blocking render
 
 ### Feature 5 — Trust Badges
 
-- [ ] 5.1 — `TrustBadges` component
-- [ ] 5.2 — Trust strip in checkout before Place Order button
-- [ ] 5.3 — Mini trust badges in Order Summary sidebar
+- [x] 5.1 — `TrustBadges` component
+- [x] 5.2 — Trust strip in checkout before Place Order button
+- [x] 5.3 — Mini trust badges in Order Summary sidebar
 
 ### Feature 6 — Mobile Sticky CTA
 

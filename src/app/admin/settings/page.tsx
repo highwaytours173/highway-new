@@ -40,7 +40,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Sparkles } from 'lucide-react';
+import { AlertTriangle, Loader2, SendHorizonal, Sparkles } from 'lucide-react';
+import { sendTestEmail } from './actions';
 import {
   Dialog,
   DialogContent,
@@ -255,6 +256,7 @@ const formSchema = z
 export default function SettingsPage() {
   const [existingLogoUrl, setExistingLogoUrl] = useState<string | null>(null);
   const [loadedSettingsData, setLoadedSettingsData] = useState<AgencySettingsData | null>(null);
+  const [testEmailPending, setTestEmailPending] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -1056,7 +1058,61 @@ export default function SettingsPage() {
                   )}
                 />
               </div>
+
+              {/* Warning: no API key configured */}
+              {!form.watch('emailSettings.resendApiKey')?.trim() && (
+                <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    <strong>Emails are disabled.</strong> Add a Resend API key above to enable
+                    automatic booking confirmations and admin alerts. Get a free key at{' '}
+                    <a
+                      href="https://resend.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-4"
+                    >
+                      resend.com
+                    </a>
+                    .
+                  </p>
+                </div>
+              )}
             </CardContent>
+            <CardFooter className="border-t pt-4 flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={testEmailPending}
+                onClick={async () => {
+                  setTestEmailPending(true);
+                  try {
+                    const result = await sendTestEmail();
+                    if (result.ok) {
+                      toast({
+                        title: 'Test email sent',
+                        description: `Check your Contact Email inbox to confirm it working.`,
+                      });
+                    } else {
+                      toast({
+                        title: 'Failed to send test email',
+                        description: result.error ?? 'Unknown error.',
+                        variant: 'destructive',
+                      });
+                    }
+                  } finally {
+                    setTestEmailPending(false);
+                  }
+                }}
+              >
+                {testEmailPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <SendHorizonal className="mr-2 h-4 w-4" />
+                )}
+                Send Test Email
+              </Button>
+            </CardFooter>
           </Card>
 
           <Card>

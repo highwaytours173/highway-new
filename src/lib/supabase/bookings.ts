@@ -17,6 +17,20 @@ import { renderBookingNotificationEmail } from '@/lib/email/templates/booking-no
 import { renderBookingStatusChangeEmail } from '@/lib/email/templates/booking-status-change';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
 
+export async function getPendingBookingsCount(): Promise<number> {
+  const supabase = await createClient();
+  const agencyId = await getCurrentAgencyId();
+
+  const { count, error } = await supabase
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('agency_id', agencyId)
+    .eq('status', 'Pending');
+
+  if (error) return 0;
+  return count ?? 0;
+}
+
 export async function getBookings(): Promise<Booking[]> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
@@ -431,6 +445,61 @@ export async function createBooking(data: CreateBookingData) {
         totalPrice: finalTotal,
       }),
     });
+
+    // 7a-ii. If payment is online (status = Pending), send a dedicated "complete your payment" reminder
+    if (data.paymentMethod === 'online') {
+      const agencyName = agencyData?.agencyName || 'Your Travel Agency';
+      const pendingHtml = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><title>Complete Your Payment</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:600px;width:100%;">
+        <tr>
+          <td style="background:linear-gradient(135deg,#78350f,#d97706);padding:32px 40px;text-align:center;">
+            ${settings?.logo_url ? `<img src="${settings.logo_url}" alt="${agencyName}" style="max-height:44px;max-width:180px;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />` : ''}
+            <div style="font-size:40px;margin-bottom:8px;">⏳</div>
+            <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">Payment Pending</h1>
+            <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">${agencyName}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px;">
+            <p style="font-size:15px;color:#555;margin:0 0 16px;">Hi <strong>${data.customerName}</strong>,</p>
+            <p style="font-size:15px;color:#555;margin:0 0 24px;">
+              We've received your booking request. Your reservation is <strong>held for 24 hours</strong>
+              while your payment is being processed. Please complete your payment to confirm your spot.
+            </p>
+            <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+              <span style="font-size:12px;text-transform:uppercase;color:#888;letter-spacing:0.5px;">Booking Reference</span><br />
+              <strong style="font-size:18px;color:#111;font-family:monospace;">#${bookingId.substring(0, 8).toUpperCase()}</strong>
+            </div>
+            <p style="font-size:13px;color:#888;margin:0;">
+              If you did not complete the payment redirect, please contact us and we'll resend the payment link.
+              ${agencyData?.contactEmail ? `<br />📧 <a href="mailto:${agencyData.contactEmail}" style="color:#2563eb;">${agencyData.contactEmail}</a>` : ''}
+              ${agencyData?.phoneNumber ? `<br />📞 ${agencyData.phoneNumber}` : ''}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 40px;text-align:center;font-size:12px;color:#888;">
+            ${agencyName}
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+      await sendEmail({
+        ...sharedOpts,
+        to: data.customerEmail,
+        subject: `⏳ Complete Your Payment — Booking #${bookingId.substring(0, 8).toUpperCase()}`,
+        html: pendingHtml,
+      });
+    }
 
     // 7b. Admin notification
     if (notifyAdmin && agencyData?.contactEmail) {

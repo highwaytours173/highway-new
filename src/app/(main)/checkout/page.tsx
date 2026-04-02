@@ -33,7 +33,8 @@ import { format } from 'date-fns';
 import { type Tour, type UpsellItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { ArrowLeft, Loader2, ShieldCheck, CheckCircle2, Zap, RefreshCw, Lock } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { TrustBadges } from '@/components/trust-badges';
 import { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
@@ -452,6 +453,7 @@ export default function CheckoutPage() {
                   />
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 border-t bg-muted/20">
+                  <TrustBadges variant="compact" />
                   <Button
                     type="submit"
                     className="w-full"
@@ -539,59 +541,7 @@ export default function CheckoutPage() {
             </CardFooter>
           </Card>
 
-          {/* Trust badges */}
-          <div className="rounded-3xl border bg-card p-5 space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {t('checkout.whyBookWith')}
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
-                  <Lock className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('checkout.securePayment')}</p>
-                  <p className="text-xs text-muted-foreground">{t('checkout.securePaymentDesc')}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('checkout.verifiedAgency')}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('checkout.verifiedAgencyDesc')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-yellow-100 dark:bg-yellow-900/30">
-                  <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('checkout.instantConfirm')}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('checkout.instantConfirmDesc')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                  <RefreshCw className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t('checkout.flexibleBooking')}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('checkout.flexibleBookingDesc')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <TrustBadges />
         </div>
       </div>
     </div>

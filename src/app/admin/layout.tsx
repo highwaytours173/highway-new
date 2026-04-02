@@ -1,10 +1,11 @@
+import { Suspense } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { BroadcastBanner } from '@/components/admin/broadcast-banner';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AdminLayoutShell } from '@/components/admin/layout-shell';
 import { getCurrentAgency } from '@/lib/supabase/agencies';
-import { getBookings } from '@/lib/supabase/bookings';
+import { getPendingBookingsCount } from '@/lib/supabase/bookings';
 import { recordAdminLogin } from '@/lib/supabase/super-admin';
 import { getUnreadNotificationCount, getNotifications } from '@/lib/supabase/notifications';
 import { checkAgencyAccess } from '@/lib/supabase/agency-users';
@@ -48,15 +49,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/unauthorized');
   }
 
-  // Fetch pending bookings count (agency already fetched above)
-  const allBookings = await getBookings();
   const settings = agency?.settings || {};
-  const pendingBookingsCount = allBookings.filter((b) => b.status === 'Pending').length;
 
-  // Fetch notifications for the current agency
-  const [unreadCount, notifications] = agency?.id
-    ? await Promise.all([getUnreadNotificationCount(agency.id), getNotifications(agency.id)])
-    : [0, []];
+  // Fetch pending count + notifications in parallel
+  const [pendingBookingsCount, [unreadCount, notifications]] = await Promise.all([
+    getPendingBookingsCount(),
+    agency?.id
+      ? Promise.all([getUnreadNotificationCount(agency.id), getNotifications(agency.id)])
+      : Promise.resolve<[number, never[]]>([0, []]),
+  ]);
 
   // Record admin login timestamp (non-blocking)
   if (agency?.id) {
@@ -75,7 +76,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="w-full">
         <ImpersonationBanner />
         <BroadcastBanner agencyTier={settings?.tier} agencyStatus={agency?.status} />
-        {children}
+        <Suspense>{children}</Suspense>
       </div>
     </AdminLayoutShell>
   );

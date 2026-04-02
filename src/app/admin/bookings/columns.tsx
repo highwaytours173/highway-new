@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, ArrowUpDown, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -86,6 +86,13 @@ function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onUpdateStatus(booking.id, 'Cancelled')}>
             Mark as Cancelled
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a href={`/api/bookings/${booking.id}/voucher`} download>
+              <FileDown className="mr-2 h-4 w-4" />
+              Download Invoice
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive" onClick={() => setIsAlertOpen(true)}>
