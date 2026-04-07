@@ -201,8 +201,24 @@ export const columns: ColumnDef<Tour>[] = [
     accessorKey: 'priceTiers',
     header: () => <div className="text-right">Starting Price</div>,
     cell: ({ row }) => {
+      const tour = row.original;
       const priceTiers = row.getValue('priceTiers') as Tour['priceTiers'];
-      const startingPrice = priceTiers[0]?.pricePerAdult;
+
+      let startingPrice: number | undefined;
+      if (priceTiers && priceTiers.length > 0) {
+        startingPrice = priceTiers[0]?.pricePerAdult;
+      } else if (tour.packages && tour.packages.length > 0) {
+        // Tours using the packages model — find the lowest adult price across all packages
+        const allPrices = tour.packages.flatMap((p) =>
+          p.priceTiers.map((t) => t.pricePerAdult)
+        );
+        startingPrice = allPrices.length > 0 ? Math.min(...allPrices) : undefined;
+      }
+
+      if (startingPrice === undefined || isNaN(startingPrice)) {
+        return <div className="text-right text-muted-foreground">—</div>;
+      }
+
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
