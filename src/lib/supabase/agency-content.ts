@@ -74,7 +74,12 @@ export type AgencySettingsData = {
   };
   theme?: {
     primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
     fontFamily?: string;
+    headingFont?: string;
+    borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'full';
+    appearance?: 'light' | 'dark';
   };
   seo?: {
     site?: SiteSeoSettings;

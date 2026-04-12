@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm, useFieldArray, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,7 +40,15 @@ import {
   Settings,
   List,
   AlertCircle,
+  Package,
+  Users,
+  ChevronDown,
+  ChevronUp,
+  Copy,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { TourAvailabilityManager } from '@/components/admin/tour-availability-manager';
 import { ImageUploader } from '@/components/admin/image-uploader';
 import { Combobox } from '@/components/ui/combobox';
@@ -67,34 +76,42 @@ const packageSchema = z.object({
   priceTiers: z.array(priceTierSchema).min(1, 'At least one price tier is required.'),
 });
 
-export const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  slug: z
-    .string()
-    .min(1, 'Slug is required.')
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with words separated by dashes.'),
-  destination: z.string().min(1, 'Please select a destination.'),
-  type: z.array(z.string()).refine((value) => value.length > 0, {
-    message: 'You have to select at least one item.',
-  }),
-  duration: z.coerce.number().min(1, 'Duration must be at least 1 day.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
-  images: z.array(z.any()).min(1, 'At least one image is required.'),
-  availability: z.boolean().default(true),
-  rating: z.coerce.number().min(1).max(5),
-  priceTiers: z.array(priceTierSchema).optional(),
-  packages: z.array(packageSchema).optional(),
+export const formSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters.'),
+    slug: z
+      .string()
+      .min(1, 'Slug is required.')
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with words separated by dashes.'),
+    destination: z.string().min(1, 'Please select a destination.'),
+    type: z.array(z.string()).refine((value) => value.length > 0, {
+      message: 'You have to select at least one item.',
+    }),
+    duration: z.coerce.number().min(1, 'Duration must be at least 1 day.'),
+    description: z.string().min(10, 'Description must be at least 10 characters.'),
+    images: z.array(z.any()).min(1, 'At least one image is required.'),
+    availability: z.boolean().default(true),
+    rating: z.coerce.number().min(1).max(5),
+    priceTiers: z.array(priceTierSchema).optional(),
+    packages: z.array(packageSchema).optional(),
 
-  durationText: z.string().optional(),
-  tourType: z.string().optional(),
-  availabilityDescription: z.string().optional(),
-  pickupAndDropoff: z.string().optional(),
-  cancellationPolicy: z.string().optional(),
-  itinerary: z.array(itineraryItemSchema).optional(),
-  highlights: z.array(z.object({ value: z.string() })).optional(),
-  includes: z.array(z.object({ value: z.string() })).optional(),
-  excludes: z.array(z.object({ value: z.string() })).optional(),
-});
+    durationText: z.string().optional(),
+    tourType: z.string().optional(),
+    availabilityDescription: z.string().optional(),
+    pickupAndDropoff: z.string().optional(),
+    cancellationPolicy: z.string().optional(),
+    itinerary: z.array(itineraryItemSchema).optional(),
+    highlights: z.array(z.object({ value: z.string() })).optional(),
+    includes: z.array(z.object({ value: z.string() })).optional(),
+    excludes: z.array(z.object({ value: z.string() })).optional(),
+  })
+  .refine(
+    (data) => (data.packages?.length ?? 0) > 0 || (data.priceTiers?.length ?? 0) > 0,
+    {
+      message: 'You must add at least one package with pricing.',
+      path: ['packages'],
+    }
+  );
 
 interface TourFormProps {
   initialData?: Tour;
@@ -105,8 +122,24 @@ interface TourFormProps {
 }
 
 // Sub-component for individual package editing
-function PackageEditor({ index, remove }: { index: number; remove: (index: number) => void }) {
-  const { control } = useFormContext<z.infer<typeof formSchema>>();
+const PACKAGE_COLORS = [
+  'border-l-primary',
+  'border-l-blue-500',
+  'border-l-amber-500',
+  'border-l-emerald-500',
+] as const;
+
+function PackageEditor({
+  index,
+  remove,
+  onDuplicate,
+}: {
+  index: number;
+  remove: (index: number) => void;
+  onDuplicate: (index: number) => void;
+}) {
+  const { control, watch } = useFormContext<z.infer<typeof formSchema>>();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const {
     fields: priceTierFields,
@@ -117,152 +150,307 @@ function PackageEditor({ index, remove }: { index: number; remove: (index: numbe
     name: `packages.${index}.priceTiers`,
   });
 
+  const packageName = watch(`packages.${index}.name`);
+  const borderColor = PACKAGE_COLORS[index % PACKAGE_COLORS.length];
+
   return (
-    <Card className="border-l-4 border-l-primary/20">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="space-y-1 flex-1">
-            <FormField
-              control={control}
-              name={`packages.${index}.name`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="Package Name (e.g., Standard, Luxury)"
-                      className="font-bold text-lg"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`packages.${index}.description`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      placeholder="Description (e.g., Includes entry fees...)"
-                      className="text-sm text-muted-foreground"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+    <Card className={`border-l-4 ${borderColor} overflow-hidden`}>
+      {/* Collapsible Header */}
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+          {index + 1}
+        </Badge>
+        <span className="font-semibold truncate flex-1">
+          {packageName || <span className="text-muted-foreground italic">Unnamed Package</span>}
+        </span>
+        <Badge variant="outline" className="shrink-0 text-xs gap-1">
+          <Users className="h-3 w-3" />
+          {priceTierFields.length} {priceTierFields.length === 1 ? 'tier' : 'tiers'}
+        </Badge>
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10 -mt-2 -mr-2"
-            onClick={() => remove(index)}
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={() => onDuplicate(index)}
+            title="Duplicate package"
           >
-            <Trash2 className="h-5 w-5" />
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            onClick={() => remove(index)}
+            title="Delete package"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4 bg-muted/20 p-4 pt-2 rounded-b-lg">
-        <div className="text-sm font-semibold mb-2">Price Tiers</div>
-        {priceTierFields.map((field, tierIndex) => (
-          <div
-            key={field.id}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 items-end p-3 bg-background border rounded-md relative"
-          >
-            <FormField
-              control={control}
-              name={`packages.${index}.priceTiers.${tierIndex}.minPeople`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Min People</FormLabel>
-                  <FormControl>
-                    <Input type="number" className="h-8" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`packages.${index}.priceTiers.${tierIndex}.maxPeople`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Max People</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="unlimited"
-                      className="h-8"
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`packages.${index}.priceTiers.${tierIndex}.pricePerAdult`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Adult Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" className="h-8" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name={`packages.${index}.priceTiers.${tierIndex}.pricePerChild`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Child Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" className="h-8" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {priceTierFields.length > 1 && (
+        {isCollapsed ? (
+          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+        )}
+      </div>
+
+      {/* Expandable Body */}
+      {!isCollapsed && (
+        <>
+          <Separator />
+          <CardContent className="pt-4 space-y-4">
+            {/* Package Info */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FormField
+                control={control}
+                name={`packages.${index}.name`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Package Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Standard, Luxury, VIP"
+                        className="font-semibold"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name={`packages.${index}.description`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Description <span className="normal-case">(optional)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Includes entry fees and lunch"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Price Tiers */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Price Tiers
+                </span>
+              </div>
+
+              {priceTierFields.map((field, tierIndex) => (
+                <div
+                  key={field.id}
+                  className={`relative rounded-lg border p-4 ${
+                    tierIndex % 2 === 0 ? 'bg-background' : 'bg-muted/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      Tier {tierIndex + 1}
+                    </span>
+                    {priceTierFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => removePriceTier(tierIndex)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    {/* People Range Group */}
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                        <Users className="h-3 w-3" /> People Range
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <FormField
+                          control={control}
+                          name={`packages.${index}.priceTiers.${tierIndex}.minPeople`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  className="h-8 text-center"
+                                  placeholder="Min"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <span className="text-muted-foreground text-sm font-medium">—</span>
+                        <FormField
+                          control={control}
+                          name={`packages.${index}.priceTiers.${tierIndex}.maxPeople`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  className="h-8 text-center"
+                                  placeholder="∞"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Pricing Group */}
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                        <DollarSign className="h-3 w-3" /> Price Per Person
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <FormField
+                          control={control}
+                          name={`packages.${index}.priceTiers.${tierIndex}.pricePerAdult`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <div className="relative">
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                                    $
+                                  </span>
+                                  <Input
+                                    type="number"
+                                    className="h-8 pl-6"
+                                    placeholder="Adult"
+                                    {...field}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={control}
+                          name={`packages.${index}.priceTiers.${tierIndex}.pricePerChild`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <div className="relative">
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                                    $
+                                  </span>
+                                  <Input
+                                    type="number"
+                                    className="h-8 pl-6"
+                                    placeholder="Child"
+                                    {...field}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Helper text on first tier only */}
+                  {tierIndex === 0 && priceTierFields.length === 1 && (
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      Leave max people empty for unlimited group size. Add more tiers for volume
+                      pricing.
+                    </p>
+                  )}
+                </div>
+              ))}
+
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                onClick={() => removePriceTier(tierIndex)}
+                variant="outline"
+                size="sm"
+                className="w-full border-dashed"
+                onClick={() =>
+                  appendPriceTier({
+                    minPeople: priceTierFields.length > 0
+                      ? (priceTierFields[priceTierFields.length - 1] as unknown as { maxPeople: number | null }).maxPeople
+                        ? Number((priceTierFields[priceTierFields.length - 1] as unknown as { maxPeople: number | null }).maxPeople) + 1
+                        : 1
+                      : 1,
+                    maxPeople: null,
+                    pricePerAdult: 100,
+                    pricePerChild: 50,
+                  })
+                }
               >
-                <Trash2 className="h-3 w-3" />
+                <PlusCircle className="mr-2 h-3 w-3" />
+                Add Tier {priceTierFields.length + 1}
               </Button>
-            )}
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full border-dashed"
-          onClick={() =>
-            appendPriceTier({
-              minPeople: 1,
-              maxPeople: null,
-              pricePerAdult: 100,
-              pricePerChild: 50,
-            })
-          }
-        >
-          <PlusCircle className="mr-2 h-3 w-3" />
-          Add Price Tier
-        </Button>
-      </CardContent>
+            </div>
+          </CardContent>
+        </>
+      )}
     </Card>
+  );
+}
+
+// Sub-component for the reactive pricing summary bar
+function PricingSummary({
+  control,
+  packageCount,
+}: {
+  control: ReturnType<typeof useForm<z.infer<typeof formSchema>>>['control'];
+  packageCount: number;
+}) {
+  const { watch } = useFormContext<z.infer<typeof formSchema>>();
+  const packages = watch('packages');
+
+  const lowestPrice = packages
+    ?.flatMap((p) => p.priceTiers?.map((t) => t.pricePerAdult) ?? [])
+    .filter((p): p is number => typeof p === 'number' && p > 0)
+    .sort((a, b) => a - b)[0];
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3">
+      <div className="rounded-full bg-primary/10 p-2">
+        <DollarSign className="h-4 w-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium">
+          {packageCount} {packageCount === 1 ? 'package' : 'packages'}
+          {lowestPrice ? (
+            <span className="text-muted-foreground font-normal">
+              {' '}· Starting from <span className="font-semibold text-foreground">${lowestPrice}</span>/person
+            </span>
+          ) : (
+            <span className="text-muted-foreground font-normal"> · Set prices below</span>
+          )}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -905,40 +1093,163 @@ export function TourForm({
               <TabsContent value="pricing">
                 <Card className="border-none shadow-none sm:border sm:shadow-sm">
                   <CardHeader>
-                    <CardTitle className="text-xl">Packages & Pricing</CardTitle>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Packages & Pricing
+                    </CardTitle>
                     <CardDescription>
                       Create different packages (e.g. Standard, Luxury) with their own pricing
-                      tiers.
+                      tiers based on group size.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {packageFields.map((field, index) => (
-                      <PackageEditor key={field.id} index={index} remove={removePackage} />
-                    ))}
+                    {/* Pricing Summary Bar */}
+                    {packageFields.length > 0 && (
+                      <PricingSummary control={form.control} packageCount={packageFields.length} />
+                    )}
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-dashed h-12"
-                      onClick={() =>
-                        appendPackage({
-                          id: crypto.randomUUID(),
-                          name: '',
-                          description: '',
-                          priceTiers: [
-                            {
-                              minPeople: 1,
-                              maxPeople: null,
-                              pricePerAdult: 100,
-                              pricePerChild: 50,
-                            },
-                          ],
-                        })
-                      }
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Add New Package
-                    </Button>
+                    {/* Empty State */}
+                    {packageFields.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <div className="rounded-full bg-muted p-4 mb-4">
+                          <Package className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-1">No packages yet</h3>
+                        <p className="text-sm text-muted-foreground max-w-md mb-6">
+                          Add pricing packages to define what customers can book. Each package can
+                          have multiple price tiers based on group size.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button
+                            type="button"
+                            variant="default"
+                            onClick={() =>
+                              appendPackage({
+                                id: crypto.randomUUID(),
+                                name: 'Standard',
+                                description: '',
+                                priceTiers: [
+                                  {
+                                    minPeople: 1,
+                                    maxPeople: null,
+                                    pricePerAdult: 100,
+                                    pricePerChild: 50,
+                                  },
+                                ],
+                              })
+                            }
+                          >
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Start with one package
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              appendPackage({
+                                id: crypto.randomUUID(),
+                                name: 'Standard',
+                                description: 'Basic tour experience',
+                                priceTiers: [
+                                  {
+                                    minPeople: 1,
+                                    maxPeople: 4,
+                                    pricePerAdult: 100,
+                                    pricePerChild: 50,
+                                  },
+                                  {
+                                    minPeople: 5,
+                                    maxPeople: null,
+                                    pricePerAdult: 80,
+                                    pricePerChild: 40,
+                                  },
+                                ],
+                              });
+                              appendPackage({
+                                id: crypto.randomUUID(),
+                                name: 'Luxury',
+                                description: 'Premium experience with extras',
+                                priceTiers: [
+                                  {
+                                    minPeople: 1,
+                                    maxPeople: 4,
+                                    pricePerAdult: 200,
+                                    pricePerChild: 100,
+                                  },
+                                  {
+                                    minPeople: 5,
+                                    maxPeople: null,
+                                    pricePerAdult: 170,
+                                    pricePerChild: 85,
+                                  },
+                                ],
+                              });
+                            }}
+                          >
+                            <Package className="mr-2 h-4 w-4" />
+                            Start with Standard + Luxury
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Package Editors */}
+                        {packageFields.map((field, index) => (
+                          <PackageEditor
+                            key={field.id}
+                            index={index}
+                            remove={removePackage}
+                            onDuplicate={(idx) => {
+                              const packages = form.getValues('packages');
+                              if (packages?.[idx]) {
+                                const source = packages[idx];
+                                appendPackage({
+                                  id: crypto.randomUUID(),
+                                  name: `${source.name} (Copy)`,
+                                  description: source.description ?? '',
+                                  priceTiers: source.priceTiers.map((t) => ({ ...t })),
+                                });
+                              }
+                            }}
+                          />
+                        ))}
+
+                        {/* Add Package Button */}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full border-dashed h-12"
+                          onClick={() =>
+                            appendPackage({
+                              id: crypto.randomUUID(),
+                              name: '',
+                              description: '',
+                              priceTiers: [
+                                {
+                                  minPeople: 1,
+                                  maxPeople: null,
+                                  pricePerAdult: 100,
+                                  pricePerChild: 50,
+                                },
+                              ],
+                            })
+                          }
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Add Package {packageFields.length + 1}
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Validation Error */}
+                    {form.formState.errors.packages?.message && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          {form.formState.errors.packages.message}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -58,11 +58,13 @@ export default function CheckoutSuccessPage() {
       if (booking.status === 'Confirmed') {
         setPaymentState('confirmed');
         clearCart();
+        window.clearInterval(intervalId);
         return;
       }
 
       if (booking.status === 'Cancelled') {
         setPaymentState('cancelled');
+        window.clearInterval(intervalId);
         return;
       }
 

@@ -16,7 +16,7 @@ import { Logo } from '@/components/logo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/use-language';
-import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { useSettings } from '@/components/providers/settings-provider';
 
 type SettingsData = {
   agencyName?: string;
@@ -50,25 +50,42 @@ function normalizeNavHref(href: string | undefined | null) {
   return withoutTrailingSlash;
 }
 
+function NewsletterForm({ t }: { t: (key: string) => string }) {
+  const [email, setEmail] = React.useState('');
+  const [subscribed, setSubscribed] = React.useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    // TODO: wire to actual newsletter service
+    setSubscribed(true);
+    setEmail('');
+  };
+
+  if (subscribed) {
+    return <p className="text-sm text-green-400">✓ Thanks! We&apos;ll be in touch.</p>;
+  }
+
+  return (
+    <form className="space-y-3" onSubmit={handleSubscribe}>
+      <Input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={t('footer.emailPlaceholder')}
+        className="bg-white text-gray-900 border-0 rounded-lg"
+        required
+      />
+      <Button type="submit" className="w-full rounded-lg">
+        {t('footer.subscribeBtn')} <ArrowRight className="ml-2 h-4 w-4" />
+      </Button>
+    </form>
+  );
+}
+
 export function Footer() {
   const { t } = useLanguage();
-  const [settings, setSettings] = React.useState<{
-    data: SettingsData;
-    logo_url?: string | null;
-  } | null>(null);
-
-  React.useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const data = await getAgencySettings();
-        if (!data) return;
-        setSettings({ data: (data.data || {}) as SettingsData, logo_url: data.logo_url || null });
-      } catch {
-        // ignore
-      }
-    };
-    loadSettings();
-  }, []);
+  const settings = useSettings();
 
   const agencyName = settings?.data?.agencyName || 'Travel Agency';
   const tagline = settings?.data?.tagline || '';
@@ -93,16 +110,7 @@ export function Footer() {
               {t('footer.subscribeNewsletter')}
             </h3>
             <p className="text-sm">{t('footer.subscribeDesc')}</p>
-            <form className="space-y-3">
-              <Input
-                type="email"
-                placeholder={t('footer.emailPlaceholder')}
-                className="bg-white text-gray-900 border-0 rounded-lg"
-              />
-              <Button type="submit" className="w-full rounded-lg">
-                {t('footer.subscribeBtn')} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
+            <NewsletterForm t={t} />
             <div className="flex space-x-3 pt-2">
               {settings?.data?.socialMedia?.facebook ? (
                 <a
@@ -233,9 +241,9 @@ export function Footer() {
                   <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-md bg-primary text-white">
                     <Phone className="h-5 w-5" />
                   </div>
-                  <div>
-                    <p>{phoneNumber}</p>
-                  </div>
+                  <a href={`tel:${phoneNumber}`} className="hover:text-primary transition-colors">
+                    {phoneNumber}
+                  </a>
                 </li>
               ) : null}
             </ul>
@@ -248,15 +256,15 @@ export function Footer() {
             &copy; {new Date().getFullYear()} {agencyName}. {t('footer.rights')}
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-primary">
+            <Link href="/terms" className="hover:text-primary">
               {t('footer.terms')}
-            </a>
-            <a href="#" className="hover:text-primary">
+            </Link>
+            <Link href="/privacy" className="hover:text-primary">
               {t('footer.privacy')}
-            </a>
-            <a href="#" className="hover:text-primary">
+            </Link>
+            <Link href="/environmental" className="hover:text-primary">
               {t('footer.environmental')}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

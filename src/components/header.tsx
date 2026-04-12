@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   ShoppingCart,
   Search,
@@ -36,7 +36,8 @@ import type { Currency } from '@/hooks/use-currency';
 import { useLanguage, languages } from '@/hooks/use-language';
 import { useCurrency, currencies } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
-import { getAgencySettings, AgencySettingsData } from '@/lib/supabase/agency-content';
+import { AgencySettingsData } from '@/lib/supabase/agency-content';
+import { useSettings } from '@/components/providers/settings-provider';
 
 type SettingsData = AgencySettingsData;
 
@@ -202,11 +203,10 @@ export function Header() {
   const { wishlistItems } = useWishlist();
   const { t } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [settings, setSettings] = useState<{ data: SettingsData; logo_url?: string | null } | null>(
-    null
-  );
+  const settings = useSettings();
 
   useEffect(() => {
     setIsClient(true);
@@ -232,22 +232,6 @@ export function Header() {
     : 'font-medium text-foreground transition-colors hover:text-primary';
 
   const iconClass = isTransparent ? 'text-white/90 hover:text-white' : 'text-foreground';
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const data = await getAgencySettings();
-        if (!data) return;
-        setSettings({
-          data: (data.data || {}) as SettingsData,
-          logo_url: data.logo_url || null,
-        });
-      } catch {
-        // ignore
-      }
-    };
-    loadSettings();
-  }, []);
 
   const itemCount = isClient ? cartItems.length : 0;
   const wishlistItemCount = isClient ? wishlistItems.length : 0;
@@ -335,6 +319,9 @@ export function Header() {
                 <Link href="/services" className={navLinkClass}>
                   {t('nav.services')}
                 </Link>
+                <Link href="/upsell-items" className={navLinkClass}>
+                  {t('nav.extras')}
+                </Link>
                 {settings?.data?.modules?.blog !== false ? (
                   <Link href="/blog" className={navLinkClass}>
                     {t('nav.blog')}
@@ -349,7 +336,7 @@ export function Header() {
 
           <div className="flex items-center gap-1 md:gap-2">
             <LanguageCurrencySelector />
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Button variant="ghost" size="icon" className="hidden sm:flex" onClick={() => router.push('/tours')}>
               <Search className={cn('h-5 w-5', iconClass)} />
               <span className="sr-only">Search</span>
             </Button>
@@ -449,6 +436,12 @@ export function Header() {
                           className="text-lg font-medium text-foreground transition-colors hover:text-primary"
                         >
                           {t('nav.services')}
+                        </Link>
+                        <Link
+                          href="/upsell-items"
+                          className="text-lg font-medium text-foreground transition-colors hover:text-primary"
+                        >
+                          {t('nav.extras')}
                         </Link>
                         {settings?.data?.modules?.blog !== false ? (
                           <Link

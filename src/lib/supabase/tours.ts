@@ -141,7 +141,8 @@ export async function addTour(
   const dbData = {
     ...rest,
     images: imageUrls.length > 0 ? imageUrls : rest.images, // Use new URLs or keep old ones if no new files were uploaded
-    price_tiers: priceTiers,
+    // Clear legacy priceTiers when using packages to avoid stale data
+    price_tiers: packages && packages.length > 0 ? [] : (priceTiers ?? []),
     packages: packages?.map((p) => ({ ...p, id: p.id || crypto.randomUUID() })) || [],
     duration_text: durationText,
     tour_type: tourType,
@@ -228,7 +229,8 @@ export async function updateTour(id: string, formData: Omit<Tour, 'id'>) {
   const dbData = {
     ...rest,
     images: imageUrls.length > 0 ? imageUrls : rest.images, // Use new URLs or keep old ones if no new files were uploaded
-    price_tiers: priceTiers,
+    // Clear legacy priceTiers when using packages to avoid stale data
+    price_tiers: packages && packages.length > 0 ? [] : (priceTiers ?? []),
     packages: packages?.map((p) => ({ ...p, id: p.id || crypto.randomUUID() })) || [],
     duration_text: durationText,
     tour_type: tourType,
@@ -249,9 +251,8 @@ export async function updateTour(id: string, formData: Omit<Tour, 'id'>) {
     throw new Error('Failed to update tour.');
   }
 
-  // 4. Revalidate and redirect
+  // 4. Revalidate paths (redirect is handled by the client)
   revalidatePath('/admin/tours');
   revalidatePath('/'); // Revalidate homepage
   revalidatePath('/tours'); // Revalidate tours page
-  redirect('/admin/tours');
 }

@@ -272,27 +272,12 @@ export default function HomePageClient({
   const [tourType, setTourType] = React.useState('');
   const [heroSearchTab, setHeroSearchTab] = React.useState<'find' | 'custom'>('find');
 
-  // Hotel Search State
-  const [hotelLocation, _setHotelLocation] = React.useState('');
-  const [checkIn, _setCheckIn] = React.useState('');
-  const [checkOut, _setCheckOut] = React.useState('');
-  const [guests] = React.useState('2');
-
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.append('q', searchQuery);
     if (destination) params.append('destination', destination);
     if (tourType) params.append('type', tourType);
     router.push(`/tours?${params.toString()}`);
-  };
-
-  const _handleHotelSearch = () => {
-    const params = new URLSearchParams();
-    if (hotelLocation) params.append('q', hotelLocation);
-    if (checkIn) params.append('checkIn', checkIn);
-    if (checkOut) params.append('checkOut', checkOut);
-    if (guests) params.append('guests', guests);
-    router.push(`/hotels?${params.toString()}`);
   };
 
   const [destinationFilter, setDestinationFilter] = React.useState('all');

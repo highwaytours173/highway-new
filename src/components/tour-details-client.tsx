@@ -110,7 +110,8 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
   const currentPriceTier = useMemo(() => {
     if (!tour) return null;
     // Use package tiers if available, otherwise tour tiers
-    const tiers = currentPackage ? currentPackage.priceTiers : tour.priceTiers;
+    const tiers = currentPackage?.priceTiers ?? tour.priceTiers ?? [];
+    if (tiers.length === 0) return null;
 
     return (
       tiers.find(

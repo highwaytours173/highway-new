@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/accordion';
 import { AlertTriangle, Loader2, SendHorizonal, Sparkles } from 'lucide-react';
 import { sendTestEmail } from './actions';
+import { ThemeEditor } from '@/components/admin/theme-editor';
 import {
   Dialog,
   DialogContent,
@@ -116,7 +117,12 @@ const formSchema = z
     theme: z
       .object({
         primaryColor: z.string().optional(),
+        secondaryColor: z.string().optional(),
+        accentColor: z.string().optional(),
         fontFamily: z.string().optional(),
+        headingFont: z.string().optional(),
+        borderRadius: z.enum(['none', 'sm', 'md', 'lg', 'full']).optional(),
+        appearance: z.enum(['light', 'dark']).optional(),
       })
       .optional(),
     seo: z
@@ -305,7 +311,12 @@ export default function SettingsPage() {
       },
       theme: {
         primaryColor: '#0f172a',
+        secondaryColor: '#f5f0e8',
+        accentColor: '#e67e22',
         fontFamily: 'Inter',
+        headingFont: 'Playfair Display',
+        borderRadius: 'md',
+        appearance: 'light',
       },
       seo: {},
       modules: {
@@ -405,7 +416,12 @@ export default function SettingsPage() {
           },
           theme: {
             primaryColor: settingsData.theme?.primaryColor ?? '#0f172a',
+            secondaryColor: settingsData.theme?.secondaryColor ?? '#f5f0e8',
+            accentColor: settingsData.theme?.accentColor ?? '#e67e22',
             fontFamily: settingsData.theme?.fontFamily ?? 'Inter',
+            headingFont: settingsData.theme?.headingFont ?? 'Playfair Display',
+            borderRadius: settingsData.theme?.borderRadius ?? 'md',
+            appearance: settingsData.theme?.appearance ?? 'light',
           },
           seo: settingsData.seo ?? {},
           modules: settingsData.modules ?? {
@@ -1536,57 +1552,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Theme Customization</CardTitle>
-              <CardDescription>Customize the look and feel of your website.</CardDescription>
+              <CardDescription>
+                Customize colours, typography, corners, and appearance for your website.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="theme.primaryColor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Primary Color</FormLabel>
-                    <div className="flex items-center gap-4">
-                      <FormControl>
-                        <Input
-                          type="color"
-                          {...field}
-                          className="w-12 h-12 p-1 rounded-md cursor-pointer"
-                        />
-                      </FormControl>
-                      <Input {...field} placeholder="#0f172a" className="max-w-[120px]" />
-                    </div>
-                    <FormDescription>
-                      The main color used for buttons, links, and highlights.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="theme.fontFamily"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Font Family</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a font" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter (Default)</SelectItem>
-                        <SelectItem value="Playfair Display">Playfair Display (Luxury)</SelectItem>
-                        <SelectItem value="Roboto">Roboto (Modern)</SelectItem>
-                        <SelectItem value="Lato">Lato (Friendly)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>The font used for headings and body text.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <CardContent>
+              <ThemeEditor form={form} />
             </CardContent>
           </Card>
 

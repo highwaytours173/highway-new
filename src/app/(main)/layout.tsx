@@ -2,6 +2,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { WhatsAppChatButton } from '@/components/whatsapp-chat-button';
+import { SettingsProvider } from '@/components/providers/settings-provider';
 
 function hexToHsl(hex: string) {
   let c = hex.substring(1).split('');
@@ -50,22 +51,44 @@ export default async function MainLayout({
   const phoneNumber = settings?.data?.phoneNumber;
 
   const primaryHsl = theme?.primaryColor ? hexToHsl(theme.primaryColor) : null;
+  const secondaryHsl = theme?.secondaryColor ? hexToHsl(theme.secondaryColor) : null;
+  const accentHsl = theme?.accentColor ? hexToHsl(theme.accentColor) : null;
   const fontFamily = theme?.fontFamily;
+  const headingFont = theme?.headingFont;
+  const borderRadius = theme?.borderRadius;
+
+  const radiusMap: Record<string, string> = {
+    none: '0',
+    sm: '0.25rem',
+    md: '0.5rem',
+    lg: '0.75rem',
+    full: '9999px',
+  };
+
+  const settingsValue = settings
+    ? { data: settings.data, logo_url: settings.logo_url }
+    : null;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <style>{`
-        :root {
-          ${primaryHsl ? `--primary: ${primaryHsl};` : ''}
-          ${fontFamily ? `--font-playfair: ${fontFamily}, serif;` : ''}
-        }
-      `}</style>
-      <Header />
-      <main className="flex-grow container mx-auto px-4 pt-[84px] md:pt-[134px] pb-8">
-        {children}
-      </main>
-      <Footer />
-      {phoneNumber && <WhatsAppChatButton phone={phoneNumber} />}
-    </div>
+    <SettingsProvider value={settingsValue}>
+      <div className="flex flex-col min-h-screen">
+        <style>{`
+          :root {
+            ${primaryHsl ? `--primary: ${primaryHsl};` : ''}
+            ${secondaryHsl ? `--secondary: ${secondaryHsl};` : ''}
+            ${accentHsl ? `--accent: ${accentHsl};` : ''}
+            ${fontFamily ? `--font-body: ${fontFamily}, sans-serif;` : ''}
+            ${headingFont ? `--font-playfair: ${headingFont}, serif;` : ''}
+            ${borderRadius && radiusMap[borderRadius] ? `--radius: ${radiusMap[borderRadius]};` : ''}
+          }
+        `}</style>
+        <Header />
+        <main className="flex-grow container mx-auto px-4 pt-[84px] md:pt-[134px] pb-8">
+          {children}
+        </main>
+        <Footer />
+        {phoneNumber && <WhatsAppChatButton phone={phoneNumber} />}
+      </div>
+    </SettingsProvider>
   );
 }
