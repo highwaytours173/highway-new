@@ -2,13 +2,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form';
+import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -20,7 +14,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Check, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
 /* ─── Preset palettes ─── */
 const PRESETS = [
@@ -127,41 +121,6 @@ function hexToHsl(hex: string) {
 function needsLightText(hex: string) {
   const { l } = hexToHsl(hex);
   return l < 55;
-}
-
-/* ─── Color Swatch ─── */
-function ColorSwatch({
-  color,
-  selected,
-  onClick,
-  label,
-}: {
-  color: string;
-  selected: boolean;
-  onClick: () => void;
-  label?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'relative h-10 w-10 rounded-lg border-2 transition-all hover:scale-110',
-        selected ? 'border-foreground ring-2 ring-foreground/20' : 'border-transparent'
-      )}
-      style={{ backgroundColor: color }}
-      title={label}
-    >
-      {selected && (
-        <Check
-          className={cn(
-            'absolute inset-0 m-auto h-4 w-4',
-            needsLightText(color) ? 'text-white' : 'text-gray-900'
-          )}
-        />
-      )}
-    </button>
-  );
 }
 
 /* ─── Main Component ─── */
@@ -383,7 +342,8 @@ export function ThemeEditor({ form }: { form: UseFormReturn<any> }) {
                     key={r.value}
                     className={cn(
                       'flex cursor-pointer flex-col items-center gap-2 rounded-lg border p-3 transition-all hover:bg-muted/50',
-                      field.value === r.value && 'border-foreground bg-muted/50 ring-1 ring-foreground/10'
+                      field.value === r.value &&
+                        'border-foreground bg-muted/50 ring-1 ring-foreground/10'
                     )}
                   >
                     <div
@@ -408,15 +368,12 @@ export function ThemeEditor({ form }: { form: UseFormReturn<any> }) {
           <FormItem>
             <FormLabel>Appearance</FormLabel>
             <FormControl>
-              <RadioGroup
-                value={field.value}
-                onValueChange={field.onChange}
-                className="flex gap-3"
-              >
+              <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-3">
                 <Label
                   className={cn(
                     'flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 transition-all hover:bg-muted/50',
-                    field.value === 'light' && 'border-foreground bg-muted/50 ring-1 ring-foreground/10'
+                    field.value === 'light' &&
+                      'border-foreground bg-muted/50 ring-1 ring-foreground/10'
                   )}
                 >
                   <RadioGroupItem value="light" className="sr-only" />
@@ -426,7 +383,8 @@ export function ThemeEditor({ form }: { form: UseFormReturn<any> }) {
                 <Label
                   className={cn(
                     'flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 transition-all hover:bg-muted/50',
-                    field.value === 'dark' && 'border-foreground bg-muted/50 ring-1 ring-foreground/10'
+                    field.value === 'dark' &&
+                      'border-foreground bg-muted/50 ring-1 ring-foreground/10'
                   )}
                 >
                   <RadioGroupItem value="dark" className="sr-only" />
@@ -481,16 +439,10 @@ export function ThemeEditor({ form }: { form: UseFormReturn<any> }) {
           </div>
           {/* Preview body */}
           <div className="p-5 space-y-3">
-            <h3
-              className="text-lg font-bold"
-              style={{ fontFamily: `${headingFont}, serif` }}
-            >
+            <h3 className="text-lg font-bold" style={{ fontFamily: `${headingFont}, serif` }}>
               Discover Amazing Tours
             </h3>
-            <p
-              className="text-sm opacity-70"
-              style={{ fontFamily: `${bodyFont}, sans-serif` }}
-            >
+            <p className="text-sm opacity-70" style={{ fontFamily: `${bodyFont}, sans-serif` }}>
               Explore the best destinations with expert guides and unforgettable experiences.
             </p>
             <div className="flex gap-2 flex-wrap">

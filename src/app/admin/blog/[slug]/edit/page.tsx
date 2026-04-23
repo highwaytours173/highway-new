@@ -52,6 +52,58 @@ const availableTags = [
   { value: 'Food', label: 'Food' },
 ];
 
+const BLOG_DRAFT_STORAGE_KEY = 'admin-ai-blog-draft';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function createPostSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function toStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === 'string' || typeof item === 'number' ? String(item) : ''))
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  return [];
+}
+
+function getStringValue(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function getDraftKeywords(value: unknown): string | null {
+  const keywords = toStringList(value);
+  if (keywords.length > 0) return keywords.join(', ');
+
+  const singleValue = getStringValue(value);
+  return singleValue;
+}
+
+function getBlogDraftSource(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value)) return null;
+  if (isRecord(value.data)) return value.data;
+  return value;
+}
+
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   slug: z
@@ -164,6 +216,42 @@ export default function EditPostPage() {
       });
     }
   }, [aiState.content, form]);
+
+  useEffect(() => {
+    if (!isNewPost || post) return;
+
+    try {
+      const storedDraft = localStorage.getItem(BLOG_DRAFT_STORAGE_KEY);
+      if (!storedDraft) return;
+
+      const parsedDraft = JSON.parse(storedDraft) as unknown;
+      const draftSource = getBlogDraftSource(parsedDraft);
+      if (!draftSource) return;
+
+      const title = getStringValue(draftSource.title);
+      const content =
+        getStringValue(draftSource.contentHtml) ?? getStringValue(draftSource.content);
+      const keywords =
+        getDraftKeywords(draftSource.seoKeywords) ?? getDraftKeywords(draftSource.keywords);
+
+      if (!title && !content && !keywords) return;
+
+      const currentValues = form.getValues();
+      const generatedSlug = title ? createPostSlug(title) : '';
+
+      form.reset({
+        ...currentValues,
+        title: title ?? currentValues.title,
+        slug: generatedSlug || currentValues.slug,
+        content: content ?? currentValues.content,
+        keywords: keywords ?? currentValues.keywords,
+      });
+
+      localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to import blog draft from localStorage:', error);
+    }
+  }, [form, isNewPost, post]);
 
   if (!isNewPost && !post) {
     return <div>Post not found.</div>;

@@ -65,9 +65,7 @@ export default async function MainLayout({
     full: '9999px',
   };
 
-  const settingsValue = settings
-    ? { data: settings.data, logo_url: settings.logo_url }
-    : null;
+  const settingsValue = settings ? { data: settings.data, logo_url: settings.logo_url } : null;
 
   return (
     <SettingsProvider value={settingsValue}>

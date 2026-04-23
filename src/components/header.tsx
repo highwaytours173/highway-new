@@ -336,7 +336,12 @@ export function Header() {
 
           <div className="flex items-center gap-1 md:gap-2">
             <LanguageCurrencySelector />
-            <Button variant="ghost" size="icon" className="hidden sm:flex" onClick={() => router.push('/tours')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden sm:flex"
+              onClick={() => router.push('/tours')}
+            >
               <Search className={cn('h-5 w-5', iconClass)} />
               <span className="sr-only">Search</span>
             </Button>

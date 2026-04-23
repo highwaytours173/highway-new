@@ -12,7 +12,7 @@ Key gaps remain around production-grade data persistence for CMS features (blog,
 - Styling/UI: Tailwind CSS + Shadcn UI
 - Data/Storage: Supabase (Postgres + Storage) with SSR and browser clients
 - Charts: Recharts
-- AI: Genkit with Google AI (Gemini 2.0 Flash), flows for tour suggestions and blog generation
+- AI: OpenRouter (via `src/lib/ai/openrouter.ts`), flows for tour suggestions and blog generation
 
 ## Current Feature Inventory
 

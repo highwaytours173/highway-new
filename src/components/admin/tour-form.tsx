@@ -82,7 +82,10 @@ export const formSchema = z
     slug: z
       .string()
       .min(1, 'Slug is required.')
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with words separated by dashes.'),
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        'Slug must be lowercase with words separated by dashes.'
+      ),
     destination: z.string().min(1, 'Please select a destination.'),
     type: z.array(z.string()).refine((value) => value.length > 0, {
       message: 'You have to select at least one item.',
@@ -105,13 +108,10 @@ export const formSchema = z
     includes: z.array(z.object({ value: z.string() })).optional(),
     excludes: z.array(z.object({ value: z.string() })).optional(),
   })
-  .refine(
-    (data) => (data.packages?.length ?? 0) > 0 || (data.priceTiers?.length ?? 0) > 0,
-    {
-      message: 'You must add at least one package with pricing.',
-      path: ['packages'],
-    }
-  );
+  .refine((data) => (data.packages?.length ?? 0) > 0 || (data.priceTiers?.length ?? 0) > 0, {
+    message: 'You must add at least one package with pricing.',
+    path: ['packages'],
+  });
 
 interface TourFormProps {
   initialData?: Tour;
@@ -395,11 +395,22 @@ function PackageEditor({
                 className="w-full border-dashed"
                 onClick={() =>
                   appendPriceTier({
-                    minPeople: priceTierFields.length > 0
-                      ? (priceTierFields[priceTierFields.length - 1] as unknown as { maxPeople: number | null }).maxPeople
-                        ? Number((priceTierFields[priceTierFields.length - 1] as unknown as { maxPeople: number | null }).maxPeople) + 1
-                        : 1
-                      : 1,
+                    minPeople:
+                      priceTierFields.length > 0
+                        ? (
+                            priceTierFields[priceTierFields.length - 1] as unknown as {
+                              maxPeople: number | null;
+                            }
+                          ).maxPeople
+                          ? Number(
+                              (
+                                priceTierFields[priceTierFields.length - 1] as unknown as {
+                                  maxPeople: number | null;
+                                }
+                              ).maxPeople
+                            ) + 1
+                          : 1
+                        : 1,
                     maxPeople: null,
                     pricePerAdult: 100,
                     pricePerChild: 50,
@@ -419,7 +430,7 @@ function PackageEditor({
 
 // Sub-component for the reactive pricing summary bar
 function PricingSummary({
-  control,
+  control: _control,
   packageCount,
 }: {
   control: ReturnType<typeof useForm<z.infer<typeof formSchema>>>['control'];
@@ -443,7 +454,9 @@ function PricingSummary({
           {packageCount} {packageCount === 1 ? 'package' : 'packages'}
           {lowestPrice ? (
             <span className="text-muted-foreground font-normal">
-              {' '}· Starting from <span className="font-semibold text-foreground">${lowestPrice}</span>/person
+              {' '}
+              · Starting from <span className="font-semibold text-foreground">${lowestPrice}</span>
+              /person
             </span>
           ) : (
             <span className="text-muted-foreground font-normal"> · Set prices below</span>
@@ -1098,8 +1111,8 @@ export function TourForm({
                       Packages & Pricing
                     </CardTitle>
                     <CardDescription>
-                      Create different packages (e.g. Standard, Luxury) with their own pricing
-                      tiers based on group size.
+                      Create different packages (e.g. Standard, Luxury) with their own pricing tiers
+                      based on group size.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">

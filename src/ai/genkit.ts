@@ -1,7 +1,5 @@
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
-
-export const ai = genkit({
-  plugins: [googleAI()],
-  model: 'googleai/gemini-2.5-flash',
-});
+/**
+ * Runtime AI generation now uses OpenRouter via src/lib/ai/openrouter.ts.
+ * This file is kept only as a compatibility placeholder.
+ */
+export const ai = undefined;

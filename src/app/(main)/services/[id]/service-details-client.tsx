@@ -12,14 +12,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, PlusCircle, ShoppingBag } from 'lucide-react';
 
-function formatUsd(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
   const { addToCart, cartItems } = useCart();
   const { format } = useCurrency();
@@ -75,7 +67,7 @@ export function ServiceDetailsClient({ service }: { service: UpsellItem }) {
           )}
           <div className="absolute left-5 top-5 flex flex-wrap items-center gap-2">
             <Badge className="bg-background/90 text-foreground hover:bg-background">
-              {formatUsd(displayPrice)}
+              {format(displayPrice)}
             </Badge>
             {!service.isActive ? (
               <Badge variant="secondary" className="bg-background/90">

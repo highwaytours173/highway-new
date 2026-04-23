@@ -23,8 +23,19 @@ const currencyLocales: Record<Currency, string> = {
   AED: 'ar-AE',
 };
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrency] = useState<Currency>('USD');
+export function CurrencyProvider({
+  children,
+  defaultCurrency,
+}: {
+  children: React.ReactNode;
+  defaultCurrency?: string;
+}) {
+  const resolvedDefault =
+    defaultCurrency && currencies.some((c) => c.code === defaultCurrency)
+      ? (defaultCurrency as Currency)
+      : 'USD';
+
+  const [currency, setCurrency] = useState<Currency>(resolvedDefault);
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({
     USD: 1,
     EUR: 0.92,
@@ -35,12 +46,15 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load currency from local storage on mount
+  // Load currency from local storage on mount; fall back to agency default if nothing saved
   useEffect(() => {
     const savedCurrency = localStorage.getItem('currency') as Currency;
     if (savedCurrency && currencies.some((c) => c.code === savedCurrency)) {
       setCurrency(savedCurrency);
+    } else if (resolvedDefault !== 'USD') {
+      setCurrency(resolvedDefault);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch exchange rates from API

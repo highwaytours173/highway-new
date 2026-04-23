@@ -58,7 +58,7 @@ Your platform is a **multi-tenant SaaS** built for the travel and hospitality in
 | ------------------ | -------------------------------------- |
 | Framework          | Next.js 15.3 (App Router, Turbopack)   |
 | Backend / Database | Supabase (PostgreSQL + Auth + Storage) |
-| AI Engine          | Google Genkit + Gemini                 |
+| AI Engine          | OpenRouter (multi-model)               |
 | Payment Gateway    | Kashier (Egypt)                        |
 | UI Components      | Radix UI + shadcn/ui                   |
 | Styling            | Tailwind CSS                           |
@@ -359,7 +359,7 @@ getCurrentAgencySlug() → returns slug string
 
 All data fetches then filter by `agency_id` — clean and correct.
 
-### 6.3 AI Integration (Genkit)
+### 6.3 AI Integration (OpenRouter)
 
 Three AI flows implemented:
 
@@ -367,7 +367,7 @@ Three AI flows implemented:
 2. **`generateBlogPost`** — writes SEO blog content for a given topic
 3. **`suggestAlternativeTours`** — suggests related tours based on current cart items
 
-These run via Google Gemini through Genkit. The flows are well-structured with Zod schemas for input/output validation.
+These run via OpenRouter through `src/lib/ai/openrouter.ts`. The flows are well-structured with Zod schemas for input/output validation.
 
 **Issues:**
 

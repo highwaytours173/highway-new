@@ -116,16 +116,24 @@ export async function generateMetadata(): Promise<Metadata> {
 import { LanguageProvider } from '@/hooks/use-language';
 import { CurrencyProvider } from '@/hooks/use-currency';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let defaultCurrency: string | undefined;
+  try {
+    const settings = await getAgencySettings();
+    defaultCurrency = settings?.data?.defaultCurrency ?? undefined;
+  } catch {
+    // proceed without default currency
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} ${playfair.variable}`} suppressHydrationWarning={true}>
         <LanguageProvider>
-          <CurrencyProvider>
+          <CurrencyProvider defaultCurrency={defaultCurrency}>
             <WishlistProvider>
               <CartProvider>
                 {children}

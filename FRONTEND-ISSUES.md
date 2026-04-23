@@ -10,6 +10,7 @@ _Date: April 2, 2026_
 **Severity:** Medium — UX confusion
 
 ### Problem
+
 The search `<Button>` in the navbar has no `onClick`, no `href`, and opens no dialog. Clicking it does absolutely nothing.
 
 ```tsx
@@ -21,7 +22,9 @@ The search `<Button>` in the navbar has no `onClick`, no `href`, and opens no di
 ```
 
 ### Fix Options
+
 **Option A — Wire it to the tours search page (recommended):**
+
 ```tsx
 <Button
   variant="ghost"
@@ -33,6 +36,7 @@ The search `<Button>` in the navbar has no `onClick`, no `href`, and opens no di
   <span className="sr-only">Search</span>
 </Button>
 ```
+
 Requires adding `useRouter` from `next/navigation` to `Header`.
 
 **Option B — Remove it entirely:**
@@ -46,6 +50,7 @@ Delete the entire button block if a dedicated search page is not planned.
 **Severity:** High — trust damage; users expect a confirmation but get nothing
 
 ### Problem
+
 The newsletter `<form>` has an email input and a "Subscribe" button, but **no `onSubmit`, no server action, no API call**. Submitting it causes a full-page reload and the input value is discarded silently.
 
 ```tsx
@@ -59,9 +64,11 @@ The newsletter `<form>` has an email input and a "Subscribe" button, but **no `o
 ```
 
 ### Fix
+
 Add a controlled state + submit handler. Since there is no newsletter backend yet, the simplest honest fix is to show a toast and collect emails via the contact form, OR hook it into a real service (Resend Audiences, Mailchimp, etc.).
 
 **Minimal fix — prevent reload + show feedback:**
+
 ```tsx
 const [email, setEmail] = React.useState('');
 const [subscribed, setSubscribed] = React.useState(false);
@@ -93,7 +100,7 @@ const handleSubscribe = (e: React.FormEvent) => {
       </Button>
     </>
   )}
-</form>
+</form>;
 ```
 
 ---
@@ -104,6 +111,7 @@ const handleSubscribe = (e: React.FormEvent) => {
 **Severity:** Medium — professionalism / potential legal exposure
 
 ### Problem
+
 "Terms", "Privacy", and "Environmental" links in the footer bottom bar all use `href="#"`, which scrolls to the top of the page instead of navigating anywhere.
 
 ```tsx
@@ -114,6 +122,7 @@ const handleSubscribe = (e: React.FormEvent) => {
 ```
 
 ### Fix Options
+
 **Option A — Create real policy pages** at `/terms`, `/privacy`, `/environmental` and link to them.
 
 **Option B — Hide until pages exist (recommended short-term):**
@@ -121,11 +130,13 @@ Remove these links entirely from the render output. They currently create false 
 
 ```tsx
 // Remove or comment out the entire block:
-{/* 
+{
+  /* 
   <a href="#" ...>{t('footer.terms')}</a>
   <a href="#" ...>{t('footer.privacy')}</a>
   <a href="#" ...>{t('footer.environmental')}</a>
-*/}
+*/
+}
 ```
 
 ---
@@ -136,6 +147,7 @@ Remove these links entirely from the render output. They currently create false 
 **Severity:** High — fires Supabase queries every 2 seconds indefinitely
 
 ### Problem
+
 When payment status is `Confirmed` or `Cancelled`, the `checkBookingStatus` function returns early — but that only exits the function, **not the interval**. The `setInterval` keeps firing every 2 seconds for the entire time the user stays on the page.
 
 ```ts
@@ -153,6 +165,7 @@ if (booking.status === 'Cancelled') {
 ```
 
 ### Fix
+
 Store the interval ID in a `ref` so it can be cleared when the status resolves:
 
 ```tsx
@@ -162,12 +175,18 @@ useEffect(() => {
   let cancelled = false;
 
   async function checkBookingStatus() {
-    if (!merchantOrderId) { setPaymentState('unknown'); return; }
+    if (!merchantOrderId) {
+      setPaymentState('unknown');
+      return;
+    }
 
     const booking = await getBookingById(merchantOrderId);
     if (cancelled) return;
 
-    if (!booking) { setPaymentState('unknown'); return; }
+    if (!booking) {
+      setPaymentState('unknown');
+      return;
+    }
 
     if (booking.status === 'Confirmed') {
       setPaymentState('confirmed');
@@ -210,6 +229,7 @@ useEffect(() => {
 **Severity:** Low — dead code / code smell
 
 ### Problem
+
 `_handleHotelSearch` and its associated state variables (`_setHotelLocation`, `_setCheckIn`, `_setCheckOut`) are all prefixed with `_` and referenced nowhere in the JSX. The `HotelSearchBox` component handles hotel search independently. This is leftover scaffolding that was never wired up.
 
 ```ts
@@ -223,6 +243,7 @@ const _handleHotelSearch = () => { ... };
 ```
 
 ### Fix
+
 Delete the 4 state variables and the `_handleHotelSearch` function entirely. Verify `HotelSearchBox` component is self-contained (it is).
 
 ---
@@ -233,6 +254,7 @@ Delete the 4 state variables and the `_handleHotelSearch` function entirely. Ver
 **Severity:** Low-Medium — mobile UX
 
 ### Problem
+
 The phone number in the footer contact column is plain text inside a `<p>` tag. The header correctly uses `<a href="tel:...">`, but the footer does not — mobile users cannot tap to call.
 
 ```tsx
@@ -243,6 +265,7 @@ The phone number in the footer contact column is plain text inside a `<p>` tag. 
 ```
 
 ### Fix
+
 Wrap in an anchor with `tel:` scheme:
 
 ```tsx
@@ -261,6 +284,7 @@ Wrap in an anchor with `tel:` scheme:
 **Severity:** Medium — performance; 2 extra Supabase round-trips on every page load
 
 ### Problem
+
 Both shell components call `getAgencySettings()` inside a client-side `useEffect` independently on mount. Every page visit fires 2 parallel Supabase requests just for the shell, before user content is visible.
 
 ### Fix Options
@@ -276,7 +300,9 @@ const SettingsContext = React.createContext<AgencySettings | null>(null);
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = React.useState<AgencySettings | null>(null);
   React.useEffect(() => {
-    getAgencySettings().then(setSettings).catch(() => {});
+    getAgencySettings()
+      .then(setSettings)
+      .catch(() => {});
   }, []);
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
 }
@@ -285,6 +311,7 @@ export const useSettings = () => React.useContext(SettingsContext);
 ```
 
 Wrap in `src/app/(main)/layout.tsx`:
+
 ```tsx
 <SettingsProvider>
   <Header />
@@ -304,6 +331,7 @@ Fetch once in the server `layout.tsx` and pass as props to `Header` and `Footer`
 **Severity:** Medium — discoverability; revenue loss
 
 ### Problem
+
 The `/upsell-items` route renders all add-on items (transport, extras, etc.) but is **not linked from the header nav, footer, or any internal page**. Users can only reach it by typing the URL directly.
 
 ### Fix Options
@@ -321,13 +349,13 @@ Let agency admins add it to their custom nav links via the home page editor sett
 
 ## Summary Table
 
-| # | File | Issue | Severity | Effort |
-|---|------|-------|----------|--------|
-| 4 | `checkout/success/page.tsx` | Polling interval never cleared | 🔴 High | 15 min |
-| 2 | `footer.tsx` | Newsletter form does nothing | 🔴 High | 30 min |
-| 3 | `footer.tsx` | Legal links go to `#` | 🟡 Medium | 10 min |
-| 1 | `header.tsx` | Search icon is dead | 🟡 Medium | 15 min |
-| 7 | `header.tsx` + `footer.tsx` | Double settings fetch | 🟡 Medium | 1–2 hr |
-| 8 | `upsell-items/` route | Page is orphaned from nav | 🟡 Medium | 20 min |
-| 6 | `footer.tsx` | Phone not tappable on mobile | 🟢 Low | 5 min |
-| 5 | `home-client.tsx` | Dead hotel search handler | 🟢 Low | 5 min |
+| #   | File                        | Issue                          | Severity  | Effort |
+| --- | --------------------------- | ------------------------------ | --------- | ------ |
+| 4   | `checkout/success/page.tsx` | Polling interval never cleared | 🔴 High   | 15 min |
+| 2   | `footer.tsx`                | Newsletter form does nothing   | 🔴 High   | 30 min |
+| 3   | `footer.tsx`                | Legal links go to `#`          | 🟡 Medium | 10 min |
+| 1   | `header.tsx`                | Search icon is dead            | 🟡 Medium | 15 min |
+| 7   | `header.tsx` + `footer.tsx` | Double settings fetch          | 🟡 Medium | 1–2 hr |
+| 8   | `upsell-items/` route       | Page is orphaned from nav      | 🟡 Medium | 20 min |
+| 6   | `footer.tsx`                | Phone not tappable on mobile   | 🟢 Low    | 5 min  |
+| 5   | `home-client.tsx`           | Dead hotel search handler      | 🟢 Low    | 5 min  |

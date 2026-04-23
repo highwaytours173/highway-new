@@ -1,7 +1,7 @@
 // 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for suggesting alternative tours based on the current shopping cart content.
+ * @fileOverview This file suggests alternative tours based on the current shopping cart content.
  *
  * - suggestAlternativeTours - A function that takes a list of tour descriptions and suggests alternative tours.
  * - SuggestAlternativeToursInput - The input type for the suggestAlternativeTours function.
@@ -10,14 +10,14 @@
 
 "use server";
 
-import { ai } from "@/ai/genkit";
-import { z } from "genkit";
+import { generateStructuredWithOpenRouter } from '@/lib/ai/openrouter';
+import { z } from 'zod';
 
 const SuggestAlternativeToursInputSchema = z.object({
   tourDescriptions: z
     .array(z.string())
     .describe(
-      "A list of descriptions of tours currently in the shopping cart.",
+      'A list of descriptions of tours currently in the shopping cart.',
     ),
 });
 export type SuggestAlternativeToursInput = z.infer<
@@ -28,7 +28,7 @@ const SuggestAlternativeToursOutputSchema = z.object({
   alternativeTours: z
     .array(z.string())
     .describe(
-      "A list of suggested alternative tours based on the cart content.",
+      'A list of suggested alternative tours based on the cart content.',
     ),
 });
 export type SuggestAlternativeToursOutput = z.infer<
@@ -38,28 +38,16 @@ export type SuggestAlternativeToursOutput = z.infer<
 export async function suggestAlternativeTours(
   input: SuggestAlternativeToursInput,
 ): Promise<SuggestAlternativeToursOutput> {
-  return suggestAlternativeToursFlow(input);
-}
+  const validatedInput = SuggestAlternativeToursInputSchema.parse(input);
 
-const prompt = ai.definePrompt({
-  name: "suggestAlternativeToursPrompt",
-  input: { schema: SuggestAlternativeToursInputSchema },
-  output: { schema: SuggestAlternativeToursOutputSchema },
-  prompt: `You are a tour suggestion expert. Given the following list of tours in the user\'s shopping cart, suggest alternative tours that the user might be interested in. Consider tours that are similar to the ones in the cart, or that would complement the existing tours.
+  return generateStructuredWithOpenRouter({
+    schema: SuggestAlternativeToursOutputSchema,
+    systemPrompt:
+      'You are a travel recommendation assistant. Return valid JSON matching the output schema.',
+    userPrompt: `Given the tours below, suggest exactly 4 alternative tour ideas. Keep each suggestion concise and specific.
 
 Tours in cart:
-{{#each tourDescriptions}}- {{{this}}}
-{{/each}}`,
-});
-
-const suggestAlternativeToursFlow = ai.defineFlow(
-  {
-    name: "suggestAlternativeToursFlow",
-    inputSchema: SuggestAlternativeToursInputSchema,
-    outputSchema: SuggestAlternativeToursOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
-  },
-);
+${validatedInput.tourDescriptions.map((description) => `- ${description}`).join('\n')}`,
+    temperature: 0.6,
+  });
+}

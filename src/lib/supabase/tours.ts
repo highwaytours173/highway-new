@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/agency-users';
 import type { Tour } from '@/types';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { toCamelCase } from '@/lib/utils';
 import { getCurrentAgencyId } from '@/lib/supabase/agencies';
 

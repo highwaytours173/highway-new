@@ -18,22 +18,6 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/hooks/use-language';
 import { useSettings } from '@/components/providers/settings-provider';
 
-type SettingsData = {
-  agencyName?: string;
-  phoneNumber?: string;
-  contactEmail?: string;
-  address?: string;
-  aboutUs?: string;
-  tagline?: string;
-  navLinks?: { label: string; href: string }[];
-  socialMedia?: {
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
-    linkedin?: string;
-  };
-};
-
 function normalizeNavHref(href: string | undefined | null) {
   const raw = String(href || '').trim();
   if (!raw) return '/';

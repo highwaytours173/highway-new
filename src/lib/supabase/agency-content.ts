@@ -116,6 +116,8 @@ export type AgencySettingsData = {
     /** Whether to send admin notification emails on new bookings */
     notifyAdminOnBooking?: boolean;
   };
+  /** Default display currency for all public-facing price displays */
+  defaultCurrency?: string;
 };
 
 export type TourTaxonomyType = 'category' | 'destination';
@@ -526,7 +528,7 @@ export async function updateHomePageContent(content: HomeContent) {
 }
 
 export async function getPageMetadata(
-  page: 'home' | 'about' | 'contact' | 'tours' | 'services' | 'blog' | 'destination' | 'tailorMade',
+  page: string,
   defaults?: { title?: string; description?: string }
 ): Promise<Metadata> {
   let settings;
@@ -537,7 +539,8 @@ export async function getPageMetadata(
   }
 
   const site = settings?.data?.seo?.site;
-  const seo = settings?.data?.seo?.[page];
+  const seoMap = settings?.data?.seo as Record<string, PageSeoSettings | undefined> | undefined;
+  const seo = seoMap?.[page];
 
   const siteName = site?.siteName || settings?.data?.agencyName || 'Travel Agency';
 

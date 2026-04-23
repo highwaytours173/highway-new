@@ -20,5 +20,5 @@ node_modules
 *.min.js
 *.map
 
-# Ignore Genkit generated files
+# Ignore AI flow files (legacy formatting exclusion)
 src/ai/flows

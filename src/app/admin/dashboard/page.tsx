@@ -4,21 +4,23 @@ import { OverviewChart } from '@/components/admin/overview-chart';
 import { RecentSales } from '@/components/admin/recent-sales';
 import { PeriodSelector } from '@/components/admin/period-selector';
 import { GettingStarted } from '@/components/admin/getting-started';
+import { AiCommandCenter } from '@/components/admin/ai-command-center';
 import { getBookings } from '@/lib/supabase/bookings';
 import { getCustomers } from '@/lib/supabase/customers';
 import { getTours } from '@/lib/supabase/tours';
 import { getCurrentAgency } from '@/lib/supabase/agencies';
+import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { Suspense } from 'react';
 
-function formatUSD(value: number) {
+function formatRevenue(value: number, currency: string) {
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency,
       maximumFractionDigits: 0,
     }).format(value);
   } catch {
-    return `$${Math.round(value)}`;
+    return `${currency} ${Math.round(value)}`;
   }
 }
 
@@ -90,12 +92,15 @@ export default async function AdminDashboard({
   const period = periodParam ?? '30';
   const periodDays = getPeriodDays(period);
 
-  const [allBookings, customers, tours, agency] = await Promise.all([
+  const [allBookings, customers, tours, agency, agencySettings] = await Promise.all([
     getBookings(),
     getCustomers(),
     getTours(),
     getCurrentAgency(),
+    getAgencySettings(),
   ]);
+
+  const defaultCurrency = agencySettings?.data?.defaultCurrency ?? 'USD';
 
   // Filter bookings by period
   const now = new Date();
@@ -180,7 +185,7 @@ export default async function AdminDashboard({
   const recentItems = periodBookings.slice(0, 5).map((b) => ({
     user: b.customerName ?? b.customerEmail ?? 'Customer',
     email: b.customerEmail ?? '',
-    amount: `+${formatUSD(b.totalPrice ?? 0)}`,
+    amount: `+${formatRevenue(b.totalPrice ?? 0, defaultCurrency)}`,
     avatar: undefined,
   }));
 
@@ -206,7 +211,7 @@ export default async function AdminDashboard({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatUSD(totalRevenue)}</div>
+            <div className="text-2xl font-bold">{formatRevenue(totalRevenue, defaultCurrency)}</div>
             <p className="text-xs text-muted-foreground capitalize">{periodLabel}</p>
           </CardContent>
         </Card>
@@ -241,6 +246,8 @@ export default async function AdminDashboard({
           </CardContent>
         </Card>
       </div>
+
+      <AiCommandCenter />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
         <Card className="lg:col-span-4 rounded-lg shadow-sm">

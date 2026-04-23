@@ -209,9 +209,7 @@ export const columns: ColumnDef<Tour>[] = [
         startingPrice = priceTiers[0]?.pricePerAdult;
       } else if (tour.packages && tour.packages.length > 0) {
         // Tours using the packages model — find the lowest adult price across all packages
-        const allPrices = tour.packages.flatMap((p) =>
-          p.priceTiers.map((t) => t.pricePerAdult)
-        );
+        const allPrices = tour.packages.flatMap((p) => p.priceTiers.map((t) => t.pricePerAdult));
         startingPrice = allPrices.length > 0 ? Math.min(...allPrices) : undefined;
       }
 

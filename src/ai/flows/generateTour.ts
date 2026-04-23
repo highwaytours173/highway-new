@@ -1,52 +1,40 @@
-import { ai } from "../genkit";
-import { TourInputSchema, TourOutputSchema } from "@/types/tour-schemas";
+import { generateStructuredWithOpenRouter } from '@/lib/ai/openrouter';
+import { TourInputSchema, TourOutputSchema } from '@/types/tour-schemas';
+import { z } from 'zod';
 
 export { TourInputSchema, TourOutputSchema };
 
-export const generateTourFlow = ai.defineFlow(
-  {
-    name: "generateTour",
-    inputSchema: TourInputSchema,
-    outputSchema: TourOutputSchema,
-  },
-  async (input) => {
-    const prompt = `
-      You are an expert travel agent specializing in Egypt tours.
-      Create a personalized tour package based on the following requirements:
-      
-      - Travel Dates: ${input.travelDates.arrival} to ${input.travelDates.departure}
-      - Region: ${input.region.join(", ")}
-      - Duration: ${input.duration} days
-      - Participants: ${input.participants}
-      - Accommodation: ${input.accommodation}
-      - Budget: ${input.budget.amount} ${input.budget.currency} (Per Person)
-      - Inclusions Requested: ${input.inclusions.join(", ")}
-      - Interests: ${input.interests.join(", ")}
-      - Custom Preferences/Special Activities: ${input.customPreferences || "None"}
+export type GenerateTourInput = z.infer<typeof TourInputSchema>;
+export type GenerateTourOutput = z.infer<typeof TourOutputSchema>;
 
-      Generate a detailed itinerary, including:
-      1. A catchy Tour Name
-      2. A brief Summary
-      3. Total Estimated Price (within budget if possible, or explain why not)
-      4. Day-by-day itinerary with Title, Description, Activities, Accommodation suggestions, and Meals included.
-      5. List of Inclusions and Exclusions.
-      6. Transportation details.
+export async function generateTourFlow(input: GenerateTourInput): Promise<GenerateTourOutput> {
+  const validatedInput = TourInputSchema.parse(input);
 
-      Ensure the response is in valid JSON format matching the output schema.
-    `;
+  return generateStructuredWithOpenRouter({
+    schema: TourOutputSchema,
+    systemPrompt:
+      'You are an expert travel planner for Egypt itineraries. Return valid JSON that exactly matches the requested schema.',
+    userPrompt: `Create a personalized tour package using the following details:
 
-    const { output } = await ai.generate({
-      prompt,
-      output: { schema: TourOutputSchema },
-    });
+- Travel Dates: ${validatedInput.travelDates.arrival} to ${validatedInput.travelDates.departure}
+- Regions: ${validatedInput.region.join(', ')}
+- Duration: ${validatedInput.duration} days
+- Participants: ${validatedInput.participants}
+- Accommodation: ${validatedInput.accommodation}
+- Budget: ${validatedInput.budget.amount} ${validatedInput.budget.currency} per person
+- Requested Inclusions: ${validatedInput.inclusions.join(', ')}
+- Interests: ${validatedInput.interests.join(', ')}
+- Custom Preferences: ${validatedInput.customPreferences || 'None'}
 
-    if (!output) {
-      throw new Error("Failed to generate tour");
-    }
-
-    return output;
-  }
-);
+Output rules:
+- Use realistic pricing and keep totalPrice as a number.
+- Include a day-by-day itinerary with useful detail.
+- Keep inclusions/exclusions practical and specific.
+- Provide clear transportationDetails.
+- Return JSON only.`,
+    temperature: 0.6,
+  });
+}
 
 
 

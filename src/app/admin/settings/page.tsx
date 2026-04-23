@@ -62,6 +62,7 @@ import {
 } from '@/lib/supabase/agency-content';
 import { useToast } from '@/hooks/use-toast';
 import { generateSeoAssistAction, type SeoAssistResult } from '@/app/actions';
+import { currencies } from '@/hooks/use-currency';
 
 const formSchema = z
   .object({
@@ -208,6 +209,7 @@ const formSchema = z
       })
       .default({ tours: true, hotels: true, blog: true }),
     singleHotelMode: z.boolean().default(false),
+    defaultCurrency: z.string().optional(),
     emailSettings: z
       .object({
         resendApiKey: z.string().optional(),
@@ -325,6 +327,7 @@ export default function SettingsPage() {
         blog: true,
       },
       singleHotelMode: false,
+      defaultCurrency: 'USD',
       emailSettings: {
         resendApiKey: '',
         fromName: '',
@@ -430,6 +433,7 @@ export default function SettingsPage() {
             blog: true,
           },
           singleHotelMode: settingsData.singleHotelMode ?? false,
+          defaultCurrency: settingsData.defaultCurrency ?? 'USD',
           emailSettings: {
             resendApiKey: settingsData.emailSettings?.resendApiKey ?? '',
             fromName: settingsData.emailSettings?.fromName ?? '',
@@ -785,6 +789,7 @@ export default function SettingsPage() {
       seo: mergeSeo(loadedSettingsData?.seo, values.seo),
       modules: values.modules,
       singleHotelMode: values.singleHotelMode,
+      defaultCurrency: values.defaultCurrency ?? 'USD',
       emailSettings: values.emailSettings
         ? {
             resendApiKey: values.emailSettings.resendApiKey?.trim() || undefined,
@@ -2024,6 +2029,46 @@ export default function SettingsPage() {
                     </FormItem>
                   );
                 }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* ── Default Currency ── */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Currency</CardTitle>
+              <CardDescription>
+                Set the default display currency for all public-facing price displays. Visitors can
+                still switch currency from the site header.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FormField
+                control={form.control}
+                name="defaultCurrency"
+                render={({ field }) => (
+                  <FormItem className="max-w-xs">
+                    <FormLabel>Default Currency</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? 'USD'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {currencies.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {c.symbol} {c.code} — {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Prices across the website will display in this currency by default.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </CardContent>
           </Card>
