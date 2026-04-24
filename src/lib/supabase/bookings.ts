@@ -15,7 +15,10 @@ import { sendEmail } from '@/lib/email';
 import { renderBookingConfirmationEmail } from '@/lib/email/templates/booking-confirmation';
 import { renderBookingNotificationEmail } from '@/lib/email/templates/booking-notification';
 import { renderBookingStatusChangeEmail } from '@/lib/email/templates/booking-status-change';
-import { getAgencySettings } from '@/lib/supabase/agency-content';
+import {
+  getAgencySettings,
+  getCheckoutPaymentMethodAvailability,
+} from '@/lib/supabase/agency-content';
 
 export async function getPendingBookingsCount(): Promise<number> {
   const supabase = await createClient();
@@ -145,6 +148,7 @@ export async function deleteBooking(bookingId: string) {
 }
 
 interface CreateBookingData {
+  bookingId?: string;
   customerName: string;
   customerEmail: string;
   phoneNumber: string;
@@ -263,9 +267,29 @@ export async function createBooking(data: CreateBookingData) {
     }
   }
 
+  // 2c. Enforce server-side checkout payment method availability
+  const paymentAvailability = await getCheckoutPaymentMethodAvailability();
+  const requestedPaymentMethodAvailable =
+    data.paymentMethod === 'online' ? paymentAvailability.online : paymentAvailability.cash;
+
+  if (!requestedPaymentMethodAvailable) {
+    const availableMethods: Array<'cash' | 'online'> = [];
+
+    if (paymentAvailability.cash) availableMethods.push('cash');
+    if (paymentAvailability.online) availableMethods.push('online');
+
+    const availableMethodsLabel =
+      availableMethods.length > 0 ? availableMethods.join(' or ') : 'none';
+
+    throw new Error(
+      `Payment method "${data.paymentMethod}" is currently unavailable. Available methods: ${availableMethodsLabel}.`
+    );
+  }
+
   // 3. Insert into bookings table
   const status = data.paymentMethod === 'cash' ? 'Confirmed' : 'Pending';
   const insertPayload = {
+    ...(data.bookingId ? { id: data.bookingId } : {}),
     customer_name: data.customerName,
     customer_email: data.customerEmail,
     phone_number: data.phoneNumber,

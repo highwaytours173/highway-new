@@ -1,10 +1,10 @@
 'use server';
 
 import crypto from 'crypto';
+import { getAgencyKashierSettingsForRuntime } from '@/lib/supabase/agency-content';
 
 type KashierConfig = {
   merchantId: string;
-  secretKey: string;
   apiKey: string;
   currency: string;
   mode: 'test' | 'live';
@@ -14,26 +14,75 @@ type KashierConfig = {
   display?: string;
 };
 
-function getKashierConfig(): KashierConfig {
-  const merchantId = process.env.KASHIER_MERCHANT_ID;
-  const secretKey = process.env.KASHIER_SECRET_KEY;
-  const apiKey = process.env.KASHIER_API_KEY;
-  const currency = process.env.KASHIER_CURRENCY ?? 'EGP';
-  const mode = (process.env.KASHIER_MODE ?? 'test') as KashierConfig['mode'];
-  const merchantRedirectUrl = process.env.KASHIER_MERCHANT_REDIRECT_URL;
-  const hppBaseUrl = process.env.KASHIER_HPP_BASE_URL ?? 'https://checkout.kashier.io/';
-  const allowedMethods = process.env.KASHIER_ALLOWED_METHODS;
-  const display = process.env.KASHIER_DISPLAY ?? 'en';
+type KashierConfigSource = Partial<KashierConfig>;
+
+const KASHIER_CURRENCY = 'EGP';
+const KASHIER_HPP_BASE_URL = 'https://checkout.kashier.io/';
+
+function normalizeOptionalString(value?: string | null): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim();
+  return normalized ? normalized : undefined;
+}
+
+function normalizeMode(value?: string | null): KashierConfig['mode'] | undefined {
+  const normalized = normalizeOptionalString(value)?.toLowerCase();
+  return normalized === 'test' || normalized === 'live' ? normalized : undefined;
+}
+
+function normalizeDisplay(value?: string | null): string | undefined {
+  const normalized = normalizeOptionalString(value)?.toLowerCase();
+  return normalized === 'en' || normalized === 'ar' ? normalized : undefined;
+}
+
+function getEnvKashierConfig(): KashierConfigSource {
+  return {
+    merchantId: normalizeOptionalString(process.env.KASHIER_MERCHANT_ID),
+    apiKey: normalizeOptionalString(process.env.KASHIER_API_KEY),
+    mode: normalizeMode(process.env.KASHIER_MODE),
+    merchantRedirectUrl: normalizeOptionalString(process.env.KASHIER_MERCHANT_REDIRECT_URL),
+    allowedMethods: normalizeOptionalString(process.env.KASHIER_ALLOWED_METHODS),
+    display: normalizeDisplay(process.env.KASHIER_DISPLAY),
+  };
+}
+
+async function getDatabaseKashierConfig(): Promise<KashierConfigSource> {
+  try {
+    const settings = await getAgencyKashierSettingsForRuntime();
+    return {
+      merchantId: normalizeOptionalString(settings.merchantId),
+      apiKey: normalizeOptionalString(settings.apiKey),
+      mode: normalizeMode(settings.mode),
+      allowedMethods: normalizeOptionalString(settings.allowedMethods),
+      display: normalizeDisplay(settings.display),
+    };
+  } catch {
+    return {};
+  }
+}
+
+async function getKashierConfig(): Promise<KashierConfig> {
+  const [databaseConfig, envConfig] = await Promise.all([
+    getDatabaseKashierConfig(),
+    Promise.resolve(getEnvKashierConfig()),
+  ]);
+
+  const merchantId = databaseConfig.merchantId ?? envConfig.merchantId;
+  const apiKey = databaseConfig.apiKey ?? envConfig.apiKey;
+  const currency = KASHIER_CURRENCY;
+  const mode = databaseConfig.mode ?? envConfig.mode ?? 'test';
+  const merchantRedirectUrl = envConfig.merchantRedirectUrl;
+  const hppBaseUrl = KASHIER_HPP_BASE_URL;
+  const allowedMethods = databaseConfig.allowedMethods ?? envConfig.allowedMethods;
+  const display = databaseConfig.display ?? envConfig.display ?? 'en';
 
   if (!merchantId) throw new Error('Missing KASHIER_MERCHANT_ID');
-  if (!secretKey) throw new Error('Missing KASHIER_SECRET_KEY');
   if (!apiKey) throw new Error('Missing KASHIER_API_KEY');
   if (!merchantRedirectUrl) throw new Error('Missing KASHIER_MERCHANT_REDIRECT_URL');
   if (mode !== 'test' && mode !== 'live') throw new Error('Invalid KASHIER_MODE');
 
   return {
     merchantId,
-    secretKey,
     apiKey,
     currency,
     mode,
@@ -62,12 +111,13 @@ export async function buildKashierHppUrl(input: {
     mobile?: string;
   };
 }) {
-  const cfg = getKashierConfig();
+  const cfg = await getKashierConfig();
   const amount = normalizeAmount(input.amount);
   const orderId = input.merchantOrderId;
+  const signingKey = cfg.apiKey;
 
   const paymentPath = `/?payment=${cfg.merchantId}.${orderId}.${amount}.${cfg.currency}`;
-  const hash = hmacSha256Hex(cfg.secretKey, paymentPath);
+  const hash = hmacSha256Hex(signingKey, paymentPath);
 
   const url = new URL(cfg.hppBaseUrl);
   url.searchParams.set('merchantId', cfg.merchantId);
@@ -92,7 +142,7 @@ export async function verifyKashierSignature(input: {
   signatureKeys: string[] | null | undefined;
   data: Record<string, unknown>;
 }) {
-  const cfg = getKashierConfig();
+  const cfg = await getKashierConfig();
   const signature = (input.signature ?? '').trim();
   const signatureKeys = input.signatureKeys ?? [];
 
@@ -105,7 +155,11 @@ export async function verifyKashierSignature(input: {
   const payload = keys
     .map((key) => {
       const value = (input.data as Record<string, unknown>)[key];
-      return `${key}=${value === undefined || value === null ? '' : String(value)}`;
+      const encodedKey = encodeURIComponent(key);
+      const encodedValue = encodeURIComponent(
+        value === undefined || value === null ? '' : String(value)
+      );
+      return `${encodedKey}=${encodedValue}`;
     })
     .join('&');
 

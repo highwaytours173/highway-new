@@ -41,6 +41,23 @@ export function ImageUploader({ value, onChange, maxFiles, accept, hint }: Image
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
+      if (maxFiles === 1) {
+        const replacementFile = acceptedFiles[0];
+        if (!replacementFile) return;
+
+        const replacementPreview = URL.createObjectURL(replacementFile);
+        setPreviews((prev) => {
+          prev.forEach((preview) => {
+            if (preview.startsWith('blob:')) {
+              URL.revokeObjectURL(preview);
+            }
+          });
+          return [replacementPreview];
+        });
+        onChange([replacementFile]);
+        return;
+      }
+
       const currentFiles = value || [];
       const newFiles = [...currentFiles, ...acceptedFiles];
 
@@ -69,7 +86,7 @@ export function ImageUploader({ value, onChange, maxFiles, accept, hint }: Image
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: accept ?? defaultAccept,
-    multiple: true,
+    multiple: maxFiles === 1 ? false : true,
     maxFiles: maxFiles,
   });
 

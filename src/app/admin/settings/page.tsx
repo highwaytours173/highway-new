@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -53,8 +54,10 @@ import {
 } from '@/components/ui/dialog';
 import {
   getAgencySettings,
+  getAgencyKashierSettingsForAdmin,
   updateAgencySettings,
   type AgencyImageSettings,
+  type AgencyKashierSettingsInput,
   AgencySettingsData,
   type DestinationFallbackImage,
   PageSeoSettings,
@@ -66,6 +69,51 @@ import { currencies } from '@/hooks/use-currency';
 import { languages } from '@/hooks/use-language';
 import { useAdminLanguage } from '@/hooks/use-admin-language';
 
+const KASHIER_ALLOWED_METHOD_OPTIONS = ['card', 'wallet', 'meeza', 'bnpl'] as const;
+const KASHIER_ALLOWED_METHOD_SET = new Set<string>(KASHIER_ALLOWED_METHOD_OPTIONS);
+
+function normalizeKashierAllowedMethodTokens(tokens: string[]): string[] {
+  const normalizedTokens: string[] = [];
+  const seen = new Set<string>();
+
+  for (const token of tokens) {
+    const normalized = token.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) {
+      continue;
+    }
+
+    seen.add(normalized);
+    normalizedTokens.push(normalized);
+  }
+
+  return normalizedTokens;
+}
+
+function parseKashierAllowedMethodsCsv(value?: string | null): string[] {
+  if (!value) return [];
+
+  return normalizeKashierAllowedMethodTokens(value.split(','));
+}
+
+function serializeKashierAllowedMethods(methods: string[] | undefined): string | null {
+  const normalizedMethods = normalizeKashierAllowedMethodTokens(methods ?? []);
+
+  if (normalizedMethods.length === 0) {
+    return null;
+  }
+
+  const selectedMethods = new Set(normalizedMethods);
+  const knownMethods = KASHIER_ALLOWED_METHOD_OPTIONS.filter((method) =>
+    selectedMethods.has(method)
+  );
+  const unknownMethods = normalizedMethods.filter(
+    (method) => !KASHIER_ALLOWED_METHOD_SET.has(method)
+  );
+  const orderedMethods = [...knownMethods, ...unknownMethods];
+
+  return orderedMethods.length > 0 ? orderedMethods.join(',') : null;
+}
+
 const formSchema = z
   .object({
     agencyName: z.string().min(1, 'Agency name is required.'),
@@ -74,6 +122,8 @@ const formSchema = z
     address: z.string().min(1, 'Address is required.'),
     logo: z.array(z.any()).optional(),
     favicon: z.array(z.any()).optional(),
+    ogImage: z.array(z.any()).optional(),
+    twitterImage: z.array(z.any()).optional(),
     tagline: z.string().optional(),
     navLinks: z
       .array(
@@ -84,6 +134,12 @@ const formSchema = z
       )
       .optional(),
     aboutUs: z.string().min(10, 'About us description should be at least 10 characters.'),
+    legalPages: z
+      .object({
+        termsAndConditionMarkdown: z.string().optional(),
+        policySecurityMarkdown: z.string().optional(),
+      })
+      .optional(),
     images: z
       .object({
         aboutHeroUrl: z.array(z.any()).optional(),
@@ -117,6 +173,21 @@ const formSchema = z
         defaultMethod: z.enum(['cash', 'online']),
       })
       .default({ cash: true, online: true, defaultMethod: 'online' }),
+    kashierSettings: z
+      .object({
+        merchantId: z.string().optional(),
+        apiKey: z.string().optional(),
+        mode: z.string().optional(),
+        allowedMethods: z.array(z.string()).optional(),
+        display: z.string().optional(),
+      })
+      .default({
+        merchantId: '',
+        apiKey: '',
+        mode: 'test',
+        allowedMethods: [],
+        display: 'en',
+      }),
     theme: z
       .object({
         primaryColor: z.string().optional(),
@@ -246,6 +317,43 @@ const formSchema = z
         path: ['paymentMethods', 'defaultMethod'],
       });
     }
+
+    const normalizedMode = data.kashierSettings.mode?.trim().toLowerCase();
+    const normalizedDisplay = data.kashierSettings.display?.trim().toLowerCase();
+
+    if (normalizedMode !== 'test' && normalizedMode !== 'live') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Kashier mode must be either test or live.',
+        path: ['kashierSettings', 'mode'],
+      });
+    }
+
+    if (normalizedDisplay !== 'en' && normalizedDisplay !== 'ar') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Kashier display must be either en or ar.',
+        path: ['kashierSettings', 'display'],
+      });
+    }
+
+    if (data.paymentMethods.online) {
+      const requiredKashierFields: Array<['merchantId' | 'apiKey', string]> = [
+        ['merchantId', 'Merchant ID is required when online payment is enabled.'],
+        ['apiKey', 'API key is required when online payment is enabled.'],
+      ];
+
+      for (const [fieldKey, message] of requiredKashierFields) {
+        const value = data.kashierSettings[fieldKey];
+        if (typeof value !== 'string' || !value.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message,
+            path: ['kashierSettings', fieldKey],
+          });
+        }
+      }
+    }
   })
   .refine(
     (data) => {
@@ -264,6 +372,23 @@ const formSchema = z
     path: ['confirmPassword'],
   });
 
+const SEO_IMAGE_ACCEPT: Record<string, string[]> = {
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/webp': ['.webp'],
+  'image/gif': ['.gif'],
+};
+
+const ALLOWED_SEO_IMAGE_MIME_TYPES = new Set<string>([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+]);
+
+const MAX_SEO_IMAGE_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_SEO_IMAGE_FILE_SIZE_MB = 5;
+
 export default function SettingsPage() {
   const [existingLogoUrl, setExistingLogoUrl] = useState<string | null>(null);
   const [loadedSettingsData, setLoadedSettingsData] = useState<AgencySettingsData | null>(null);
@@ -279,6 +404,8 @@ export default function SettingsPage() {
       address: '',
       logo: [],
       favicon: [],
+      ogImage: [],
+      twitterImage: [],
       tagline: '',
       navLinks: [
         { label: 'Home', href: '/' },
@@ -290,6 +417,10 @@ export default function SettingsPage() {
         { label: 'Contact', href: '/contact' },
       ],
       aboutUs: '',
+      legalPages: {
+        termsAndConditionMarkdown: '',
+        policySecurityMarkdown: '',
+      },
       images: {
         aboutHeroUrl: [],
         aboutSideImageUrl: [],
@@ -314,6 +445,13 @@ export default function SettingsPage() {
         cash: true,
         online: true,
         defaultMethod: 'online',
+      },
+      kashierSettings: {
+        merchantId: '',
+        apiKey: '',
+        mode: 'test',
+        allowedMethods: [],
+        display: 'en',
       },
       theme: {
         primaryColor: '#0f172a',
@@ -362,7 +500,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function loadSettings() {
-      const data = await getAgencySettings({ skipTranslation: true });
+      const [data, kashierSettings] = await Promise.all([
+        getAgencySettings({ skipTranslation: true }),
+        getAgencyKashierSettingsForAdmin(),
+      ]);
 
       if (data) {
         const settingsData = (data.data ?? {}) as AgencySettingsData;
@@ -382,6 +523,14 @@ export default function SettingsPage() {
           address: settingsData.address ?? '',
           logo: [],
           favicon: data.favicon_url ? [data.favicon_url] : [],
+          ogImage:
+            settingsData.seo?.site?.ogImageUrl && settingsData.seo.site.ogImageUrl.trim()
+              ? [settingsData.seo.site.ogImageUrl.trim()]
+              : [],
+          twitterImage:
+            settingsData.seo?.site?.twitterImageUrl && settingsData.seo.site.twitterImageUrl.trim()
+              ? [settingsData.seo.site.twitterImageUrl.trim()]
+              : [],
           tagline: settingsData.tagline ?? '',
           navLinks: settingsData.navLinks ?? [
             { label: 'Home', href: '/' },
@@ -393,6 +542,10 @@ export default function SettingsPage() {
             { label: 'Contact', href: '/contact' },
           ],
           aboutUs: settingsData.aboutUs ?? '',
+          legalPages: {
+            termsAndConditionMarkdown: settingsData.legalPages?.termsAndConditionMarkdown ?? '',
+            policySecurityMarkdown: settingsData.legalPages?.policySecurityMarkdown ?? '',
+          },
           images: {
             aboutHeroUrl: images.aboutHeroUrl ? [images.aboutHeroUrl] : [],
             aboutSideImageUrl: images.aboutSideImageUrl ? [images.aboutSideImageUrl] : [],
@@ -421,6 +574,13 @@ export default function SettingsPage() {
             online: paymentMethods.online ?? true,
             defaultMethod:
               paymentMethods.defaultMethod ?? (paymentMethods.online === false ? 'cash' : 'online'),
+          },
+          kashierSettings: {
+            merchantId: kashierSettings.merchantId ?? '',
+            apiKey: kashierSettings.apiKey ?? '',
+            mode: kashierSettings.mode ?? 'test',
+            allowedMethods: parseKashierAllowedMethodsCsv(kashierSettings.allowedMethods),
+            display: kashierSettings.display ?? 'en',
           },
           theme: {
             primaryColor: settingsData.theme?.primaryColor ?? '#0f172a',
@@ -684,6 +844,89 @@ export default function SettingsPage() {
       }
     } catch {}
 
+    const resolveSeoImageUrl = async (input: {
+      fieldLabel: string;
+      fileCandidate: unknown;
+      manualUrl: string;
+      existingUrl: string | null;
+      pathPrefix: string;
+    }): Promise<{ ok: boolean; url: string | null }> => {
+      const fallbackUrl = input.manualUrl || input.existingUrl || null;
+
+      if (!(input.fileCandidate instanceof File)) {
+        return { ok: true, url: fallbackUrl };
+      }
+
+      if (!ALLOWED_SEO_IMAGE_MIME_TYPES.has(input.fileCandidate.type)) {
+        toast({
+          title: `Invalid ${input.fieldLabel}`,
+          description: 'Please upload a PNG, JPG, WEBP, or GIF image.',
+          variant: 'destructive',
+        });
+        return { ok: false, url: fallbackUrl };
+      }
+
+      if (input.fileCandidate.size > MAX_SEO_IMAGE_FILE_SIZE_BYTES) {
+        toast({
+          title: `Invalid ${input.fieldLabel}`,
+          description: `Please upload an image smaller than ${MAX_SEO_IMAGE_FILE_SIZE_MB} MB.`,
+          variant: 'destructive',
+        });
+        return { ok: false, url: fallbackUrl };
+      }
+
+      const ext = input.fileCandidate.name.split('.').pop() || 'png';
+      const path = `seo/${input.pathPrefix}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('cms')
+        .upload(path, input.fileCandidate, {
+          contentType: input.fileCandidate.type || 'image/png',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        toast({
+          title: `Failed to upload ${input.fieldLabel}`,
+          description: 'Please try again.',
+          variant: 'destructive',
+        });
+        return { ok: false, url: fallbackUrl };
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('cms').getPublicUrl(path);
+      return { ok: true, url: publicUrlData.publicUrl };
+    };
+
+    const ogImageResult = await resolveSeoImageUrl({
+      fieldLabel: 'OpenGraph image',
+      fileCandidate: values.ogImage?.[0],
+      manualUrl:
+        typeof values.seo?.site?.ogImageUrl === 'string' ? values.seo.site.ogImageUrl.trim() : '',
+      existingUrl:
+        typeof loadedSettingsData?.seo?.site?.ogImageUrl === 'string' &&
+        loadedSettingsData.seo.site.ogImageUrl.trim()
+          ? loadedSettingsData.seo.site.ogImageUrl.trim()
+          : null,
+      pathPrefix: 'og-image',
+    });
+    if (!ogImageResult.ok) return;
+
+    const twitterImageResult = await resolveSeoImageUrl({
+      fieldLabel: 'Twitter / X image',
+      fileCandidate: values.twitterImage?.[0],
+      manualUrl:
+        typeof values.seo?.site?.twitterImageUrl === 'string'
+          ? values.seo.site.twitterImageUrl.trim()
+          : '',
+      existingUrl:
+        typeof loadedSettingsData?.seo?.site?.twitterImageUrl === 'string' &&
+        loadedSettingsData.seo.site.twitterImageUrl.trim()
+          ? loadedSettingsData.seo.site.twitterImageUrl.trim()
+          : null,
+      pathPrefix: 'twitter-image',
+    });
+    if (!twitterImageResult.ok) return;
+
     const uploadSingleImage = async (
       value: unknown[] | undefined,
       pathPrefix: string,
@@ -788,6 +1031,12 @@ export default function SettingsPage() {
       tagline: values.tagline ?? '',
       navLinks: values.navLinks ?? [],
       aboutUs: values.aboutUs,
+      legalPages: values.legalPages
+        ? {
+            termsAndConditionMarkdown: values.legalPages.termsAndConditionMarkdown ?? '',
+            policySecurityMarkdown: values.legalPages.policySecurityMarkdown ?? '',
+          }
+        : undefined,
       images: imagesPayload,
       socialMedia: values.socialMedia,
       paymentMethods: values.paymentMethods,
@@ -807,8 +1056,19 @@ export default function SettingsPage() {
         : undefined,
     };
 
+    const kashierSettingsPayload: AgencyKashierSettingsInput = {
+      merchantId: values.kashierSettings.merchantId?.trim() || null,
+      apiKey: values.kashierSettings.apiKey?.trim() || null,
+      mode: values.kashierSettings.mode?.trim() || null,
+      allowedMethods: serializeKashierAllowedMethods(values.kashierSettings.allowedMethods),
+      display: values.kashierSettings.display?.trim() || null,
+    };
+
     try {
-      await updateAgencySettings(nextSettingsData, logoUrl, faviconUrl);
+      await updateAgencySettings(nextSettingsData, logoUrl, faviconUrl, {
+        ogImageUrl: ogImageResult.url,
+        twitterImageUrl: twitterImageResult.url,
+      }, kashierSettingsPayload);
       // Sync admin language in the client context immediately
       if (values.adminLanguage) setAdminLanguage(values.adminLanguage);
       toast({
@@ -1323,6 +1583,61 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
+              <CardTitle>Legal Pages</CardTitle>
+              <CardDescription>
+                Manage the markdown content for your legal pages shown in the website footer.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="legalPages.termsAndConditionMarkdown"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Terms and Condition Markdown</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="# Terms and Condition\n\nWrite your terms in Markdown..."
+                        {...field}
+                        value={field.value ?? ''}
+                        rows={12}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Rendered publicly on /terms-and-condition. Supports Markdown and tables.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="legalPages.policySecurityMarkdown"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Policy and Security Markdown</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="# Policy and Security\n\nWrite your policy and security content in Markdown..."
+                        {...field}
+                        value={field.value ?? ''}
+                        rows={12}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Rendered publicly on /policy-security. Leave empty to use built-in fallback
+                      content.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Page Images</CardTitle>
               <CardDescription>
                 Customize hero and section images used on public pages.
@@ -1712,41 +2027,110 @@ export default function SettingsPage() {
                   )}
                 />
 
-                {/* Social & Favicon Images */}
+                {/* Social Preview Images & Favicon */}
                 <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={'seo.site.ogImageUrl' as never}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>OpenGraph Image URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." {...field} />
-                          </FormControl>
-                          <p className="text-xs text-muted-foreground">
-                            Recommended: 1200×630 px — shown when shared on Facebook, LinkedIn, etc.
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={'seo.site.twitterImageUrl' as never}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Twitter / X Image URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." {...field} />
-                          </FormControl>
-                          <p className="text-xs text-muted-foreground">
-                            Recommended: 1200×628 px — shown when shared on Twitter / X.
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+                    <div>
+                      <p className="text-sm font-medium leading-none">OpenGraph Image</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended: 1200×630 px. Used by Facebook, LinkedIn, and most social
+                        previews.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 items-start">
+                      <FormField
+                        control={form.control}
+                        name={'ogImage' as never}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground font-normal">
+                              Upload file
+                            </FormLabel>
+                            <FormControl>
+                              <ImageUploader
+                                value={field.value || []}
+                                onChange={field.onChange}
+                                maxFiles={1}
+                                accept={SEO_IMAGE_ACCEPT}
+                                hint="PNG, JPG, WEBP or GIF — 1200×630 recommended"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={'seo.site.ogImageUrl' as never}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground font-normal">
+                              Or paste a URL
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://example.com/og-image.jpg" {...field} />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              If both are provided, the uploaded file takes priority.
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+                    <div>
+                      <p className="text-sm font-medium leading-none">Twitter / X Image</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended: 1200×628 px. Used for large-card previews on Twitter / X.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 items-start">
+                      <FormField
+                        control={form.control}
+                        name={'twitterImage' as never}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground font-normal">
+                              Upload file
+                            </FormLabel>
+                            <FormControl>
+                              <ImageUploader
+                                value={field.value || []}
+                                onChange={field.onChange}
+                                maxFiles={1}
+                                accept={SEO_IMAGE_ACCEPT}
+                                hint="PNG, JPG, WEBP or GIF — 1200×628 recommended"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={'seo.site.twitterImageUrl' as never}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground font-normal">
+                              Or paste a URL
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://example.com/twitter-image.jpg"
+                                {...field}
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              If both are provided, the uploaded file takes priority.
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
 
                   {/* Favicon — upload + URL in one card */}
@@ -2038,6 +2422,143 @@ export default function SettingsPage() {
                     </FormItem>
                   );
                 }}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Kashier Details</CardTitle>
+              <CardDescription>
+                Configure the credentials and hosted checkout options for Kashier online payments.
+                The redirect URL is read from server env key KASHIER_MERCHANT_REDIRECT_URL and
+                must be set in your deployment environment.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="kashierSettings.merchantId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Merchant ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="MID-XXXX" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kashierSettings.apiKey"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>API Key</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="KASHIER_API_KEY" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kashierSettings.mode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mode</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? 'test'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select mode" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="test">Test</SelectItem>
+                        <SelectItem value="live">Live</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kashierSettings.display"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Display Language</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? 'en'}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select checkout language" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="ar">Arabic</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kashierSettings.allowedMethods"
+                render={() => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Allowed Methods</FormLabel>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {KASHIER_ALLOWED_METHOD_OPTIONS.map((method) => (
+                        <FormField
+                          key={method}
+                          control={form.control}
+                          name="kashierSettings.allowedMethods"
+                          render={({ field }) => {
+                            const selectedMethods = field.value ?? [];
+
+                            return (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={selectedMethods.includes(method)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        field.onChange(
+                                          selectedMethods.includes(method)
+                                            ? selectedMethods
+                                            : [...selectedMethods, method]
+                                        );
+                                        return;
+                                      }
+
+                                      field.onChange(
+                                        selectedMethods.filter((value) => value !== method)
+                                      );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="cursor-pointer font-normal capitalize">
+                                  {method}
+                                </FormLabel>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <FormDescription>
+                      Optional payment methods to show in Kashier checkout.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </CardContent>
           </Card>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLanguage } from '@/hooks/use-language';
 
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'EGP' | 'SAR' | 'AED';
 
@@ -8,19 +9,19 @@ interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   convert: (amount: number) => number;
+  convertTo: (amount: number, targetCurrency: Currency) => number;
   format: (amount: number) => string;
   isLoading: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-const currencyLocales: Record<Currency, string> = {
-  USD: 'en-US',
-  EUR: 'de-DE',
-  GBP: 'en-GB',
-  EGP: 'ar-EG',
-  SAR: 'ar-SA',
-  AED: 'ar-AE',
+const languageLocales: Record<string, string> = {
+  en: 'en-US',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  es: 'es-ES',
+  ar: 'ar-EG',
 };
 
 export function CurrencyProvider({
@@ -36,6 +37,7 @@ export function CurrencyProvider({
       : 'USD';
 
   const [currency, setCurrency] = useState<Currency>(resolvedDefault);
+  const { language } = useLanguage();
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({
     USD: 1,
     EUR: 0.92,
@@ -98,14 +100,20 @@ export function CurrencyProvider({
     localStorage.setItem('currency', currency);
   }, [currency]);
 
-  const convert = (amount: number) => {
-    const rate = exchangeRates[currency] || 1;
+  const convertTo = (amount: number, targetCurrency: Currency) => {
+    const rate = exchangeRates[targetCurrency] || 1;
     return amount * rate;
+  };
+
+  const convert = (amount: number) => {
+    return convertTo(amount, currency);
   };
 
   const format = (amount: number) => {
     const convertedAmount = convert(amount);
-    return new Intl.NumberFormat(currencyLocales[currency], {
+    const locale = languageLocales[language] ?? 'en-US';
+
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
       maximumFractionDigits: 0,
@@ -113,7 +121,9 @@ export function CurrencyProvider({
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, convert, format, isLoading }}>
+    <CurrencyContext.Provider
+      value={{ currency, setCurrency, convert, convertTo, format, isLoading }}
+    >
       {children}
     </CurrencyContext.Provider>
   );

@@ -147,6 +147,10 @@ export type AgencySettingsData = {
   tagline?: string;
   navLinks?: { label: string; href: string }[];
   aboutUs?: string;
+  legalPages?: {
+    termsAndConditionMarkdown?: string;
+    policySecurityMarkdown?: string;
+  };
   images?: AgencyImageSettings;
   socialMedia?: {
     facebook?: string;
@@ -209,13 +213,56 @@ export type AgencySettingsData = {
   adminLanguage?: string;
 };
 
+export type KashierMode = 'test' | 'live';
+export type KashierDisplay = 'en' | 'ar';
+
+export type AgencyKashierSettings = {
+  merchantId?: string;
+  apiKey?: string;
+  mode?: KashierMode;
+  allowedMethods?: string;
+  display?: KashierDisplay;
+};
+
+export type AgencyKashierSettingsInput = {
+  merchantId?: string | null;
+  apiKey?: string | null;
+  mode?: string | null;
+  allowedMethods?: string | null;
+  display?: string | null;
+};
+
+export type CheckoutPaymentMethodAvailability = {
+  cash: boolean;
+  online: boolean;
+  defaultMethod: 'cash' | 'online';
+  onlineConfigured: boolean;
+};
+
 export type TourTaxonomyType = 'category' | 'destination';
+
+type AgencyKashierSettingsRow = {
+  kashier_merchant_id: string | null;
+  kashier_api_key: string | null;
+  kashier_mode: string | null;
+  kashier_allowed_methods: string | null;
+  kashier_display: string | null;
+};
 
 type AgencySettingsRow = {
   data: AgencySettingsData;
   logo_url: string | null;
   favicon_url: string | null;
+  og_image_url: string | null;
+  twitter_image_url: string | null;
+  terms_and_condition_markdown: string | null;
+  policy_security_markdown: string | null;
   agency_id: string;
+} & AgencyKashierSettingsRow;
+
+type SeoImageUrls = {
+  ogImageUrl?: string | null;
+  twitterImageUrl?: string | null;
 };
 
 type TourTaxonomyRow = {
@@ -236,13 +283,99 @@ function slugifyTaxonomyName(value: string) {
     .replace(/(^-+|-+$)/g, '');
 }
 
+function normalizeOptionalString(value?: string | null): string | null {
+  if (typeof value !== 'string') return null;
+  const normalizedValue = value.trim();
+  return normalizedValue ? normalizedValue : null;
+}
+
+function normalizeOptionalUrl(value?: string | null): string | null {
+  return normalizeOptionalString(value);
+}
+
+function normalizeOptionalMarkdown(value?: string | null): string | null {
+  if (typeof value !== 'string') return null;
+  return value.trim() ? value : null;
+}
+
+function normalizeKashierMode(value?: string | null): KashierMode | null {
+  const normalizedValue = normalizeOptionalString(value)?.toLowerCase();
+  if (normalizedValue === 'test' || normalizedValue === 'live') {
+    return normalizedValue;
+  }
+
+  return null;
+}
+
+function normalizeKashierDisplay(value?: string | null): KashierDisplay | null {
+  const normalizedValue = normalizeOptionalString(value)?.toLowerCase();
+  if (normalizedValue === 'en' || normalizedValue === 'ar') {
+    return normalizedValue;
+  }
+
+  return null;
+}
+
+function normalizeAgencyKashierSettingsRow(
+  row?: Partial<AgencyKashierSettingsRow> | null
+): AgencyKashierSettings {
+  const merchantId = normalizeOptionalString(row?.kashier_merchant_id);
+  const apiKey = normalizeOptionalString(row?.kashier_api_key);
+  const mode = normalizeKashierMode(row?.kashier_mode);
+  const allowedMethods = normalizeOptionalString(row?.kashier_allowed_methods);
+  const display = normalizeKashierDisplay(row?.kashier_display);
+
+  return {
+    ...(merchantId ? { merchantId } : {}),
+    ...(apiKey ? { apiKey } : {}),
+    ...(mode ? { mode } : {}),
+    ...(allowedMethods ? { allowedMethods } : {}),
+    ...(display ? { display } : {}),
+  };
+}
+
+function stripKashierKeysFromSettingsData(data: AgencySettingsData): AgencySettingsData {
+  const sanitizedData = {
+    ...(data as Record<string, unknown>),
+  };
+
+  delete sanitizedData.kashierSettings;
+  delete sanitizedData.kashier;
+  delete sanitizedData.kashierConfig;
+  delete sanitizedData.paymentGateway;
+
+  const paymentMethodsCandidate = sanitizedData.paymentMethods;
+  if (paymentMethodsCandidate && typeof paymentMethodsCandidate === 'object') {
+    const sanitizedPaymentMethods = {
+      ...(paymentMethodsCandidate as Record<string, unknown>),
+    };
+
+    delete sanitizedPaymentMethods.kashier;
+    delete sanitizedPaymentMethods.kashierSettings;
+    delete sanitizedPaymentMethods.kashierConfig;
+
+    sanitizedData.paymentMethods = sanitizedPaymentMethods;
+  }
+
+  return sanitizedData as AgencySettingsData;
+}
+
+function isKashierConfiguredForOnlinePayments(
+  settings: AgencyKashierSettings,
+  merchantRedirectUrl: string | null
+): boolean {
+  return Boolean(settings.merchantId && settings.apiKey && merchantRedirectUrl);
+}
+
 async function getAgencySettingsRow(): Promise<AgencySettingsRow | null> {
   const supabase = await createClient();
   const agencyId = await getCurrentAgencyId();
 
   const { data, error } = await supabase
     .from('settings')
-    .select('data, logo_url, favicon_url, agency_id')
+    .select(
+      'data, logo_url, favicon_url, og_image_url, twitter_image_url, terms_and_condition_markdown, policy_security_markdown, agency_id, kashier_merchant_id, kashier_api_key, kashier_mode, kashier_allowed_methods, kashier_display'
+    )
     .eq('agency_id', agencyId)
     .maybeSingle();
 
@@ -286,14 +419,32 @@ export async function getAgencySettings(options: { skipTranslation?: boolean } =
     getTourTaxonomy('destination'),
   ]);
 
-  const baseData = (row?.data ?? {}) as AgencySettingsData;
-  const rowFaviconUrl = row?.favicon_url ?? null;
-  const mergedSeoSite: SiteSeoSettings | undefined = rowFaviconUrl
-    ? {
-        ...(baseData.seo?.site ?? {}),
-        faviconUrl: rowFaviconUrl,
-      }
-    : baseData.seo?.site;
+  const baseData = stripKashierKeysFromSettingsData((row?.data ?? {}) as AgencySettingsData);
+  const rowFaviconUrl = normalizeOptionalUrl(row?.favicon_url);
+  const rowOgImageUrl = normalizeOptionalUrl(row?.og_image_url);
+  const rowTwitterImageUrl = normalizeOptionalUrl(row?.twitter_image_url);
+  const rowTermsAndConditionMarkdown = normalizeOptionalMarkdown(
+    row?.terms_and_condition_markdown
+  );
+  const rowPolicySecurityMarkdown = normalizeOptionalMarkdown(row?.policy_security_markdown);
+  const dataTermsAndConditionMarkdown = normalizeOptionalMarkdown(
+    baseData.legalPages?.termsAndConditionMarkdown
+  );
+  const dataPolicySecurityMarkdown = normalizeOptionalMarkdown(
+    baseData.legalPages?.policySecurityMarkdown
+  );
+  const resolvedTermsAndConditionMarkdown =
+    rowTermsAndConditionMarkdown ?? dataTermsAndConditionMarkdown;
+  const resolvedPolicySecurityMarkdown = rowPolicySecurityMarkdown ?? dataPolicySecurityMarkdown;
+  const mergedSeoSite: SiteSeoSettings | undefined =
+    baseData.seo?.site || rowFaviconUrl || rowOgImageUrl || rowTwitterImageUrl
+      ? {
+          ...(baseData.seo?.site ?? {}),
+          ...(rowFaviconUrl ? { faviconUrl: rowFaviconUrl } : {}),
+          ...(rowOgImageUrl ? { ogImageUrl: rowOgImageUrl } : {}),
+          ...(rowTwitterImageUrl ? { twitterImageUrl: rowTwitterImageUrl } : {}),
+        }
+      : undefined;
   const mergedSeo: AgencySettingsData['seo'] | undefined =
     mergedSeoSite || baseData.seo
       ? {
@@ -301,9 +452,30 @@ export async function getAgencySettings(options: { skipTranslation?: boolean } =
           site: mergedSeoSite,
         }
       : undefined;
+  const mergedLegalPages: AgencySettingsData['legalPages'] | undefined =
+    baseData.legalPages || resolvedTermsAndConditionMarkdown || resolvedPolicySecurityMarkdown
+      ? {
+          ...(baseData.legalPages ?? {}),
+          ...(resolvedTermsAndConditionMarkdown
+            ? { termsAndConditionMarkdown: resolvedTermsAndConditionMarkdown }
+            : {}),
+          ...(resolvedPolicySecurityMarkdown
+            ? { policySecurityMarkdown: resolvedPolicySecurityMarkdown }
+            : {}),
+        }
+      : undefined;
+
+  if (mergedLegalPages && !resolvedTermsAndConditionMarkdown) {
+    delete mergedLegalPages.termsAndConditionMarkdown;
+  }
+
+  if (mergedLegalPages && !resolvedPolicySecurityMarkdown) {
+    delete mergedLegalPages.policySecurityMarkdown;
+  }
   const mergedData: AgencySettingsData = {
     ...baseData,
     seo: mergedSeo,
+    legalPages: mergedLegalPages,
   };
 
   let finalData: AgencySettingsData = {
@@ -323,14 +495,82 @@ export async function getAgencySettings(options: { skipTranslation?: boolean } =
     data: finalData,
     logo_url: row?.logo_url ?? null,
     favicon_url: rowFaviconUrl,
+    og_image_url: rowOgImageUrl,
+    twitter_image_url: rowTwitterImageUrl,
     agency_id: row?.agency_id ?? agencyId,
+  };
+}
+
+export async function getAgencyKashierSettingsForRuntime(): Promise<AgencyKashierSettings> {
+  const row = await getAgencySettingsRow();
+  return normalizeAgencyKashierSettingsRow(row);
+}
+
+export async function getAgencyKashierSettingsForAdmin(): Promise<AgencyKashierSettings> {
+  const supabase = await createAdminClient();
+  const agencyId = await getCurrentAgencyId();
+
+  const { data, error } = await supabase
+    .from('settings')
+    .select(
+      'kashier_merchant_id, kashier_api_key, kashier_mode, kashier_allowed_methods, kashier_display'
+    )
+    .eq('agency_id', agencyId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch Kashier settings: ${error.message}`);
+  }
+
+  return normalizeAgencyKashierSettingsRow((data as AgencyKashierSettingsRow | null) ?? null);
+}
+
+export async function getCheckoutPaymentMethodAvailability(): Promise<CheckoutPaymentMethodAvailability> {
+  const [settings, kashierSettings] = await Promise.all([
+    getAgencySettings({ skipTranslation: true }),
+    getAgencyKashierSettingsForRuntime().catch((): AgencyKashierSettings => ({})),
+  ]);
+
+  const paymentMethods = settings.data?.paymentMethods;
+  const envMerchantRedirectUrl = normalizeOptionalString(process.env.KASHIER_MERCHANT_REDIRECT_URL);
+  const effectiveKashierSettings: AgencyKashierSettings = {
+    merchantId:
+      kashierSettings.merchantId ??
+      normalizeOptionalString(process.env.KASHIER_MERCHANT_ID) ??
+      undefined,
+    apiKey:
+      kashierSettings.apiKey ?? normalizeOptionalString(process.env.KASHIER_API_KEY) ?? undefined,
+  };
+  const onlineConfigured = isKashierConfiguredForOnlinePayments(
+    effectiveKashierSettings,
+    envMerchantRedirectUrl
+  );
+
+  let cash = paymentMethods?.cash ?? true;
+  let online = (paymentMethods?.online ?? true) && onlineConfigured;
+
+  if (!cash && !online) {
+    cash = true;
+  }
+
+  const requestedDefault = paymentMethods?.defaultMethod;
+  const defaultMethod: 'cash' | 'online' =
+    requestedDefault === 'cash' ? (cash ? 'cash' : 'online') : online ? 'online' : 'cash';
+
+  return {
+    cash,
+    online,
+    defaultMethod,
+    onlineConfigured,
   };
 }
 
 export async function updateAgencySettings(
   settingsData: AgencySettingsData,
   logoUrl?: string | null,
-  faviconUrl?: string | null
+  faviconUrl?: string | null,
+  seoImageUrls?: SeoImageUrls,
+  kashierSettings?: AgencyKashierSettingsInput
 ) {
   const supabase = await createAdminClient();
   const agencyId = await getCurrentAgencyId();
@@ -346,13 +586,74 @@ export async function updateAgencySettings(
 
   const resolvedLogoUrl = logoUrl === undefined ? (existing?.logo_url ?? null) : logoUrl;
   const existingFaviconUrlFromData =
-    existing?.data?.seo?.site?.faviconUrl && existing.data.seo.site.faviconUrl.trim()
-      ? existing.data.seo.site.faviconUrl.trim()
-      : null;
+    normalizeOptionalUrl(existing?.data?.seo?.site?.faviconUrl) ?? null;
+  const settingsOgImageUrl = normalizeOptionalUrl(settingsDataWithoutTaxonomy.seo?.site?.ogImageUrl);
+  const settingsTwitterImageUrl = normalizeOptionalUrl(
+    settingsDataWithoutTaxonomy.seo?.site?.twitterImageUrl
+  );
+  const incomingTermsAndConditionMarkdown =
+    settingsDataWithoutTaxonomy.legalPages?.termsAndConditionMarkdown;
+  const incomingPolicySecurityMarkdown = settingsDataWithoutTaxonomy.legalPages?.policySecurityMarkdown;
+  const existingOgImageUrlFromData = normalizeOptionalUrl(existing?.data?.seo?.site?.ogImageUrl);
+  const existingTwitterImageUrlFromData = normalizeOptionalUrl(
+    existing?.data?.seo?.site?.twitterImageUrl
+  );
+  const existingTermsAndConditionMarkdownFromData = normalizeOptionalMarkdown(
+    existing?.data?.legalPages?.termsAndConditionMarkdown
+  );
+  const existingPolicySecurityMarkdownFromData = normalizeOptionalMarkdown(
+    existing?.data?.legalPages?.policySecurityMarkdown
+  );
   const resolvedFaviconUrl =
-    faviconUrl === undefined ? (existing?.favicon_url ?? existingFaviconUrlFromData) : faviconUrl;
+    faviconUrl === undefined
+      ? (normalizeOptionalUrl(existing?.favicon_url) ?? existingFaviconUrlFromData)
+      : normalizeOptionalUrl(faviconUrl);
+  const resolvedOgImageUrl =
+    seoImageUrls?.ogImageUrl === undefined
+      ? (settingsOgImageUrl ??
+        normalizeOptionalUrl(existing?.og_image_url) ??
+        existingOgImageUrlFromData)
+      : normalizeOptionalUrl(seoImageUrls.ogImageUrl);
+  const resolvedTwitterImageUrl =
+    seoImageUrls?.twitterImageUrl === undefined
+      ? (settingsTwitterImageUrl ??
+        normalizeOptionalUrl(existing?.twitter_image_url) ??
+        existingTwitterImageUrlFromData)
+      : normalizeOptionalUrl(seoImageUrls.twitterImageUrl);
+  const resolvedTermsAndConditionMarkdown =
+    incomingTermsAndConditionMarkdown === undefined
+      ? (normalizeOptionalMarkdown(existing?.terms_and_condition_markdown) ??
+        existingTermsAndConditionMarkdownFromData)
+      : normalizeOptionalMarkdown(incomingTermsAndConditionMarkdown);
+  const resolvedPolicySecurityMarkdown =
+    incomingPolicySecurityMarkdown === undefined
+      ? (normalizeOptionalMarkdown(existing?.policy_security_markdown) ??
+        existingPolicySecurityMarkdownFromData)
+      : normalizeOptionalMarkdown(incomingPolicySecurityMarkdown);
 
-  const currentData = (existing?.data ?? {}) as AgencySettingsData;
+  const existingKashierSettings = normalizeAgencyKashierSettingsRow(existing);
+  const resolvedKashierMerchantId =
+    kashierSettings?.merchantId === undefined
+      ? (existingKashierSettings.merchantId ?? null)
+      : normalizeOptionalString(kashierSettings.merchantId);
+  const resolvedKashierApiKey =
+    kashierSettings?.apiKey === undefined
+      ? (existingKashierSettings.apiKey ?? null)
+      : normalizeOptionalString(kashierSettings.apiKey);
+  const resolvedKashierMode =
+    kashierSettings?.mode === undefined
+      ? (existingKashierSettings.mode ?? null)
+      : normalizeKashierMode(kashierSettings.mode);
+  const resolvedKashierAllowedMethods =
+    kashierSettings?.allowedMethods === undefined
+      ? (existingKashierSettings.allowedMethods ?? null)
+      : normalizeOptionalString(kashierSettings.allowedMethods);
+  const resolvedKashierDisplay =
+    kashierSettings?.display === undefined
+      ? (existingKashierSettings.display ?? null)
+      : normalizeKashierDisplay(kashierSettings.display);
+
+  const currentData = stripKashierKeysFromSettingsData((existing?.data ?? {}) as AgencySettingsData);
 
   const mergedSettingsData: AgencySettingsData = {
     ...currentData,
@@ -377,6 +678,10 @@ export async function updateAgencySettings(
       ...(currentData.destinationPage ?? {}),
       ...(settingsDataWithoutTaxonomy.destinationPage ?? {}),
     },
+    legalPages: {
+      ...(currentData.legalPages ?? {}),
+      ...(settingsDataWithoutTaxonomy.legalPages ?? {}),
+    },
     seo: {
       ...(currentData.seo ?? {}),
       ...(settingsDataWithoutTaxonomy.seo ?? {}),
@@ -392,7 +697,7 @@ export async function updateAgencySettings(
       ...(mergedSettingsData.seo ?? {}),
       site: {
         ...(mergedSettingsData.seo?.site ?? {}),
-        faviconUrl: resolvedFaviconUrl.trim(),
+        faviconUrl: resolvedFaviconUrl,
       },
     };
   } else if (mergedSettingsData.seo?.site?.faviconUrl) {
@@ -404,10 +709,77 @@ export async function updateAgencySettings(
     };
   }
 
+  if (resolvedOgImageUrl) {
+    mergedSettingsData.seo = {
+      ...(mergedSettingsData.seo ?? {}),
+      site: {
+        ...(mergedSettingsData.seo?.site ?? {}),
+        ogImageUrl: resolvedOgImageUrl,
+      },
+    };
+  } else if (mergedSettingsData.seo?.site?.ogImageUrl) {
+    const nextSite = { ...(mergedSettingsData.seo.site ?? {}) };
+    delete nextSite.ogImageUrl;
+    mergedSettingsData.seo = {
+      ...(mergedSettingsData.seo ?? {}),
+      site: nextSite,
+    };
+  }
+
+  if (resolvedTwitterImageUrl) {
+    mergedSettingsData.seo = {
+      ...(mergedSettingsData.seo ?? {}),
+      site: {
+        ...(mergedSettingsData.seo?.site ?? {}),
+        twitterImageUrl: resolvedTwitterImageUrl,
+      },
+    };
+  } else if (mergedSettingsData.seo?.site?.twitterImageUrl) {
+    const nextSite = { ...(mergedSettingsData.seo.site ?? {}) };
+    delete nextSite.twitterImageUrl;
+    mergedSettingsData.seo = {
+      ...(mergedSettingsData.seo ?? {}),
+      site: nextSite,
+    };
+  }
+
+  const mergedLegalPages = {
+    ...(mergedSettingsData.legalPages ?? {}),
+  };
+
+  if (resolvedTermsAndConditionMarkdown) {
+    mergedLegalPages.termsAndConditionMarkdown = resolvedTermsAndConditionMarkdown;
+  } else {
+    delete mergedLegalPages.termsAndConditionMarkdown;
+  }
+
+  if (resolvedPolicySecurityMarkdown) {
+    mergedLegalPages.policySecurityMarkdown = resolvedPolicySecurityMarkdown;
+  } else {
+    delete mergedLegalPages.policySecurityMarkdown;
+  }
+
+  if (Object.keys(mergedLegalPages).length > 0) {
+    mergedSettingsData.legalPages = mergedLegalPages;
+  } else {
+    delete mergedSettingsData.legalPages;
+  }
+
+  const sanitizedMergedSettingsData = stripKashierKeysFromSettingsData(mergedSettingsData);
+
   const payload = {
-    data: mergedSettingsData,
+    data: sanitizedMergedSettingsData,
     logo_url: resolvedLogoUrl,
     favicon_url: resolvedFaviconUrl,
+    og_image_url: resolvedOgImageUrl,
+    twitter_image_url: resolvedTwitterImageUrl,
+    terms_and_condition_markdown: resolvedTermsAndConditionMarkdown,
+    policy_security_markdown: resolvedPolicySecurityMarkdown,
+    kashier_merchant_id: resolvedKashierMerchantId,
+    kashier_api_key: resolvedKashierApiKey,
+    kashier_mode: resolvedKashierMode,
+    kashier_allowed_methods: resolvedKashierAllowedMethods,
+    kashier_display: resolvedKashierDisplay,
     updated_at: new Date().toISOString(),
     agency_id: agencyId,
   };
@@ -433,12 +805,16 @@ export async function updateAgencySettings(
   revalidatePath('/');
   revalidatePath('/about');
   revalidatePath('/contact');
+  revalidatePath('/terms-and-condition');
+  revalidatePath('/policy-security');
   revalidatePath('/tours');
   revalidatePath('/services');
   revalidatePath('/blog');
   revalidatePath('/destination');
   revalidatePath('/upsell-items');
   revalidatePath('/tailor-made');
+  revalidatePath('/terms');
+  revalidatePath('/privacy');
   revalidatePath('/admin/tours');
   revalidatePath('/admin/tours/new');
   revalidatePath('/admin/tours/settings');

@@ -37,7 +37,7 @@ import { ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 import { TrustBadges } from '@/components/trust-badges';
 import { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { getCheckoutPaymentMethodAvailability } from '@/lib/supabase/agency-content';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -54,13 +54,14 @@ type PaymentMethod = z.infer<typeof formSchema>['paymentMethod'];
 
 export default function CheckoutPage() {
   const { cartItems, getCartTotal, getDiscountAmount, getFinalTotal, promoCode } = useCart();
-  const { format: formatPrice } = useCurrency();
+  const { format: formatPrice, convertTo } = useCurrency();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [paymentConfig, setPaymentConfig] = useState<{
     cash: boolean;
     online: boolean;
     defaultMethod: PaymentMethod;
+    onlineConfigured: boolean;
   } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -99,17 +100,17 @@ export default function CheckoutPage() {
 
     async function loadPaymentMethods() {
       try {
-        const settings = await getAgencySettings();
+        const availability = await getCheckoutPaymentMethodAvailability();
 
         if (cancelled) return;
 
-        const paymentMethods = settings?.data?.paymentMethods;
-        const cash = paymentMethods?.cash ?? true;
-        const online = paymentMethods?.online ?? true;
+        const cash = availability?.cash ?? true;
+        const online = availability?.online ?? true;
         const defaultMethod: PaymentMethod =
-          paymentMethods?.defaultMethod === 'cash' || paymentMethods?.defaultMethod === 'online'
-            ? paymentMethods.defaultMethod
+          availability?.defaultMethod === 'cash' || availability?.defaultMethod === 'online'
+            ? availability.defaultMethod
             : 'online';
+        const onlineConfigured = availability?.onlineConfigured ?? true;
 
         const normalizedCash = cash || (!cash && !online);
         const normalizedOnline = online || (!cash && !online);
@@ -127,11 +128,21 @@ export default function CheckoutPage() {
           cash: normalizedCash,
           online: normalizedOnline,
           defaultMethod: nextDefault,
+          onlineConfigured,
         });
 
         form.setValue('paymentMethod', nextDefault, { shouldValidate: true });
       } catch {
         if (cancelled) return;
+
+        setPaymentConfig({
+          cash: true,
+          online: false,
+          defaultMethod: 'cash',
+          onlineConfigured: false,
+        });
+
+        form.setValue('paymentMethod', 'cash', { shouldValidate: true });
       }
     }
 
@@ -152,8 +163,18 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (values.paymentMethod === 'online' && paymentConfig?.onlineConfigured === false) {
+      toast({
+        title: 'Online Payment Unavailable',
+        description:
+          'Online payment is not configured at the moment. Please choose cash or contact support.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
-      const bookingId = await createBooking({
+      const bookingPayload = {
         customerName: values.name,
         customerEmail: values.email,
         phoneNumber: values.phoneNumber,
@@ -161,9 +182,11 @@ export default function CheckoutPage() {
         cartItems: cartItems,
         paymentMethod: values.paymentMethod,
         promoCode: promoCode?.code,
-      });
+      };
 
       if (values.paymentMethod === 'cash') {
+        const bookingId = await createBooking(bookingPayload);
+
         toast({
           title: 'Booking Confirmed',
           description: 'Your booking has been placed successfully.',
@@ -172,19 +195,27 @@ export default function CheckoutPage() {
         return;
       }
 
-      toast({
-        title: 'Redirecting to Payment',
-        description: 'Complete your payment to confirm the booking.',
-      });
+      const provisionalBookingId = crypto.randomUUID();
+      const kashierAmountInEgp = convertTo(getFinalTotal(), 'EGP');
 
       const paymentUrl = await buildKashierHppUrl({
-        merchantOrderId: bookingId,
-        amount: getFinalTotal(),
+        merchantOrderId: provisionalBookingId,
+        amount: kashierAmountInEgp,
         customer: {
           name: values.name,
           email: values.email,
           mobile: values.phoneNumber,
         },
+      });
+
+      await createBooking({
+        ...bookingPayload,
+        bookingId: provisionalBookingId,
+      });
+
+      toast({
+        title: 'Redirecting to Payment',
+        description: 'Complete your payment to confirm the booking.',
       });
 
       window.location.href = paymentUrl;

@@ -240,11 +240,11 @@ export function Footer() {
             &copy; {new Date().getFullYear()} {agencyName}. {t('footer.rights')}
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link href="/terms" className="hover:text-primary">
+            <Link href="/terms-and-condition" className="hover:text-primary">
               {t('footer.terms')}
             </Link>
-            <Link href="/privacy" className="hover:text-primary">
-              {t('footer.privacy')}
+            <Link href="/policy-security" className="hover:text-primary">
+              {t('footer.policySecurity')}
             </Link>
             <Link href="/environmental" className="hover:text-primary">
               {t('footer.environmental')}
