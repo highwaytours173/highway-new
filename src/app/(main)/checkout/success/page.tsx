@@ -18,6 +18,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getBookingById } from '@/lib/supabase/bookings';
 import { useCart } from '@/hooks/use-cart';
 import { useLanguage } from '@/hooks/use-language';
+import { finalizeKashierRedirect } from './actions';
 
 type PaymentState = 'checking' | 'confirmed' | 'cancelled' | 'pending' | 'unknown';
 
@@ -36,6 +37,40 @@ export default function CheckoutSuccessPage() {
       null
     );
   }, [searchParams]);
+
+  const paymentStatusParam = useMemo(
+    () => searchParams.get('paymentStatus') || searchParams.get('status'),
+    [searchParams]
+  );
+
+  const allParams = useMemo(() => {
+    const obj: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      obj[key] = value;
+    });
+    return obj;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!merchantOrderId || !paymentStatusParam) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        await finalizeKashierRedirect({
+          merchantOrderId,
+          paymentStatus: paymentStatusParam,
+          signature: allParams.signature ?? null,
+          signatureKeys: allParams.signatureKeys ?? null,
+          params: allParams,
+        });
+      } catch (err) {
+        if (!cancelled) console.error('Failed to finalize Kashier redirect:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [merchantOrderId, paymentStatusParam, allParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,6 +93,22 @@ export default function CheckoutSuccessPage() {
       if (booking.status === 'Confirmed') {
         setPaymentState('confirmed');
         clearCart();
+        // Clear any stored provisional booking id from the checkout flow.
+        try {
+          if (typeof window !== 'undefined') {
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < window.sessionStorage.length; i += 1) {
+              const key = window.sessionStorage.key(i);
+              if (key && key.startsWith('tourista:checkout:provisionalId:')) {
+                keysToRemove.push(key);
+              }
+            }
+            keysToRemove.forEach((k) => window.sessionStorage.removeItem(k));
+            window.sessionStorage.removeItem('tourista:checkout:lastSubmitAt');
+          }
+        } catch {
+          /* sessionStorage unavailable; ignore */
+        }
         window.clearInterval(intervalId);
         return;
       }
