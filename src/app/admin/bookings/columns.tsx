@@ -24,7 +24,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, ArrowUpDown, FileDown, AlertTriangle } from 'lucide-react';
+import {
+  MoreHorizontal,
+  ArrowUpDown,
+  FileDown,
+  AlertTriangle,
+  CreditCard,
+  Banknote,
+  Copy,
+  Check,
+  MailCheck,
+  Loader2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -34,6 +45,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { resendBookingConfirmationEmail } from '@/lib/supabase/bookings';
+import { useToast } from '@/hooks/use-toast';
 
 interface ColumnsProps {
   onUpdateStatus: (bookingId: string, status: Booking['status']) => void;
@@ -46,8 +59,65 @@ interface ActionCellProps {
   onDelete: (bookingId: string) => void;
 }
 
+function BookingIdCopy({ bookingId }: { bookingId: string }) {
+  const [copied, setCopied] = useState(false);
+  const short = `#${bookingId.substring(0, 8).toUpperCase()}`;
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(bookingId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="mt-0.5 inline-flex w-fit items-center gap-1 rounded font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <span>{short}</span>
+            {copied ? (
+              <Check className="h-3 w-3 text-emerald-600" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Copy booking ID</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const { toast } = useToast();
+
+  const handleResend = async () => {
+    setIsResending(true);
+    try {
+      await resendBookingConfirmationEmail(booking.id);
+      toast({ title: 'Confirmation email resent' });
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to resend email',
+        description: err instanceof Error ? err.message : 'Unexpected error.',
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <>
@@ -92,6 +162,21 @@ function ActionCell({ booking, onUpdateStatus, onDelete }: ActionCellProps) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onUpdateStatus(booking.id, 'Cancelled')}>
             Mark as Cancelled
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={isResending || booking.status === 'Pending'}
+            onSelect={(e) => {
+              e.preventDefault();
+              if (isResending || booking.status === 'Pending') return;
+              void handleResend();
+            }}
+          >
+            {isResending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <MailCheck className="mr-2 h-4 w-4" />
+            )}
+            Resend confirmation email
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -171,6 +256,7 @@ export const columns = ({ onUpdateStatus, onDelete }: ColumnsProps): ColumnDef<B
               </Tooltip>
             </TooltipProvider>
           )}
+          <BookingIdCopy bookingId={row.original.id} />
         </div>
       );
     },
@@ -190,6 +276,40 @@ export const columns = ({ onUpdateStatus, onDelete }: ColumnsProps): ColumnDef<B
           ))}
         </div>
       );
+    },
+  },
+  {
+    accessorKey: 'paymentMethod',
+    header: 'Payment',
+    cell: ({ row }) => {
+      const method = row.getValue('paymentMethod') as Booking['paymentMethod'];
+      if (method === 'online') {
+        return (
+          <Badge
+            variant="outline"
+            className="gap-1 border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300"
+          >
+            <CreditCard className="h-3 w-3" />
+            Online
+          </Badge>
+        );
+      }
+      if (method === 'cash') {
+        return (
+          <Badge
+            variant="outline"
+            className="gap-1 border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+          >
+            <Banknote className="h-3 w-3" />
+            Cash
+          </Badge>
+        );
+      }
+      return <span className="text-muted-foreground">—</span>;
+    },
+    filterFn: (row, id, value) => {
+      if (!value) return true;
+      return row.getValue(id) === value;
     },
   },
   {

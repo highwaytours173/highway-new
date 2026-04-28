@@ -6,8 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ArrowRight,
+  Banknote,
+  Check,
   CheckCircle2,
   Compass,
+  Copy,
+  CreditCard,
   Download,
   Loader2,
   Ticket,
@@ -16,17 +20,73 @@ import {
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { getBookingById } from '@/lib/supabase/bookings';
+import type { Booking } from '@/types';
 import { useCart } from '@/hooks/use-cart';
 import { useLanguage } from '@/hooks/use-language';
 import { finalizeKashierRedirect } from './actions';
 
 type PaymentState = 'checking' | 'confirmed' | 'cancelled' | 'pending' | 'unknown';
 
+function PaymentMethodBadge({ method }: { method: Booking['paymentMethod'] }) {
+  if (method === 'online') {
+    return (
+      <Badge
+        variant="outline"
+        className="gap-1 border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300"
+      >
+        <CreditCard className="h-3 w-3" />
+        Online
+      </Badge>
+    );
+  }
+  if (method === 'cash') {
+    return (
+      <Badge
+        variant="outline"
+        className="gap-1 border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+      >
+        <Banknote className="h-3 w-3" />
+        Cash
+      </Badge>
+    );
+  }
+  return null;
+}
+
+function BookingIdCopyButton({ bookingId }: { bookingId: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(bookingId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1 rounded font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
+      aria-label="Copy booking ID"
+    >
+      <span>Booking ID: {bookingId}</span>
+      {copied ? (
+        <Check className="h-3 w-3 text-emerald-600" />
+      ) : (
+        <Copy className="h-3 w-3" />
+      )}
+    </button>
+  );
+}
+
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
   const { t } = useLanguage();
   const [paymentState, setPaymentState] = useState<PaymentState>('checking');
+  const [booking, setBooking] = useState<Booking | null>(null);
 
   const merchantOrderId = useMemo(() => {
     return (
@@ -89,6 +149,8 @@ export default function CheckoutSuccessPage() {
         setPaymentState('unknown');
         return;
       }
+
+      setBooking(booking);
 
       if (booking.status === 'Confirmed') {
         setPaymentState('confirmed');
@@ -222,13 +284,25 @@ export default function CheckoutSuccessPage() {
                     ? t('success.paymentNotCompleted')
                     : t('success.processingPayment')}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {merchantOrderId
-                  ? `Booking ID: ${merchantOrderId}`
-                  : 'Return to the cart if needed.'}
-              </p>
+              {merchantOrderId ? (
+                <BookingIdCopyButton bookingId={merchantOrderId} />
+              ) : (
+                <p className="text-sm text-muted-foreground">Return to the cart if needed.</p>
+              )}
             </div>
           </div>
+          {paymentState === 'confirmed' && booking && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {booking.paymentMethod && <PaymentMethodBadge method={booking.paymentMethod} />}
+              <Badge variant="secondary" className="font-mono">
+                Total paid:{' '}
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                }).format(booking.totalPrice)}
+              </Badge>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border bg-muted/30 p-5">

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { verifyKashierSignature } from '@/lib/kashier';
+import { applyBookingStatusChange } from '@/lib/supabase/bookings';
 
 type KashierWebhookPayload = {
   event?: string;
@@ -52,13 +52,14 @@ export async function POST(request: Request) {
         ? 'Cancelled'
         : 'Pending';
 
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: nextStatus })
-    .eq('id', merchantOrderId);
+  if (nextStatus === 'Pending') {
+    return NextResponse.json({ ok: true });
+  }
 
-  if (error) {
+  try {
+    await applyBookingStatusChange(merchantOrderId, nextStatus, { scopeToCurrentAgency: false });
+  } catch (err) {
+    console.error('Kashier webhook: failed to apply status change', err);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 

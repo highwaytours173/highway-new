@@ -46,8 +46,11 @@ import { ChevronDown, X, Inbox, Ban } from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { startOfDay, endOfDay, subDays, startOfMonth } from 'date-fns';
 
 type StatusFilter = 'all' | 'Pending' | 'Confirmed' | 'Cancelled';
+type PaymentFilter = 'all' | 'online' | 'cash';
+type DatePresetKey = 'today' | 'last7' | 'last30' | 'thisMonth';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -65,6 +68,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
+  const [activeDatePreset, setActiveDatePreset] = React.useState<DatePresetKey | null>(null);
 
   const table = useReactTable({
     data,
@@ -98,7 +102,51 @@ export function DataTable<TData, TValue>({
   const resetFilters = () => {
     table.resetColumnFilters();
     setDateRange(undefined);
+    setActiveDatePreset(null);
   };
+
+  const handleDateRangeChange = React.useCallback(
+    (next: DateRange | undefined) => {
+      setDateRange(next);
+      setActiveDatePreset(null);
+    },
+    []
+  );
+
+  const applyDatePreset = (preset: DatePresetKey | null) => {
+    if (preset === null) {
+      setDateRange(undefined);
+      setActiveDatePreset(null);
+      return;
+    }
+    const now = new Date();
+    let from: Date;
+    let to: Date = endOfDay(now);
+    switch (preset) {
+      case 'today':
+        from = startOfDay(now);
+        break;
+      case 'last7':
+        from = startOfDay(subDays(now, 6));
+        break;
+      case 'last30':
+        from = startOfDay(subDays(now, 29));
+        break;
+      case 'thisMonth':
+        from = startOfMonth(now);
+        break;
+    }
+    setDateRange({ from, to });
+    setActiveDatePreset(preset);
+  };
+
+  const datePresets: { label: string; key: DatePresetKey | null }[] = [
+    { label: 'All time', key: null },
+    { label: 'Today', key: 'today' },
+    { label: 'Last 7 days', key: 'last7' },
+    { label: 'Last 30 days', key: 'last30' },
+    { label: 'This month', key: 'thisMonth' },
+  ];
 
   const statusFilterValue = (table.getColumn('status')?.getFilterValue() as string) ?? 'all';
   const statusCounts = React.useMemo(() => {
@@ -126,6 +174,32 @@ export function DataTable<TData, TValue>({
     { label: 'Pending', value: 'Pending' },
     { label: 'Confirmed', value: 'Confirmed' },
     { label: 'Cancelled', value: 'Cancelled' },
+  ];
+
+  const paymentFilterValue =
+    (table.getColumn('paymentMethod')?.getFilterValue() as string) ?? 'all';
+  const paymentCounts = React.useMemo(() => {
+    const counts: Record<PaymentFilter, number> = { all: 0, online: 0, cash: 0 };
+    for (const row of data) {
+      const method = (row as { paymentMethod?: string }).paymentMethod;
+      if (method === 'online' || method === 'cash') {
+        counts[method]++;
+        counts.all++;
+      }
+    }
+    return counts;
+  }, [data]);
+
+  const setPayment = (value: PaymentFilter) => {
+    table
+      .getColumn('paymentMethod')
+      ?.setFilterValue(value === 'all' ? undefined : value);
+  };
+
+  const paymentChips: { label: string; value: PaymentFilter }[] = [
+    { label: 'All payments', value: 'all' },
+    { label: 'Online', value: 'online' },
+    { label: 'Cash', value: 'cash' },
   ];
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -177,6 +251,52 @@ export function DataTable<TData, TValue>({
         })}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3">
+        <span className="text-xs font-medium text-muted-foreground">Payment</span>
+        {paymentChips.map((chip) => {
+          const active = paymentFilterValue === chip.value;
+          return (
+            <Button
+              key={chip.value}
+              type="button"
+              size="sm"
+              variant={active ? 'default' : 'outline'}
+              onClick={() => setPayment(chip.value)}
+              className="h-7 rounded-full text-xs"
+            >
+              {chip.label}
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'ml-2 h-5 px-1.5 font-mono text-[10px]',
+                  active && 'bg-primary-foreground/20 text-primary-foreground'
+                )}
+              >
+                {paymentCounts[chip.value]}
+              </Badge>
+            </Button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3">
+        {datePresets.map((preset) => {
+          const active = activeDatePreset === preset.key;
+          return (
+            <Button
+              key={preset.label}
+              type="button"
+              size="sm"
+              variant={active ? 'default' : 'outline'}
+              onClick={() => applyDatePreset(preset.key)}
+              className="h-7 rounded-full text-xs"
+            >
+              {preset.label}
+            </Button>
+          );
+        })}
+      </div>
+
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <Input
           placeholder="Filter by customer name..."
@@ -185,7 +305,11 @@ export function DataTable<TData, TValue>({
           className="w-full sm:max-w-xs"
         />
 
-        <DateRangePicker date={dateRange} setDate={setDateRange} className="w-full sm:w-auto" />
+        <DateRangePicker
+          date={dateRange}
+          setDate={handleDateRangeChange}
+          className="w-full sm:w-auto"
+        />
 
         {isFiltered && (
           <Button variant="ghost" onClick={resetFilters} className="h-8 px-2 lg:px-3">
@@ -273,73 +397,78 @@ export function DataTable<TData, TValue>({
           </div>
         </div>
       )}
-      <Table className="min-w-[900px]">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => {
-              const isDuplicate = Boolean(
-                (row.original as { _duplicateGroupId?: string })._duplicateGroupId
-              );
-              return (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    isDuplicate && 'bg-amber-50/40 hover:bg-amber-50/60 dark:bg-amber-950/20'
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-48">
-                <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Inbox className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">No bookings match these filters</p>
-                    <p className="text-xs text-muted-foreground">
-                      Try a different status, date range, or search term.
-                    </p>
-                  </div>
-                  {isFiltered && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={resetFilters}
-                      className="mt-1"
+      <div className="max-h-[70vh] overflow-y-auto">
+        <Table className="min-w-[900px]">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className="sticky top-0 z-10 bg-card"
                     >
-                      Reset filters
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => {
+                const isDuplicate = Boolean(
+                  (row.original as { _duplicateGroupId?: string })._duplicateGroupId
+                );
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={cn(
+                      isDuplicate && 'bg-amber-50/40 hover:bg-amber-50/60 dark:bg-amber-950/20'
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-48">
+                  <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <Inbox className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">No bookings match these filters</p>
+                      <p className="text-xs text-muted-foreground">
+                        Try a different status, date range, or search term.
+                      </p>
+                    </div>
+                    {isFiltered && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetFilters}
+                        className="mt-1"
+                      >
+                        Reset filters
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-end">
         <div className="text-sm text-muted-foreground sm:flex-1">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}

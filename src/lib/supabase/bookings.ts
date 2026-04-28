@@ -15,6 +15,7 @@ import { sendEmail } from '@/lib/email';
 import { renderBookingConfirmationEmail } from '@/lib/email/templates/booking-confirmation';
 import { renderBookingNotificationEmail } from '@/lib/email/templates/booking-notification';
 import { renderBookingStatusChangeEmail } from '@/lib/email/templates/booking-status-change';
+import { renderBookingPaymentConfirmedEmail } from '@/lib/email/templates/booking-payment-confirmed';
 import {
   getAgencySettings,
   getCheckoutPaymentMethodAvailability,
@@ -72,61 +73,209 @@ export async function getBookingById(id: string): Promise<Booking | null> {
 }
 
 export async function updateBookingStatus(bookingId: string, status: Booking['status']) {
-  const supabase = await createAdminClient();
-  const agencyId = await getCurrentAgencyId();
+  await applyBookingStatusChange(bookingId, status, { scopeToCurrentAgency: true });
+  revalidatePath('/admin/bookings');
+  revalidatePath(`/admin/bookings/${bookingId}`);
+}
 
-  const { error } = await supabase
+/**
+ * Core status-change applier used by both the admin UI (`updateBookingStatus`)
+ * and the Kashier webhook / redirect-finalize path. Handles:
+ * - the DB update (admin client, optional agency scope)
+ * - selecting the right customer email template based on previous status
+ *   and payment method (online Pending → Confirmed gets a dedicated
+ *   "Payment Received" email; everything else gets the generic status-change)
+ * Non-blocking: email failures do not fail the status update.
+ */
+export async function applyBookingStatusChange(
+  bookingId: string,
+  status: Booking['status'],
+  opts: { scopeToCurrentAgency?: boolean } = {}
+): Promise<void> {
+  const supabase = await createAdminClient();
+
+  // Read previous state first (we need previous status + payment_method
+  // to pick the right email).
+  const baseQuery = supabase
     .from('bookings')
-    .update({ status })
-    .eq('id', bookingId)
-    .eq('agency_id', agencyId);
+    .select('id, status, payment_method, agency_id, customer_email')
+    .eq('id', bookingId);
+
+  const previousQuery = opts.scopeToCurrentAgency
+    ? baseQuery.eq('agency_id', await getCurrentAgencyId())
+    : baseQuery;
+
+  const { data: previous, error: previousErr } = await previousQuery.maybeSingle();
+
+  if (previousErr || !previous) {
+    if (previousErr) console.error('Error reading booking for status change:', previousErr);
+    throw new Error('Booking not found for status change.');
+  }
+
+  const previousStatus = previous.status as Booking['status'];
+  const paymentMethod = (previous.payment_method as 'cash' | 'online' | null) ?? undefined;
+
+  if (previousStatus === status) return; // idempotent
+
+  const updateBase = supabase.from('bookings').update({ status }).eq('id', bookingId);
+  const { error } = opts.scopeToCurrentAgency
+    ? await updateBase.eq('agency_id', previous.agency_id)
+    : await updateBase;
 
   if (error) {
     console.error('Error updating booking status:', error);
     throw new Error('Failed to update booking status.');
   }
 
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${bookingId}`);
+  if (status !== 'Confirmed' && status !== 'Cancelled') return;
 
-  // Send status change email for notable status changes (non-blocking)
-  if (status === 'Confirmed' || status === 'Cancelled') {
-    try {
-      const [booking, settings] = await Promise.all([
-        getBookingById(bookingId),
-        getAgencySettings().catch(() => null),
-      ]);
+  // Send appropriate email (non-blocking)
+  try {
+    const [booking, settings] = await Promise.all([
+      getBookingByIdUnscoped(bookingId),
+      getAgencySettings().catch(() => null),
+    ]);
 
-      if (booking?.customerEmail) {
-        const agencyData = settings?.data;
-        await sendEmail({
-          agencyEmailSettings: agencyData?.emailSettings,
-          to: booking.customerEmail,
-          subject: `Booking ${status} — ${agencyData?.agencyName || 'Your Travel Agency'}`,
-          html: renderBookingStatusChangeEmail({
-            agencyName: agencyData?.agencyName || 'Your Travel Agency',
-            agencyLogoUrl: settings?.logo_url || undefined,
-            agencyEmail: agencyData?.contactEmail,
-            agencyPhone: agencyData?.phoneNumber,
-            bookingId,
-            customerName: booking.customerName,
-            newStatus: status,
-            totalPrice: booking.totalPrice,
-            items: (booking.bookingItems || []).map((bi) => ({
-              name: bi.tours?.name ?? bi.upsellItems?.name ?? 'Item',
-              packageName: bi.packageName,
-              adults: bi.adults,
-              children: bi.children,
-              date: bi.itemDate,
-            })),
-          }),
-        });
-      }
-    } catch (emailErr) {
-      console.error('Error sending status change email:', emailErr);
-      // Non-blocking: don’t fail the status update if email fails
+    if (!booking?.customerEmail) return;
+
+    const agencyData = settings?.data;
+    const agencyName = agencyData?.agencyName || 'Your Travel Agency';
+    const items = (booking.bookingItems || []).map((bi) => ({
+      name: bi.tours?.name ?? bi.upsellItems?.name ?? 'Item',
+      packageName: bi.packageName,
+      adults: bi.adults,
+      children: bi.children,
+      date: bi.itemDate,
+      price: bi.price,
+    }));
+
+    const isOnlinePaymentSuccess =
+      status === 'Confirmed' && previousStatus === 'Pending' && paymentMethod === 'online';
+
+    if (isOnlinePaymentSuccess) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || '';
+      await sendEmail({
+        agencyEmailSettings: agencyData?.emailSettings,
+        to: booking.customerEmail,
+        subject: `✅ Payment Received — Booking #${bookingId.substring(0, 8).toUpperCase()}`,
+        html: renderBookingPaymentConfirmedEmail({
+          agencyName,
+          agencyLogoUrl: settings?.logo_url || undefined,
+          agencyEmail: agencyData?.contactEmail,
+          agencyPhone: agencyData?.phoneNumber,
+          bookingId,
+          customerName: booking.customerName,
+          paymentMethod: 'online',
+          totalPrice: booking.totalPrice,
+          items,
+          voucherUrl: appUrl ? `${appUrl}/api/bookings/${bookingId}/voucher` : undefined,
+        }),
+      });
+      return;
     }
+
+    await sendEmail({
+      agencyEmailSettings: agencyData?.emailSettings,
+      to: booking.customerEmail,
+      subject: `Booking ${status} — ${agencyName}`,
+      html: renderBookingStatusChangeEmail({
+        agencyName,
+        agencyLogoUrl: settings?.logo_url || undefined,
+        agencyEmail: agencyData?.contactEmail,
+        agencyPhone: agencyData?.phoneNumber,
+        bookingId,
+        customerName: booking.customerName,
+        newStatus: status,
+        totalPrice: booking.totalPrice,
+        items,
+      }),
+    });
+  } catch (emailErr) {
+    console.error('Error sending status change email:', emailErr);
   }
+}
+
+/**
+ * Re-send the appropriate customer confirmation email for a booking without
+ * changing its status. Useful for an admin "Resend confirmation" action.
+ */
+export async function resendBookingConfirmationEmail(bookingId: string): Promise<void> {
+  const booking = await getBookingById(bookingId);
+  if (!booking?.customerEmail) {
+    throw new Error('Booking has no customer email.');
+  }
+
+  const settings = await getAgencySettings().catch(() => null);
+  const agencyData = settings?.data;
+  const agencyName = agencyData?.agencyName || 'Your Travel Agency';
+  const items = (booking.bookingItems || []).map((bi) => ({
+    name: bi.tours?.name ?? bi.upsellItems?.name ?? 'Item',
+    packageName: bi.packageName,
+    adults: bi.adults,
+    children: bi.children,
+    date: bi.itemDate,
+    price: bi.price,
+  }));
+
+  if (booking.status === 'Confirmed') {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || '';
+    await sendEmail({
+      agencyEmailSettings: agencyData?.emailSettings,
+      to: booking.customerEmail,
+      subject: `✅ Booking Confirmed — #${bookingId.substring(0, 8).toUpperCase()}`,
+      html: renderBookingPaymentConfirmedEmail({
+        agencyName,
+        agencyLogoUrl: settings?.logo_url || undefined,
+        agencyEmail: agencyData?.contactEmail,
+        agencyPhone: agencyData?.phoneNumber,
+        bookingId,
+        customerName: booking.customerName,
+        paymentMethod: booking.paymentMethod ?? 'cash',
+        totalPrice: booking.totalPrice,
+        items,
+        voucherUrl: appUrl ? `${appUrl}/api/bookings/${bookingId}/voucher` : undefined,
+      }),
+    });
+    return;
+  }
+
+  if (booking.status !== 'Cancelled') {
+    throw new Error(`Cannot resend confirmation email for status "${booking.status}".`);
+  }
+
+  await sendEmail({
+    agencyEmailSettings: agencyData?.emailSettings,
+    to: booking.customerEmail,
+    subject: `Booking ${booking.status} — ${agencyName}`,
+    html: renderBookingStatusChangeEmail({
+      agencyName,
+      agencyLogoUrl: settings?.logo_url || undefined,
+      agencyEmail: agencyData?.contactEmail,
+      agencyPhone: agencyData?.phoneNumber,
+      bookingId,
+      customerName: booking.customerName,
+      newStatus: booking.status,
+      totalPrice: booking.totalPrice,
+      items,
+    }),
+  });
+}
+
+/** Fetch a booking by id without scoping to the current agency (webhook usage). */
+async function getBookingByIdUnscoped(id: string): Promise<Booking | null> {
+  const supabase = await createAdminClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, booking_items(*, tours(name, slug, packages), upsell_items(name, price))')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    console.error(`Error fetching booking by ID ${id}:`, error);
+    return null;
+  }
+  if (!data) return null;
+  return toCamelCase(data) as Booking;
 }
 
 export async function deleteBooking(bookingId: string) {
