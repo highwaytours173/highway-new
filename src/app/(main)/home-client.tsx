@@ -736,7 +736,7 @@ export default function HomePageClient({
 
       {/* ─── H1.1 Our Rooms Section ─── */}
       {isSingleHotel && homeContent.visibility?.roomsSection !== false && roomTypes.length > 0 && (
-        <section className="container mx-auto px-4 py-12 md:py-20" id="rooms">
+        <section className="container mx-auto px-4 py-16 md:py-24" id="rooms">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -781,7 +781,7 @@ export default function HomePageClient({
                           href={getRoomDetailHref(settings, primaryHotelSlug, room.slug)}
                           className="group block h-full"
                         >
-                          <Card className="overflow-hidden h-full border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300">
+                          <Card className="overflow-hidden h-full border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
                             {/* Image */}
                             <div className="relative h-52 overflow-hidden">
                               {room.images && room.images.length > 0 ? (
@@ -892,7 +892,7 @@ export default function HomePageClient({
         homeContent.visibility?.amenitiesSection !== false &&
         homeContent.amenitiesSection?.items &&
         homeContent.amenitiesSection.items.length > 0 && (
-          <section id="amenities" className="py-16 md:py-20 bg-muted/30">
+          <section id="amenities" className="py-16 md:py-24 bg-muted/30">
             <div className="container mx-auto px-4">
               <motion.div
                 initial="hidden"
@@ -940,7 +940,7 @@ export default function HomePageClient({
       {isSingleHotel &&
         homeContent.visibility?.gallerySection !== false &&
         galleryImages.length > 0 && (
-          <section id="gallery" className="py-16 md:py-20">
+          <section id="gallery" className="py-16 md:py-24">
             <div className="container mx-auto px-4">
               <motion.div
                 initial="hidden"
@@ -1059,7 +1059,7 @@ export default function HomePageClient({
         homeContent.whyBookDirect.benefits.length > 0 && (
           <section
             id="why-book-direct"
-            className="py-16 md:py-20 bg-primary text-primary-foreground overflow-hidden"
+            className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden"
           >
             <div className="container mx-auto px-4">
               <motion.div
@@ -1104,7 +1104,7 @@ export default function HomePageClient({
         homeContent.visibility?.locationSection !== false &&
         homeContent.locationSection &&
         (homeContent.locationSection.mapEmbedUrl || homeContent.locationSection.address) && (
-          <section id="location" className="py-16 md:py-20">
+          <section id="location" className="py-16 md:py-24">
             <div className="container mx-auto px-4">
               <motion.div
                 initial="hidden"
@@ -1180,7 +1180,7 @@ export default function HomePageClient({
         homeContent.visibility?.socialSection !== false &&
         homeContent.socialSection &&
         (homeContent.socialSection.images?.length ?? 0) > 0 && (
-          <section id="social" className="py-16 md:py-20 bg-muted/30">
+          <section id="social" className="py-16 md:py-24 bg-muted/30">
             <div className="container mx-auto px-4">
               <motion.div
                 initial="hidden"
@@ -1271,7 +1271,7 @@ export default function HomePageClient({
         homeContent.visibility?.nearbyAttractions !== false &&
         homeContent.nearbyAttractionsSection?.attractions &&
         homeContent.nearbyAttractionsSection.attractions.length > 0 && (
-          <section className="container mx-auto px-4 py-12 md:py-20">
+          <section className="container mx-auto px-4 py-16 md:py-24">
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -1318,7 +1318,7 @@ export default function HomePageClient({
         homeContent.visibility?.seasonalPackages !== false &&
         homeContent.seasonalPackagesSection?.packages &&
         homeContent.seasonalPackagesSection.packages.length > 0 && (
-          <section className="py-12 md:py-20 w-[100dvw] ml-[calc(50%-50dvw)] bg-gradient-to-b from-background to-primary/5">
+          <section className="py-16 md:py-24 w-[100dvw] ml-[calc(50%-50dvw)] bg-gradient-to-b from-background to-primary/5">
             <div className="container mx-auto px-4">
               <motion.div
                 initial="hidden"
@@ -1338,7 +1338,7 @@ export default function HomePageClient({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {homeContent.seasonalPackagesSection.packages.map((pkg) => (
                     <motion.div key={pkg.id} variants={fadeInUp} className="h-full">
-                      <Card className="overflow-hidden h-full border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300 group flex flex-col">
+                      <Card className="overflow-hidden h-full border-border/40 shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col">
                         {pkg.imageUrl && (
                           <div className="relative h-48 overflow-hidden shrink-0">
                             <Image
@@ -1513,7 +1513,7 @@ export default function HomePageClient({
       homeContent.visibility?.hotelFeatures !== false ? (
         <HotelFeaturesSection data={homeContent.hotelFeatures} />
       ) : homeContent.visibility?.whyChooseUs !== false && homeContent.whyChooseUs ? (
-        <section className="container mx-auto px-4 py-14 md:py-24">
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -1617,7 +1617,7 @@ export default function HomePageClient({
       {/* Popular Destinations Section - Only show if Tours are enabled */}
       {homeContent.visibility?.popularDestinations !== false && !isHotelOnly && (
         <section
-          className="container relative mx-auto overflow-hidden px-4 py-12 md:py-20"
+          className="container relative mx-auto overflow-hidden px-4 py-16 md:py-24"
           id="tours"
         >
           <div className="pointer-events-none absolute inset-x-0 top-16 h-48 rounded-[2rem] bg-gradient-to-r from-primary/10 via-primary/[0.07] to-transparent blur-3xl" />
@@ -1740,7 +1740,7 @@ export default function HomePageClient({
 
       {/* Featured Hotels Section - Show if Hotels enabled */}
       {hotels.length > 0 && settings?.modules?.hotels !== false && (
-        <section className="container mx-auto px-4 py-12 md:py-20" id="hotels">
+        <section className="container mx-auto px-4 py-16 md:py-24" id="hotels">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -1778,7 +1778,7 @@ export default function HomePageClient({
                         href={getRoomDetailHref(settings, primaryHotelSlug, room.slug)}
                         className="group block h-full"
                       >
-                        <Card className="overflow-hidden h-full border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <Card className="overflow-hidden h-full border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
                           <div className="relative h-52 overflow-hidden">
                             {room.images && room.images.length > 0 ? (
                               <Image
@@ -1918,7 +1918,7 @@ export default function HomePageClient({
                     key={item.step}
                     variants={fadeInUp}
                     whileHover={{ y: -4 }}
-                    className="group relative z-10 rounded-3xl border border-primary/15 bg-background/85 p-6 text-start shadow-sm transition-all duration-300 hover:border-primary/35 hover:shadow-lg hover:shadow-primary/10"
+                    className="group relative z-10 rounded-2xl border border-primary/15 bg-background/85 p-6 text-start shadow-sm transition-all duration-300 hover:border-primary/35 hover:shadow-md"
                   >
                     <div className="mb-5 flex items-center justify-between gap-4">
                       <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/20">
@@ -1944,7 +1944,7 @@ export default function HomePageClient({
 
       {/* Discount Banners */}
       {homeContent.visibility?.discountBanners !== false && (
-        <section className="container mx-auto px-4 py-12 md:py-20">
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-6 md:gap-8">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -2033,7 +2033,7 @@ export default function HomePageClient({
 
       {/* Last Minute Offers */}
       {homeContent.visibility?.lastMinuteOffers !== false && (
-        <section className="container mx-auto px-4 py-12 md:py-20">
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -2308,7 +2308,7 @@ export default function HomePageClient({
 
       {/* News & Articles Section */}
       {homeContent.visibility?.newsSection !== false && (
-        <section className="container mx-auto px-4 py-12 md:py-20">
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -2349,7 +2349,7 @@ export default function HomePageClient({
                 {articles[0] && (
                   <motion.div variants={fadeInUp} className="lg:col-span-3">
                     <Link href={`/blog/${articles[0].slug}`} className="group block h-full">
-                      <Card className="overflow-hidden h-full border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300">
+                      <Card className="overflow-hidden h-full border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="relative h-64 md:h-80 overflow-hidden">
                           {articles[0].featuredImage ? (
                             <Image
@@ -2391,7 +2391,7 @@ export default function HomePageClient({
                   {articles.slice(1, homeContent.newsSection.count || 3).map((article, index) => (
                     <motion.div key={article.id || index} variants={fadeInUp} className="flex-1">
                       <Link href={`/blog/${article.slug}`} className="group block h-full">
-                        <Card className="overflow-hidden h-full border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-row md:flex-col lg:flex-row">
+                        <Card className="overflow-hidden h-full border-border/40 shadow-sm hover:shadow-md transition-all duration-300 flex flex-row md:flex-col lg:flex-row">
                           <div className="relative w-36 md:w-full md:h-44 lg:w-36 lg:h-auto shrink-0 overflow-hidden rounded-l-lg md:rounded-t-lg md:rounded-bl-none lg:rounded-l-lg lg:rounded-tr-none">
                             {article.featuredImage ? (
                               <Image
@@ -2408,7 +2408,7 @@ export default function HomePageClient({
                               <div className="h-full w-full bg-gradient-to-br from-muted to-muted/40" />
                             )}
                           </div>
-                          <CardContent className="p-4 flex flex-col justify-between flex-1">
+                          <CardContent className="p-5 flex flex-col justify-between flex-1">
                             <div>
                               {article.tags && article.tags.length > 0 && (
                                 <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full mb-2">
@@ -2446,7 +2446,7 @@ export default function HomePageClient({
 
       {/* ─── Highlights Gallery ─── */}
       {tours.length > 0 && !isHotelOnly && (
-        <section className="container mx-auto px-4 py-12 md:py-20">
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -2507,7 +2507,7 @@ export default function HomePageClient({
       )}
 
       {/* ─── FAQ ─── */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
+      <section className="container mx-auto px-4 py-16 md:py-24">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -2554,7 +2554,7 @@ export default function HomePageClient({
       </section>
 
       {/* ─── Help CTA Banner ─── */}
-      <section className="w-[100dvw] ml-[calc(50%-50dvw)] bg-gradient-to-r from-primary via-primary/90 to-accent py-16 md:py-20">
+      <section className="w-[100dvw] ml-[calc(50%-50dvw)] bg-gradient-to-r from-primary via-primary/90 to-accent py-16 md:py-24">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -2618,7 +2618,7 @@ export default function HomePageClient({
 
       {/* H4.1 — Floating Check Availability bottom bar (mobile, hotel mode only) */}
       {isSingleHotel && homeContent.visibility?.hero !== false && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex items-center gap-3">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 pb-[max(theme(spacing.3),env(safe-area-inset-bottom))] flex items-center gap-3">
           <Button
             className="flex-1 rounded-full font-bold shadow-lg"
             onClick={() =>

@@ -10,6 +10,7 @@ import { TourCard } from '@/components/tour-card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Search, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ShareWishlistButton } from '@/components/share-wishlist-button';
 
 type SortValue = 'recent' | 'price_asc' | 'price_desc' | 'rating_desc' | 'name_asc';
 
@@ -71,6 +72,7 @@ export default function WishlistPage() {
             </p>
           )}
         </div>
+        {wishlistItems.length > 0 && <ShareWishlistButton tours={wishlistItems} />}
       </div>
 
       {wishlistItems.length === 0 ? (

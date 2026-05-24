@@ -34,6 +34,7 @@ import type { Language } from '@/hooks/use-language';
 import type { Currency } from '@/hooks/use-currency';
 import { useLanguage, languages } from '@/hooks/use-language';
 import { useCurrency, currencies } from '@/hooks/use-currency';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 import { AgencySettingsData } from '@/lib/supabase/agency-content';
 import { useSettings } from '@/components/providers/settings-provider';
@@ -459,6 +460,7 @@ export function Header() {
             {/* Actions */}
             <div className="flex items-center gap-0.5">
               <LanguageCurrencySelector isHero={isHero} />
+              <ThemeToggle iconClassName={iconClass} />
 
               <Button variant="ghost" size="icon" asChild className="relative h-11 w-11">
                 <Link href="/wishlist">

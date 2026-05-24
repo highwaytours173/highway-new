@@ -276,8 +276,8 @@ export default function CartPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-10 pb-24 lg:pb-0">
-      <section className="relative overflow-hidden rounded-3xl border bg-card">
+    <div className="mx-auto w-full max-w-6xl space-y-10 pb-[calc(theme(spacing.28)+env(safe-area-inset-bottom))] lg:pb-0">
+      <section className="relative overflow-hidden rounded-2xl border bg-card">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
         <div className="relative p-6 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -320,7 +320,7 @@ export default function CartPage() {
       </section>
 
       {cartItems.length === 0 ? (
-        <Card className="overflow-hidden rounded-3xl border bg-card">
+        <Card className="overflow-hidden rounded-2xl border bg-card">
           <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-10">
             <div className="space-y-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -339,16 +339,35 @@ export default function CartPage() {
                 </Button>
               </div>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-6">
+            <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-6 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background/70">
                   <Lightbulb className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium">{t('cart.tip')}</p>
-                  <p className="text-sm text-muted-foreground">{t('cart.tipDesc')}</p>
+                  <p className="font-medium">How it works</p>
+                  <p className="text-sm text-muted-foreground">
+                    Three steps to lock in your trip.
+                  </p>
                 </div>
               </div>
+              <ol className="space-y-3 text-sm">
+                {[
+                  { n: 1, title: 'Pick a tour or stay', desc: 'Tap "Details" on any card to view.' },
+                  { n: 2, title: 'Add to cart', desc: 'Choose date, package, and guests.' },
+                  { n: 3, title: 'Confirm & pay', desc: 'Cash on arrival or secure card.' },
+                ].map((step) => (
+                  <li key={step.n} className="flex items-start gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-bold">
+                      {step.n}
+                    </span>
+                    <div className="space-y-0.5">
+                      <p className="font-semibold leading-tight">{step.title}</p>
+                      <p className="text-xs text-muted-foreground leading-tight">{step.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </CardContent>
         </Card>
@@ -396,7 +415,7 @@ export default function CartPage() {
                   return (
                     <Card
                       key={getCartItemKey(item)}
-                      className="overflow-hidden rounded-3xl border bg-card transition-shadow hover:shadow-lg"
+                      className="overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-lg"
                     >
                       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
                         <div className="relative h-44 w-full overflow-hidden rounded-2xl border sm:h-28 sm:w-40">
@@ -501,7 +520,7 @@ export default function CartPage() {
           </div>
 
           <div className="space-y-6 lg:sticky lg:top-24">
-            <Card className="overflow-hidden rounded-3xl border bg-card">
+            <Card className="overflow-hidden rounded-2xl border bg-card">
               <CardHeader>
                 <CardTitle>{t('cart.orderSummary')}</CardTitle>
                 <CardDescription>
@@ -587,7 +606,7 @@ export default function CartPage() {
             </Card>
 
             {upsellItems.length > 0 && (
-              <Card className="overflow-hidden rounded-3xl border bg-card">
+              <Card className="overflow-hidden rounded-2xl border bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">{t('cart.addMore')}</CardTitle>
                   <CardDescription>{t('cart.enhanceExp')}</CardDescription>
@@ -688,7 +707,7 @@ export default function CartPage() {
             )}
 
             {!aiSuggestionsDismissed && (
-            <Card className="overflow-hidden rounded-3xl border bg-card">
+            <Card className="overflow-hidden rounded-2xl border bg-card">
               <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
                 <div>
                   <CardTitle className="text-lg">{t('cart.needInspiration')}</CardTitle>
@@ -738,7 +757,7 @@ export default function CartPage() {
       )}
 
       {cartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 py-3 pb-[max(theme(spacing.3),env(safe-area-inset-bottom))] shadow-lg backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs text-muted-foreground">{t('cart.total')}</p>

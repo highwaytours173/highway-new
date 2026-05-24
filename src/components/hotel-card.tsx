@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BLUR_DATA_URL } from '@/lib/blur-data-url';
 import { useLanguage } from '@/hooks/use-language';
+import { TiltCard, MagneticWrap } from '@/components/motion';
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -23,9 +24,10 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
   const location = [hotel.city, hotel.country].filter(Boolean).join(', ');
 
   return (
+    <TiltCard maxTilt={4} className="h-full">
     <Card
       className={cn(
-        'group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl',
+        'group h-full overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:shadow-md',
         className
       )}
     >
@@ -67,7 +69,7 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
         )}
       </div>
 
-      <CardContent className="flex flex-col gap-3 p-4">
+      <CardContent className="flex flex-col gap-3 p-5">
         <div className="space-y-1">
           <Link href={`/hotels/${hotel.slug}`} className="block">
             <h3 className="line-clamp-1 text-lg font-bold transition-colors group-hover:text-primary">
@@ -80,14 +82,17 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
         </div>
 
         <div className="mt-auto pt-2">
-          <Button asChild className="w-full gap-2 group-hover:bg-primary/90">
-            <Link href={`/hotels/${hotel.slug}`}>
-              {t('hotel.viewDetails')}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Button>
+          <MagneticWrap strength={0.15} radius={80} className="w-full block">
+            <Button asChild className="w-full gap-2 group-hover:bg-primary/90">
+              <Link href={`/hotels/${hotel.slug}`}>
+                {t('hotel.viewDetails')}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </MagneticWrap>
         </div>
       </CardContent>
     </Card>
+    </TiltCard>
   );
 }

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MagneticWrap } from '@/components/motion';
+import { CountrySelect } from '@/components/country-select';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useCart } from '@/hooks/use-cart';
@@ -63,6 +64,7 @@ import { AbandonedCartCapture } from '@/components/abandoned-cart-capture';
 import { HoldTimer } from '@/components/hold-timer';
 
 import { createBooking } from '@/lib/supabase/bookings';
+import { classifyCheckoutError } from '@/lib/checkout-errors';
 import { buildKashierHppUrl } from '@/lib/kashier';
 import { getCheckoutPaymentMethodAvailability } from '@/lib/supabase/agency-content';
 import { getCartRoomLookup } from '@/lib/supabase/hotels';
@@ -484,10 +486,23 @@ export default function CheckoutPage() {
     goToStep(1);
   }, [form, goToStep]);
 
-  /** Step 2 → Step 3 gate. Add-ons are optional, so this always passes. */
+  /** Step 2 → Step 3 gate. Add-ons are optional, so this always passes.
+   *  Also reconcile the selected payment method against current availability
+   *  so the user lands on step 3 with a valid default already chosen. */
   const handleAddonsContinue = useCallback(() => {
+    const current = form.getValues('paymentMethod');
+    const fallback = paymentMethodsEnabled.defaultMethod;
+    if (current === 'online' && !paymentMethodsEnabled.online) {
+      form.setValue('paymentMethod', fallback, { shouldValidate: true });
+      toast({
+        title: 'Online payment unavailable',
+        description: 'We\'ve selected cash on arrival for you.',
+      });
+    } else if (current === 'cash' && !paymentMethodsEnabled.cash) {
+      form.setValue('paymentMethod', fallback, { shouldValidate: true });
+    }
     goToStep(2);
-  }, [goToStep]);
+  }, [form, goToStep, paymentMethodsEnabled, toast]);
 
   // -------------------------------------------------------------------------
   // Submit (unchanged behavior — same `createBooking` call as today)
@@ -552,8 +567,9 @@ export default function CheckoutPage() {
         const bookingId = await createBooking(bookingPayload);
 
         toast({
-          title: 'Booking Confirmed',
-          description: 'Your booking has been placed successfully.',
+          title: '✅ Booking confirmed',
+          description:
+            'Your booking is locked in. Check your email for the confirmation and voucher.',
         });
         const successUrl = `/checkout/success?merchantOrderId=${encodeURIComponent(bookingId)}`;
         setRedirectStatus('redirecting');
@@ -583,8 +599,9 @@ export default function CheckoutPage() {
       });
 
       toast({
-        title: 'Redirecting to Payment',
-        description: 'Your booking stays pending until Kashier confirms payment.',
+        title: '🔒 Redirecting to secure payment',
+        description:
+          'You\'re heading to Kashier to complete payment. Your booking stays pending until they confirm.',
       });
 
       setRedirectStatus('redirecting');
@@ -594,9 +611,10 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error('Error placing order:', error);
       setRedirectStatus('idle');
+      const classified = classifyCheckoutError(error);
       toast({
-        title: 'Order Failed',
-        description: 'There was an error placing your order. Please try again.',
+        title: classified.title,
+        description: classified.description,
         variant: 'destructive',
       });
     }
@@ -862,7 +880,7 @@ export default function CheckoutPage() {
   if (cartItems.length === 0) {
     return (
       <div className="mx-auto w-full max-w-5xl py-10">
-        <Card className="overflow-hidden rounded-3xl border bg-card">
+        <Card className="overflow-hidden rounded-2xl border bg-card">
           <CardContent className="grid gap-8 p-8 md:grid-cols-2 md:p-10">
             <div className="space-y-4">
               <Badge variant="secondary" className="w-fit">
@@ -913,14 +931,14 @@ export default function CheckoutPage() {
     selectedPaymentMethod === 'cash' ? t('checkout.confirm') : t('checkout.payOnline');
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-8 pb-28 lg:pb-10">
+    <div className="mx-auto w-full max-w-6xl space-y-8 pb-[calc(theme(spacing.28)+env(safe-area-inset-bottom))] lg:pb-10">
       {redirectStatus !== 'idle' ? (
         <div
           role="status"
           aria-live="polite"
           className="fixed inset-0 z-[100] grid place-items-center bg-background/95 backdrop-blur-sm"
         >
-          <Card className="w-full max-w-md rounded-3xl border bg-card shadow-xl">
+          <Card className="w-full max-w-md rounded-2xl border bg-card shadow-xl">
             <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
                 <Loader2 className="h-7 w-7 animate-spin text-primary" />
@@ -953,7 +971,7 @@ export default function CheckoutPage() {
       ) : null}
 
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl border bg-card">
+      <section className="relative overflow-hidden rounded-2xl border bg-card">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
         <div className="relative p-6 md:p-10">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -1005,7 +1023,7 @@ export default function CheckoutPage() {
           <div className="space-y-6 lg:col-span-2">
             {/* Mobile collapsible order summary at top of each step */}
             <div className="lg:hidden">
-              <Accordion type="single" collapsible className="rounded-3xl border bg-card">
+              <Accordion type="single" collapsible className="rounded-2xl border bg-card">
                 <AccordionItem value="summary" className="border-0">
                   <AccordionTrigger className="px-4 py-3">
                     <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
@@ -1026,7 +1044,7 @@ export default function CheckoutPage() {
               hidden={currentStep !== 0}
               aria-live="polite"
             >
-              <Card className="overflow-hidden rounded-3xl border bg-card">
+              <Card className="overflow-hidden rounded-2xl border bg-card">
                 <CardHeader>
                   <CardTitle id="step-guest-heading">{t('checkout.customerInfo')}</CardTitle>
                   <CardDescription>{t('checkout.customerInfoDesc')}</CardDescription>
@@ -1039,7 +1057,12 @@ export default function CheckoutPage() {
                       <FormItem className="sm:col-span-2">
                         <FormLabel>{t('checkout.fullName')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input
+                            placeholder="John Doe"
+                            autoComplete="name"
+                            autoCapitalize="words"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1054,8 +1077,11 @@ export default function CheckoutPage() {
                         <FormControl>
                           <Input
                             type="email"
+                            inputMode="email"
                             placeholder="you@example.com"
                             autoComplete="email"
+                            autoCapitalize="none"
+                            spellCheck={false}
                             {...field}
                           />
                         </FormControl>
@@ -1070,7 +1096,13 @@ export default function CheckoutPage() {
                       <FormItem className="sm:col-span-1">
                         <FormLabel>{t('checkout.phoneNumber')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="+1 (555) 123-4567" autoComplete="tel" {...field} />
+                          <Input
+                            type="tel"
+                            inputMode="tel"
+                            placeholder="+1 (555) 123-4567"
+                            autoComplete="tel"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1083,7 +1115,11 @@ export default function CheckoutPage() {
                       <FormItem className="sm:col-span-2">
                         <FormLabel>{t('checkout.nationality')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., American, Egyptian" {...field} />
+                          <CountrySelect
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select your country"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1099,7 +1135,7 @@ export default function CheckoutPage() {
               hidden={currentStep !== 1}
               aria-live="polite"
             >
-              <Card className="overflow-hidden rounded-3xl border bg-card">
+              <Card className="overflow-hidden rounded-2xl border bg-card">
                 <CardHeader>
                   <CardTitle id="step-addons-heading">Make your trip even better</CardTitle>
                   <CardDescription>
@@ -1216,12 +1252,23 @@ export default function CheckoutPage() {
               hidden={currentStep !== 2}
               aria-live="polite"
             >
-              <Card className="overflow-hidden rounded-3xl border bg-card">
+              <Card className="overflow-hidden rounded-2xl border bg-card">
                 <CardHeader>
                   <CardTitle id="step-payment-heading">{t('checkout.paymentMethod')}</CardTitle>
                   <CardDescription>Review your order and choose how to pay.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {paymentConfig != null &&
+                    !paymentMethodsEnabled.online &&
+                    paymentMethodsEnabled.cash && (
+                      <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:border-amber-700 dark:text-amber-100">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                          Online card payment isn&apos;t available right now. You can pay
+                          cash on arrival — no card details needed.
+                        </span>
+                      </div>
+                    )}
                   <FormField
                     control={form.control}
                     name="paymentMethod"
@@ -1332,7 +1379,7 @@ export default function CheckoutPage() {
           {/* Desktop right rail summary */}
           <aside className="hidden lg:sticky lg:top-24 lg:block">
             <div className="space-y-6">
-              <Card className="overflow-hidden rounded-3xl border bg-card">
+              <Card className="overflow-hidden rounded-2xl border bg-card">
                 <CardHeader>
                   <CardTitle>{t('checkout.orderSummary')}</CardTitle>
                   <CardDescription>
@@ -1346,7 +1393,7 @@ export default function CheckoutPage() {
           </aside>
 
           {/* Mobile sticky bottom bar */}
-          <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 py-3 pb-[max(theme(spacing.3),env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate text-xs text-muted-foreground">

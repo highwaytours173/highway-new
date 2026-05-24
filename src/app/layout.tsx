@@ -120,6 +120,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { LanguageProvider } from '@/hooks/use-language';
 import { CurrencyProvider } from '@/hooks/use-currency';
+import { ThemeProvider, themeInitScript } from '@/components/providers/theme-provider';
 
 export default async function RootLayout({
   children,
@@ -136,24 +137,34 @@ export default async function RootLayout({
     // proceed without default currency
   }
 
-  const htmlClass = appearance === 'dark' ? 'dark' : undefined;
+  const defaultTheme: 'light' | 'dark' = appearance === 'dark' ? 'dark' : 'light';
 
   return (
-    <html lang="en" className={htmlClass} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-default-theme={defaultTheme}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* FOUC-prevention: resolves theme BEFORE React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${cairo.variable}`}
         suppressHydrationWarning={true}
       >
-        <LanguageProvider>
-          <CurrencyProvider defaultCurrency={defaultCurrency}>
-            <WishlistProvider>
-              <CartProvider>
-                {children}
-                <Toaster />
-              </CartProvider>
-            </WishlistProvider>
-          </CurrencyProvider>
-        </LanguageProvider>
+        <ThemeProvider defaultAppearance={defaultTheme}>
+          <LanguageProvider>
+            <CurrencyProvider defaultCurrency={defaultCurrency}>
+              <WishlistProvider>
+                <CartProvider>
+                  {children}
+                  <Toaster />
+                </CartProvider>
+              </WishlistProvider>
+            </CurrencyProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

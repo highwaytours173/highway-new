@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Tour, TourDateAvailability } from '@/types';
 import Image from 'next/image';
 import { BLUR_DATA_URL } from '@/lib/blur-data-url';
 import { useCart } from '@/hooks/use-cart';
 import { useCurrency } from '@/hooks/use-currency';
 import { useLanguage } from '@/hooks/use-language';
+import { SplitText } from '@/components/motion';
+import { useRecentlyViewed } from '@/hooks/use-recently-viewed';
 
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +32,7 @@ import {
   CheckCircle,
   XCircle,
   ShoppingBag,
+  ShieldCheck,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
@@ -50,6 +53,12 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
     tour.packages && tour.packages.length > 0 ? tour.packages[0].id : undefined
   );
+
+  // Track this tour for the "Recently viewed" rail.
+  const { record: recordView } = useRecentlyViewed();
+  useEffect(() => {
+    if (tour?.id) recordView(tour.id);
+  }, [tour?.id, recordView]);
 
   // Build blocked dates set and limited-spots modifiers from availability data
   const blockedDatesSet = useMemo(() => {
@@ -139,7 +148,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
   };
 
   return (
-    <div className="grid lg:grid-cols-5 gap-12 pb-24 lg:pb-0">
+    <div className="grid lg:grid-cols-5 gap-12 pb-[calc(theme(spacing.28)+env(safe-area-inset-bottom))] lg:pb-0">
       {/* Left Column: Tour Info */}
       <div className="lg:col-span-3 space-y-8">
         <Card className="overflow-hidden">
@@ -167,7 +176,12 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
           </Carousel>
           <CardHeader>
             <CardTitle className="font-headline text-2xl md:text-4xl text-primary">
-              {tour.name}
+              <SplitText
+                text={tour.name}
+                as="span"
+                staggerDelay={0.06}
+                distance={20}
+              />
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -413,22 +427,65 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                     onValueChange={setSelectedPackageId}
                     className="grid gap-2"
                   >
-                    {tour.packages.map((pkg) => (
-                      <div key={pkg.id}>
-                        <RadioGroupItem value={pkg.id} id={pkg.id} className="peer sr-only" />
-                        <Label
-                          htmlFor={pkg.id}
-                          className="flex flex-col items-start justify-between rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-                        >
-                          <div className="font-semibold text-sm">{pkg.name}</div>
-                          {pkg.description && (
-                            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                              {pkg.description}
-                            </div>
-                          )}
-                        </Label>
-                      </div>
-                    ))}
+                    {(() => {
+                      // Cheapest starting price across all packages — used as the
+                      // baseline for the per-option price delta callout.
+                      const minPricePerPackage = tour.packages.map((pkg) => {
+                        const tiers = pkg.priceTiers ?? [];
+                        const adultPrices = tiers
+                          .map((t) => t.pricePerAdult)
+                          .filter((p): p is number => typeof p === 'number');
+                        return adultPrices.length > 0 ? Math.min(...adultPrices) : null;
+                      });
+                      const validMins = minPricePerPackage.filter(
+                        (p): p is number => p != null
+                      );
+                      const cheapest = validMins.length > 0 ? Math.min(...validMins) : null;
+
+                      return tour.packages!.map((pkg, idx) => {
+                        const pkgMin = minPricePerPackage[idx];
+                        const delta =
+                          cheapest != null && pkgMin != null ? pkgMin - cheapest : null;
+                        return (
+                          <div key={pkg.id}>
+                            <RadioGroupItem
+                              value={pkg.id}
+                              id={pkg.id}
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor={pkg.id}
+                              className="flex flex-col items-start justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                            >
+                              <div className="flex w-full items-center justify-between gap-2">
+                                <div className="font-semibold text-sm">{pkg.name}</div>
+                                {pkgMin != null && (
+                                  <div className="flex shrink-0 items-center gap-1.5 text-xs">
+                                    {delta != null && delta > 0 ? (
+                                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                                        +{format(delta)}
+                                      </span>
+                                    ) : delta === 0 ? (
+                                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 font-semibold text-green-800 dark:bg-green-950/50 dark:text-green-200">
+                                        Best value
+                                      </span>
+                                    ) : null}
+                                    <span className="font-semibold text-primary">
+                                      {format(pkgMin)}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              {pkg.description && (
+                                <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                  {pkg.description}
+                                </div>
+                              )}
+                            </Label>
+                          </div>
+                        );
+                      });
+                    })()}
                   </RadioGroup>
                 </div>
               )}
@@ -539,10 +596,14 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                     {children} x {format(currentPriceTier?.pricePerChild ?? 0)}
                   </span>
                 </div>
-                <div className="flex justify-between font-bold text-xl text-primary pt-2">
+                <div className="flex justify-between font-bold text-xl text-primary pt-2 border-t border-border/60">
                   <span>{t('tour.totalPrice')}</span>
                   <span>{format(totalPrice)}</span>
                 </div>
+                <p className="flex items-center gap-1.5 text-[11px] text-green-700 dark:text-green-400 font-medium -mt-0.5">
+                  <ShieldCheck className="h-3 w-3" />
+                  Includes taxes &amp; service fees — no extra charges at checkout
+                </p>
               </div>
             </CardContent>
             <CardFooter>
@@ -556,7 +617,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
       </div>
 
       {/* ── Mobile sticky Book Now bar ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             {date ? (

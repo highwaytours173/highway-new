@@ -7,10 +7,12 @@ import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Clock, MapPin, Star, Heart, ArrowRight, Check } from 'lucide-react';
+import { Clock, MapPin, Star, Heart, ArrowRight, Check, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BLUR_DATA_URL } from '@/lib/blur-data-url';
+import { TiltCard, MagneticWrap } from '@/components/motion';
 
 export type TourAvailabilityStatus =
   | { status: 'available' }
@@ -124,9 +126,10 @@ export function TourCard({
   };
 
   return (
+    <TiltCard maxTilt={4} className="h-full">
     <Card
       className={cn(
-        'group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl',
+        'group h-full overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:shadow-md',
         isSoldOut && 'opacity-90',
         compareSelected && 'ring-2 ring-primary'
       )}
@@ -189,7 +192,7 @@ export function TourCard({
         )}
       </div>
 
-      <CardContent className="flex flex-col gap-3 p-4">
+      <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="inline-flex items-center gap-1.5">
@@ -238,7 +241,7 @@ export function TourCard({
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3">
           <div className="min-w-0">
-            <div className="text-sm text-muted-foreground">{t('featured.from')}</div>
+            <div className="text-xs text-muted-foreground">{t('featured.from')}</div>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-primary">
                 {startingPrice != null ? format(startingPrice) : t('tour.contactUs')}
@@ -247,20 +250,43 @@ export function TourCard({
                 <span className="text-xs text-muted-foreground">{t('tour.perPerson')}</span>
               )}
             </div>
+            {startingPrice != null && (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-green-700 dark:text-green-400 cursor-help"
+                      tabIndex={0}
+                      aria-label="Pricing details"
+                    >
+                      All-in price
+                      <Info className="h-3 w-3" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    Taxes and service fees are included in the displayed price.
+                    No surprise charges at checkout.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
-          <Button
-            asChild
-            variant={isSoldOut ? 'ghost' : isLimited ? 'default' : 'outline'}
-            className={cn('shrink-0', isSoldOut && 'opacity-70 pointer-events-none')}
-            aria-disabled={isSoldOut}
-          >
-            <Link href={`/tours/${tour.slug}`}>
-              {isSoldOut ? t('tours.availabilitySoldOut') : t('tours.details')}{' '}
-              {!isSoldOut && <ArrowRight className="ml-2 h-4 w-4" />}
-            </Link>
-          </Button>
+          <MagneticWrap strength={0.15} radius={70}>
+            <Button
+              asChild
+              variant={isSoldOut ? 'ghost' : isLimited ? 'default' : 'outline'}
+              className={cn('shrink-0', isSoldOut && 'opacity-70 pointer-events-none')}
+              aria-disabled={isSoldOut}
+            >
+              <Link href={`/tours/${tour.slug}`}>
+                {isSoldOut ? t('tours.availabilitySoldOut') : t('tours.details')}{' '}
+                {!isSoldOut && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Link>
+            </Button>
+          </MagneticWrap>
         </div>
       </CardContent>
     </Card>
+    </TiltCard>
   );
 }

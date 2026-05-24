@@ -475,7 +475,7 @@ export function RoomDetailView({ room, hotel, addons, singleHotelMode }: RoomDet
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 pb-28 lg:pb-10">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 pb-[calc(theme(spacing.28)+env(safe-area-inset-bottom))] lg:pb-10">
       <Link
         href={backHref}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:underline"
@@ -1028,7 +1028,7 @@ export function RoomDetailView({ room, hotel, addons, singleHotelMode }: RoomDet
       </div>
 
       {/* Mobile sticky bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             {stayQuote ? (

@@ -105,7 +105,7 @@ export async function SimilarToursSection({ currentTour, limit = 4 }: SimilarTou
                   </Badge>
                 )}
               </div>
-              <div className="p-4 space-y-2">
+              <div className="p-5 space-y-2">
                 <h3 className="font-semibold leading-snug line-clamp-2 group-hover:text-primary">
                   {tour.name}
                 </h3>

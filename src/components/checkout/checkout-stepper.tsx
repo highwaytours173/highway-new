@@ -42,7 +42,7 @@ export function CheckoutStepper({
   return (
     <nav
       aria-label="Checkout progress"
-      className={cn('rounded-3xl border bg-card p-4 shadow-sm md:p-5', className)}
+      className={cn('rounded-2xl border bg-card p-4 shadow-sm md:p-5', className)}
     >
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="font-medium">

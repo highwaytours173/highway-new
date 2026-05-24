@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft, MapPin, Star, Clock, Phone, Mail, Globe } from 'lucide-react';
 import { Reveal } from '@/components/motion';
 import { HotelHeroGallery } from '@/components/hotel-hero-gallery';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import {
   getPublicHotelBySlug,
   getPublicHotels,
@@ -62,6 +63,12 @@ export default async function HotelDetailsPage({ params }: HotelDetailsPageProps
       <div className="mx-auto w-full max-w-6xl px-4 py-8 space-y-10">
         {/* Header info */}
         <Reveal className="space-y-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Hotels', href: '/hotels' },
+              { label: hotel.name },
+            ]}
+          />
           <Link
             href="/hotels"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
@@ -74,7 +81,7 @@ export default async function HotelDetailsPage({ params }: HotelDetailsPageProps
             <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 {typeof hotel.starRating === 'number' && hotel.starRating > 0 && (
-                  <Badge variant="secondary" className="bg-amber-100 text-amber-900">
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
                     <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
                     {hotel.starRating}-star
                   </Badge>

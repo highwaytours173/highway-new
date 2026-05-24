@@ -304,7 +304,10 @@ export function Footer() {
           <p>
             &copy; {new Date().getFullYear()} {agencyName}. {t('footer.rights')}
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 md:mt-0">
+            <Link href="/bookings" className="hover:text-primary">
+              Find my booking
+            </Link>
             <Link href="/terms-and-condition" className="hover:text-primary">
               {t('footer.terms')}
             </Link>

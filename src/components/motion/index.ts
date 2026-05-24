@@ -7,3 +7,5 @@ export { MagneticButton, MagneticWrap } from './magnetic-button';
 export { ScrollScrub, ScrollScrubChild } from './scroll-scrub';
 export { AnimatedTabs } from './animated-tabs';
 export { TiltCard } from './tilt-card';
+export { PageTransition } from './page-transition';
+export { SplitText } from './split-text';

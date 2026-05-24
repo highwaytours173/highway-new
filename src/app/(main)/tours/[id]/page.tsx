@@ -9,6 +9,7 @@ import { getPublicTourAvailability } from '@/lib/supabase/tour-availability';
 import { ReviewForm } from '@/components/review-form';
 import { ReviewsDisplay } from '@/components/reviews-display';
 import { SimilarToursSection } from '@/components/similar-tours-section';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 interface TourDetailsPageProps {
   params: Promise<{
@@ -68,6 +69,22 @@ export default async function TourDetailsPage({ params }: TourDetailsPageProps) 
 
   return (
     <>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-2">
+        <Breadcrumbs
+          items={[
+            { label: 'Tours', href: '/tours' },
+            ...(tour.destination
+              ? [
+                  {
+                    label: tour.destination,
+                    href: `/tours?destination=${encodeURIComponent(tour.destination)}`,
+                  },
+                ]
+              : []),
+            { label: tour.name },
+          ]}
+        />
+      </div>
       <TourDetailsClient tour={tour} availability={availability} />
       {reviewsEnabled && (
         <div className="mx-auto w-full max-w-6xl space-y-8 px-4 pb-10">

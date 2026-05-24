@@ -4,6 +4,7 @@ import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { WhatsAppChatButton } from '@/components/whatsapp-chat-button';
 import { SettingsProvider } from '@/components/providers/settings-provider';
 import { ScrollProgress } from '@/components/motion/scroll-progress';
+import { PageTransition } from '@/components/motion/page-transition';
 
 function hexToHsl(hex: string) {
   let c = hex.substring(1).split('');
@@ -84,7 +85,7 @@ export default async function MainLayout({
         `}</style>
         <Header />
         <main className="flex-grow w-full overflow-x-hidden pt-[84px] md:pt-[134px] pb-8">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
         {phoneNumber && <WhatsAppChatButton phone={phoneNumber} />}

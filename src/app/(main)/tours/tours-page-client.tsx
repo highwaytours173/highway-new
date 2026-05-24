@@ -24,6 +24,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import type { Tour } from '@/types';
 import type { TourAvailabilityStatus } from '@/components/tour-card';
 import { cn } from '@/lib/utils';
+import { RecentlyViewedRail } from '@/components/recently-viewed-rail';
 
 interface ToursPageClientProps {
   sortedTours: Tour[];
@@ -350,6 +351,9 @@ export function ToursPageClient({
             t={t}
           />
         )}
+
+        {/* Recently viewed — only renders once user has visited tour details before */}
+        <RecentlyViewedRail catalog={allTours} className="pt-4" />
       </div>
 
       {/* Compare floating bar */}

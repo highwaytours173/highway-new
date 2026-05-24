@@ -33,6 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { generateTailorMadeTourAction } from '@/app/actions';
+import { CheckoutStepper, type CheckoutStep } from '@/components/checkout/checkout-stepper';
 
 const FormSchema = z.object({
   arrivalDate: z.date({
@@ -411,44 +412,18 @@ export function TailorMadeForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, handleInvalidSubmit)} className="space-y-6">
         <div ref={formTopRef} className="space-y-6">
-          <div className="rounded-xl border bg-muted/20 p-4 md:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-primary">
-                Step {currentStep} of {formSteps.length}
-              </p>
-              <p className="text-sm text-muted-foreground">{activeStep.title}</p>
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              {formSteps.map((step) => {
-                const isActive = currentStep === step.id;
-                const isCompleted = currentStep > step.id;
-                const isClickable = step.id <= currentStep;
-
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => isClickable && setCurrentStep(step.id)}
-                    disabled={!isClickable}
-                    className={cn(
-                      'rounded-lg border p-3 text-left transition-colors',
-                      isActive && 'border-primary bg-primary/10 shadow-sm',
-                      isCompleted &&
-                        'cursor-pointer border-primary/40 bg-primary/5 hover:bg-primary/10',
-                      !isActive &&
-                        !isCompleted &&
-                        'border-border/70 bg-background text-muted-foreground'
-                    )}
-                  >
-                    <p className="text-xs uppercase tracking-wide">Step {step.id}</p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{step.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <CheckoutStepper
+            steps={formSteps.map(
+              (s): CheckoutStep => ({
+                id: String(s.id),
+                label: s.title,
+                description: s.description,
+              })
+            )}
+            currentStep={currentStep - 1}
+            maxReachedStep={currentStep - 1}
+            onStepSelect={(index) => setCurrentStep(index + 1)}
+          />
 
           {submitErrorMessage && (
             <Alert variant="destructive" className="border-destructive/60 bg-destructive/5">
