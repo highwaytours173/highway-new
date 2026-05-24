@@ -17,6 +17,11 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   Home,
   Globe,
   Calendar,
@@ -32,7 +37,9 @@ import {
   MessageCircle,
   Building2,
   Star,
+  ChevronRight,
 } from 'lucide-react';
+import { AdminCommandBarTrigger } from '@/components/admin/command-bar';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -102,50 +109,63 @@ export function AdminSidebar({
     hotels: true,
   };
 
-  // Menu items grouped by category
+  // Menu items grouped by category.
+  //
+  // Grouping principle: organize by *what the agency is trying to do*, not by
+  // database tables. Operations (bookings/customers/reviews) live closer to
+  // the dashboard since that's the daily-driver work. Inventory (the things
+  // you sell) is its own block. Setup is pushed last.
+  //
+  // `keepOpen` pins a group expanded by default. Other groups auto-collapse
+  // unless the user has the active page inside them.
   const groups = [
     {
       label: t('admin.overview'),
+      keepOpen: true,
       items: [{ href: '/admin/dashboard', label: t('admin.dashboard'), icon: Home }],
     },
     {
-      label: t('admin.management'),
+      label: 'Operations',
+      keepOpen: true,
       items: [
-        { href: '/admin/tours', label: t('admin.tours'), icon: Globe },
         { href: '/admin/bookings', label: t('admin.bookings'), icon: Calendar },
+        { href: '/admin/hotels/bookings', label: t('admin.hotelBookings'), icon: Calendar },
         { href: '/admin/customers', label: t('admin.customers'), icon: Users },
         { href: '/admin/reviews', label: t('admin.reviews'), icon: Star },
+        { href: '/admin/contact-messages', label: t('admin.contactMessages'), icon: Mail },
       ],
     },
     {
-      label: t('admin.hotels'),
+      label: 'Inventory',
       items: [
+        { href: '/admin/tours', label: t('admin.tours'), icon: Globe },
         { href: '/admin/hotels', label: t('admin.hotelsDashboard'), icon: Building2 },
         { href: '/admin/hotels/rooms', label: t('admin.roomTypes'), icon: LayoutDashboard },
+        { href: '/admin/upsell-items', label: t('admin.upsellItems'), icon: Tag },
+      ],
+    },
+    {
+      label: 'Pricing & rates',
+      items: [
         { href: '/admin/hotels/pricing-rules', label: t('admin.pricingRules'), icon: Percent },
         { href: '/admin/hotels/availability', label: t('admin.availability'), icon: Calendar },
-        { href: '/admin/hotels/bookings', label: t('admin.hotelBookings'), icon: Calendar },
+        { href: '/admin/promotions', label: t('admin.promotions'), icon: Percent },
       ],
     },
     {
       label: t('admin.content'),
       items: [
-        { href: '/admin/blog', label: t('admin.blog'), icon: Newspaper },
         {
           href: '/admin/home-page-editor',
           label: t('admin.homePageEditor'),
           icon: LayoutDashboard,
         },
-        { href: '/admin/upsell-items', label: t('admin.upsellItems'), icon: Tag },
-        { href: '/admin/promotions', label: t('admin.promotions'), icon: Percent },
+        { href: '/admin/blog', label: t('admin.blog'), icon: Newspaper },
       ],
     },
     {
-      label: t('admin.system'),
-      items: [
-        { href: '/admin/contact-messages', label: t('admin.contactMessages'), icon: Mail },
-        { href: '/admin/settings', label: t('admin.settings'), icon: Settings },
-      ],
+      label: 'Setup',
+      items: [{ href: '/admin/settings', label: t('admin.settings'), icon: Settings }],
     },
   ];
 
@@ -193,37 +213,71 @@ export function AdminSidebar({
           </div>
         </SidebarHeader>
         <SidebarContent>
-          {visibleGroups.map((group) => (
-            <SidebarGroup key={group.label}>
-              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {group.items.map((item) => {
-                    const isPendingBookings =
-                      item.href === '/admin/bookings' &&
-                      !!pendingBookingsCount &&
-                      pendingBookingsCount > 0;
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton href={item.href} isActive={activeMenuHref === item.href}>
-                          <item.icon />
-                          <span>{item.label}</span>
-                          {isPendingBookings && (
-                            <Badge
-                              variant="destructive"
-                              className="ml-auto h-5 min-w-5 px-1 text-xs"
-                            >
-                              {pendingBookingsCount}
-                            </Badge>
-                          )}
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
+          {/* Quick search trigger — opens the global command bar (⌘K) */}
+          <div className="px-2 pt-2">
+            <AdminCommandBarTrigger variant="search-pill" />
+          </div>
+          {visibleGroups.map((group) => {
+            const groupHasActive = group.items.some(
+              (item) => activeMenuHref === item.href
+            );
+            const defaultOpen = group.keepOpen === true || groupHasActive;
+            return (
+              <Collapsible
+                key={group.label}
+                defaultOpen={defaultOpen}
+                className="group/collapsible"
+              >
+                <SidebarGroup>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel
+                      asChild
+                      className="cursor-pointer group/label hover:bg-sidebar-accent/40 rounded-md"
+                    >
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between"
+                      >
+                        <span>{group.label}</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </button>
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {group.items.map((item) => {
+                          const isPendingBookings =
+                            item.href === '/admin/bookings' &&
+                            !!pendingBookingsCount &&
+                            pendingBookingsCount > 0;
+                          return (
+                            <SidebarMenuItem key={item.href}>
+                              <SidebarMenuButton
+                                href={item.href}
+                                isActive={activeMenuHref === item.href}
+                              >
+                                <item.icon />
+                                <span>{item.label}</span>
+                                {isPendingBookings && (
+                                  <Badge
+                                    variant="destructive"
+                                    className="ml-auto h-5 min-w-5 px-1 text-xs"
+                                  >
+                                    {pendingBookingsCount}
+                                  </Badge>
+                                )}
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            );
+          })}
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
@@ -233,6 +287,8 @@ export function AdminSidebar({
             <h1 className="truncate text-lg font-semibold">{getPageTitle(pathname, t)}</h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* Header search icon — opens the same command bar as the sidebar pill */}
+            <AdminCommandBarTrigger variant="icon" className="md:hidden" />
             {agencyId && (
               <NotificationBell
                 agencyId={agencyId}

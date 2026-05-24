@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import {
   Card,
   CardContent,
@@ -27,9 +27,26 @@ interface GettingStartedProps {
   steps: OnboardingStep[];
 }
 
+const LOCAL_DISMISS_KEY = 'tourista:admin:onboarding-dismissed';
+
 export function GettingStarted({ steps }: GettingStartedProps) {
   const [dismissed, setDismissed] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Belt-and-suspenders dismissal: if the server flag ever gets clobbered
+  // (e.g. by an agency-settings write that overwrites the JSONB), the
+  // localStorage value still suppresses the card for the current browser.
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(LOCAL_DISMISS_KEY) === '1') {
+        setDismissed(true);
+      }
+    } catch {
+      // ignore storage exceptions
+    }
+    setHydrated(true);
+  }, []);
 
   const completedCount = steps.filter((s) => s.completed).length;
   const allDone = completedCount === steps.length;
@@ -37,12 +54,19 @@ export function GettingStarted({ steps }: GettingStartedProps) {
 
   const handleDismiss = () => {
     setDismissed(true);
+    try {
+      window.localStorage.setItem(LOCAL_DISMISS_KEY, '1');
+    } catch {
+      // ignore storage exceptions
+    }
     startTransition(async () => {
       await dismissOnboarding();
     });
   };
 
-  if (dismissed) return null;
+  // Avoid rendering until we know what localStorage says, otherwise users
+  // who already dismissed see a flicker of the card on every page load.
+  if (!hydrated || dismissed) return null;
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background shadow-sm">

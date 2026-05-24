@@ -5,11 +5,15 @@ import { RecentSales } from '@/components/admin/recent-sales';
 import { PeriodSelector } from '@/components/admin/period-selector';
 import { GettingStarted } from '@/components/admin/getting-started';
 import { AiCommandCenter } from '@/components/admin/ai-command-center';
+import { ThisWeekFeed } from '@/components/admin/this-week-feed';
 import { getBookings } from '@/lib/supabase/bookings';
 import { getCustomers } from '@/lib/supabase/customers';
 import { getTours } from '@/lib/supabase/tours';
 import { getCurrentAgency } from '@/lib/supabase/agencies';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
+import { getReviews } from '@/lib/supabase/reviews';
+import { getContactMessages } from '@/lib/supabase/contact-messages';
+import { getPromoCodes } from '@/lib/supabase/promo-codes';
 import { getAdminT } from '@/lib/admin-i18n';
 import { Suspense } from 'react';
 
@@ -93,12 +97,24 @@ export default async function AdminDashboard({
   const period = periodParam ?? '30';
   const periodDays = getPeriodDays(period);
 
-  const [allBookings, customers, tours, agency, agencySettings] = await Promise.all([
+  const [
+    allBookings,
+    customers,
+    tours,
+    agency,
+    agencySettings,
+    recentReviews,
+    contactMessages,
+    promoCodes,
+  ] = await Promise.all([
     getBookings(),
     getCustomers(),
     getTours({ skipTranslation: true }),
     getCurrentAgency(),
     getAgencySettings({ skipTranslation: true }),
+    getReviews().catch(() => []),
+    getContactMessages().catch(() => []),
+    getPromoCodes().catch(() => []),
   ]);
 
   // Dashboard always displays USD. The agency's `defaultCurrency` setting
@@ -134,22 +150,32 @@ export default async function AdminDashboard({
   const activeTours = tours.filter((t) => t.availability).length;
   const chartData = buildChartData(allBookings, periodDays);
 
-  // Onboarding state
+  // Onboarding state.
+  //
+  // Source-of-truth distinction:
+  //   - `agency.settings` (agencies table JSONB)  -> agency-level flags
+  //     including `onboarding_dismissed`
+  //   - `agencySettings.data` (settings table)    -> the rich
+  //     AgencySettingsData (logo, contact, theme, socialMedia, etc.)
+  //
+  // Completion checks must read from `agencySettings`, not `agency.settings`,
+  // because that's where the form actually persists values.
   const onboardingDismissed = !!agency?.settings?.onboarding_dismissed;
+  const ad = agencySettings?.data;
   const onboardingSteps = [
     {
       id: 'logo',
       label: t('admin.uploadLogo'),
       description: t('admin.uploadLogoDesc'),
       href: '/admin/settings',
-      completed: !!agency?.settings?.theme?.logoUrl,
+      completed: !!agencySettings?.logo_url,
     },
     {
       id: 'contact',
       label: t('admin.configureContact'),
       description: t('admin.configureContactDesc'),
       href: '/admin/settings',
-      completed: !!(agency?.settings?.contact?.email || agency?.settings?.contact?.phone),
+      completed: !!(ad?.contactEmail || ad?.phoneNumber),
     },
     {
       id: 'tour',
@@ -164,9 +190,10 @@ export default async function AdminDashboard({
       description: t('admin.setupHomepageDesc'),
       href: '/admin/home-page-editor',
       completed: !!(
-        agency?.settings?.theme?.primaryColor ||
-        agency?.settings?.social?.facebook ||
-        agency?.settings?.social?.instagram
+        ad?.theme?.primaryColor ||
+        ad?.socialMedia?.facebook ||
+        ad?.socialMedia?.instagram ||
+        ad?.tagline
       ),
     },
     {
@@ -198,6 +225,35 @@ export default async function AdminDashboard({
   return (
     <div className="space-y-6">
       {showOnboarding && <GettingStarted steps={onboardingSteps} />}
+
+      {/* This week — unified activity inbox surfacing new bookings, reviews,
+          unread contact messages, and promos expiring in the next 7 days. */}
+      <ThisWeekFeed
+        bookings={allBookings.map((b) => ({
+          id: b.id,
+          customerName: b.customerName ?? b.customerEmail ?? 'Customer',
+          bookingDate: b.bookingDate,
+          status: b.status,
+        }))}
+        reviews={recentReviews.map((r) => ({
+          id: r.id,
+          customerName: r.customerName,
+          rating: r.rating,
+          status: r.status,
+          createdAt: r.createdAt,
+        }))}
+        contactMessages={contactMessages.map((m) => ({
+          id: m.id,
+          name: m.name,
+          subject: m.subject,
+          status: m.status,
+          createdAt: m.createdAt,
+        }))}
+        expiringPromos={promoCodes
+          .filter((p) => p.isActive)
+          .map((p) => ({ id: p.id, code: p.code, expiresAt: p.expiresAt }))}
+      />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold">{t('admin.dashboard')}</h1>

@@ -13,6 +13,7 @@ import { redirect } from 'next/navigation';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { AdminLanguageProvider } from '@/hooks/use-admin-language';
 import { CurrencyProvider } from '@/hooks/use-currency';
+import { AdminCommandBarHost } from '@/components/admin/command-bar';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -94,6 +95,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           unreadNotificationCount={unreadCount}
           notifications={notifications}
         >
+          {/* Global ⌘K command palette — mount once, opened by triggers
+              anywhere in the admin tree via the toggle event. */}
+          <AdminCommandBarHost />
           <div className="w-full">
             <ImpersonationBanner />
             <BroadcastBanner agencyTier={settings?.tier} agencyStatus={agency?.status} />
