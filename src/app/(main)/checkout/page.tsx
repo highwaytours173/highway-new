@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ShieldCheck,
   ShoppingBag,
+  Star,
   X,
   Tag,
 } from 'lucide-react';
@@ -421,6 +422,27 @@ export default function CheckoutPage() {
       cartItems.some((i) => i.productType === 'upsell' && i.product.id === upsellId),
     [cartItems]
   );
+
+  // Visible upsells cap. Showing 10–20+ extras was a known abandonment
+  // point — we cap to the top 5 by default and reveal the rest behind
+  // a "Show all" toggle.
+  const UPSELL_VISIBLE_LIMIT = 5;
+  const [showAllUpsells, setShowAllUpsells] = useState(false);
+  const visibleUpsells = useMemo(
+    () => (showAllUpsells ? eligibleUpsells : eligibleUpsells.slice(0, UPSELL_VISIBLE_LIMIT)),
+    [eligibleUpsells, showAllUpsells]
+  );
+  const hiddenUpsellCount = Math.max(0, eligibleUpsells.length - UPSELL_VISIBLE_LIMIT);
+
+  // Has the user added ANY add-on this session? Drives the "Skip" vs
+  // "Continue" CTA copy at the bottom of step 2.
+  const hasAnyAddons = useMemo(() => {
+    const upsellAdded = cartItems.some((i) => i.productType === 'upsell');
+    const roomAddonAdded = cartItems.some(
+      (i) => i.productType === 'room' && (i.addons?.length ?? 0) > 0
+    );
+    return upsellAdded || roomAddonAdded;
+  }, [cartItems]);
 
   // Room addons: keyed by roomTypeId since multiple lines may share a room type.
   const [roomAddonsByType, setRoomAddonsByType] = useState<Record<string, RoomAddon[]>>({});
@@ -923,7 +945,15 @@ export default function CheckoutPage() {
 
   const isSubmitting = form.formState.isSubmitting || redirectStatus !== 'idle';
   const selectedPaymentMethod = form.watch('paymentMethod');
-  const continueLabel = currentStep === 0 ? 'Continue to add-ons' : 'Continue to payment';
+  // Continue-CTA label changes on step 2 (add-ons) based on whether the
+  // user has actually picked any add-on. "Skip to payment" makes the
+  // optionality explicit for users who don't want extras.
+  const continueLabel =
+    currentStep === 0
+      ? 'Continue to add-ons'
+      : hasAnyAddons
+        ? 'Continue to payment'
+        : 'Skip to payment';
   const finalLabel =
     selectedPaymentMethod === 'cash'
       ? t('checkout.confirmCashBooking')
@@ -1155,7 +1185,7 @@ export default function CheckoutPage() {
                   */}
                   {crossSellContext ? <CrossSellRail context={crossSellContext} /> : null}
 
-                  {/* Tour upsells */}
+                  {/* Tour upsells — capped at top N to reduce overwhelm */}
                   {tourItems.length > 0 ? (
                     eligibleUpsells.length > 0 ? (
                       <div className="space-y-3">
@@ -1163,7 +1193,7 @@ export default function CheckoutPage() {
                           <div>
                             <h3 className="text-sm font-semibold">Recommended add-ons</h3>
                             <p className="text-sm text-muted-foreground">
-                              Picked for the tours in your cart — cheapest when bundled.
+                              Hand-picked for your trip — cheapest when bundled.
                             </p>
                           </div>
                           <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
@@ -1172,11 +1202,12 @@ export default function CheckoutPage() {
                           </span>
                         </div>
                         <ul className="grid gap-3 sm:grid-cols-2">
-                          {eligibleUpsells.map((upsell) => (
+                          {visibleUpsells.map((upsell, idx) => (
                             <UpsellOption
                               key={upsell.id}
                               upsell={upsell}
                               alreadyInCart={upsellAlreadyInCart(upsell.id)}
+                              isPopular={idx === 0 && eligibleUpsells.length > 1}
                               onAdd={(variantId, variantName) =>
                                 addToCart(
                                   upsell,
@@ -1193,6 +1224,17 @@ export default function CheckoutPage() {
                             />
                           ))}
                         </ul>
+                        {hiddenUpsellCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAllUpsells((v) => !v)}
+                            className="text-sm font-medium text-primary hover:underline"
+                          >
+                            {showAllUpsells
+                              ? 'Show fewer add-ons'
+                              : `Show all ${eligibleUpsells.length} add-ons (${hiddenUpsellCount} more)`}
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <p className="rounded-2xl border bg-muted/30 p-4 text-sm text-muted-foreground">
@@ -1217,6 +1259,7 @@ export default function CheckoutPage() {
                             <RoomAddonsBlock
                               key={room.lineId}
                               roomName={room.name}
+                              nights={room.nights}
                               available={available}
                               selected={room.addons}
                               formatPrice={formatPrice}
@@ -1502,11 +1545,19 @@ export default function CheckoutPage() {
 type UpsellOptionProps = {
   upsell: UpsellItem;
   alreadyInCart: boolean;
+  /** Show a "Most popular" badge on the image. */
+  isPopular?: boolean;
   onAdd: (variantId: string | undefined, variantName: string | undefined) => void;
   formatPrice: (value: number) => string;
 };
 
-function UpsellOption({ upsell, alreadyInCart, onAdd, formatPrice }: UpsellOptionProps) {
+function UpsellOption({
+  upsell,
+  alreadyInCart,
+  isPopular,
+  onAdd,
+  formatPrice,
+}: UpsellOptionProps) {
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
   const variant = useMemo(
     () => (variantId ? upsell.variants?.find((v) => v.id === variantId) : undefined),
@@ -1535,6 +1586,12 @@ function UpsellOption({ upsell, alreadyInCart, onAdd, formatPrice }: UpsellOptio
           )}
           sizes="(max-width: 640px) 100vw, 50vw"
         />
+        {isPopular && !alreadyInCart && (
+          <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white shadow">
+            <Star className="h-3 w-3 fill-current" />
+            Most popular
+          </div>
+        )}
         {alreadyInCart && (
           <div className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white shadow">
             <Check className="h-3 w-3" />
@@ -1606,14 +1663,32 @@ function UpsellOption({ upsell, alreadyInCart, onAdd, formatPrice }: UpsellOptio
 
 type RoomAddonsBlockProps = {
   roomName: string;
+  /** Nights the user is booking — drives "Suggested" heuristics. */
+  nights?: number;
   available: RoomAddon[];
   selected: RoomCartAddon[];
   formatPrice: (value: number) => string;
   onToggle: (addon: RoomAddon, checked: boolean) => void;
 };
 
+/**
+ * Name-based "Suggested for you" heuristic.
+ *
+ * Travel-industry common upsells fall into a small set of keyword
+ * buckets. We never auto-select on the user's behalf — only badge them
+ * so the obvious-good-fit options stand out. The user always opts in.
+ */
+function isAddonSuggested(addon: RoomAddon, nights: number): boolean {
+  const name = addon.name.toLowerCase();
+  if (/breakfast|morning meal|buffet/.test(name) && nights >= 3) return true;
+  if (/airport.*transfer|pickup|shuttle/.test(name)) return true;
+  if (/late check.?out|early check.?in/.test(name) && nights <= 2) return true;
+  return false;
+}
+
 function RoomAddonsBlock({
   roomName,
+  nights = 0,
   available,
   selected,
   formatPrice,
@@ -1628,6 +1703,7 @@ function RoomAddonsBlock({
         {available.map((addon) => {
           const id = `room-addon-${addon.id}`;
           const checked = selectedIds.has(addon.id);
+          const suggested = isAddonSuggested(addon, nights);
           return (
             <li key={addon.id} className="flex min-w-0 items-start gap-3">
               <Checkbox
@@ -1638,7 +1714,15 @@ function RoomAddonsBlock({
               />
               <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer text-sm">
                 <span className="grid gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-3">
-                  <span className="break-words font-medium">{addon.name}</span>
+                  <span className="flex flex-wrap items-center gap-1.5 break-words font-medium">
+                    {addon.name}
+                    {suggested && !checked && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                        <Star className="h-2.5 w-2.5 fill-current" />
+                        Suggested
+                      </span>
+                    )}
+                  </span>
                   <span className="break-words font-semibold text-primary sm:text-right">
                     {formatPrice(addon.price)}
                   </span>
