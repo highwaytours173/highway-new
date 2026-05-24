@@ -51,6 +51,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { TourAvailabilityManager } from '@/components/admin/tour-availability-manager';
 import { ImageUploader } from '@/components/admin/image-uploader';
+import { UnsavedChangesWarning } from '@/components/admin/unsaved-changes-warning';
 import { Combobox } from '@/components/ui/combobox';
 import type { Tour } from '@/types';
 
@@ -694,8 +695,16 @@ export function TourForm({
           <h2 className="text-3xl font-bold tracking-tight">{pageTitle}</h2>
           <p className="text-muted-foreground mt-1">{pageDescription}</p>
         </div>
-        <div className="ml-auto flex gap-2">
-          <Button variant="outline" onClick={() => form.reset()}>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <UnsavedChangesWarning
+            dirty={form.formState.isDirty}
+            disabled={form.formState.isSubmitting}
+          />
+          <Button
+            variant="outline"
+            onClick={() => form.reset()}
+            disabled={!form.formState.isDirty || form.formState.isSubmitting}
+          >
             Discard
           </Button>
           <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>

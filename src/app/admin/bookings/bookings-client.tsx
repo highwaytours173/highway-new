@@ -4,7 +4,12 @@ import { useMemo, useState } from 'react';
 import type { Booking } from '@/types';
 import { columns } from './columns';
 import { DataTable } from './data-table';
-import { updateBookingStatus, deleteBooking } from '@/lib/supabase/bookings';
+import {
+  updateBookingStatus,
+  deleteBooking,
+  resendBookingConfirmationEmail,
+} from '@/lib/supabase/bookings';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Clock, CheckCircle, Download, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +75,7 @@ function computeDuplicateGroups(bookings: Booking[]): Map<string, string> {
 
 export function BookingsClient({ initialBookings }: BookingsClientProps) {
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const { toast } = useToast();
 
   const handleUpdateStatus = async (bookingId: string, status: Booking['status']) => {
     await updateBookingStatus(bookingId, status);
@@ -86,6 +92,48 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
     setBookings((prev) =>
       prev.map((b) => (ids.includes(b.id) ? { ...b, status: 'Cancelled' } : b))
     );
+  };
+
+  const handleBulkConfirm = async (ids: string[]) => {
+    // Only confirm rows that aren't already Confirmed to avoid pointless writes.
+    const targets = bookings.filter((b) => ids.includes(b.id) && b.status !== 'Confirmed');
+    if (targets.length === 0) {
+      toast({ title: 'Nothing to confirm', description: 'Those bookings are already confirmed.' });
+      return;
+    }
+    const results = await Promise.allSettled(
+      targets.map((b) => updateBookingStatus(b.id, 'Confirmed'))
+    );
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.length - succeeded;
+    setBookings((prev) =>
+      prev.map((b) =>
+        targets.some((t) => t.id === b.id) && results[targets.indexOf(b)]?.status === 'fulfilled'
+          ? { ...b, status: 'Confirmed' }
+          : b
+      )
+    );
+    toast({
+      title: failed === 0 ? `${succeeded} bookings confirmed` : `${succeeded} confirmed, ${failed} failed`,
+      variant: failed === 0 ? 'default' : 'destructive',
+    });
+  };
+
+  const handleBulkResendEmail = async (ids: string[]) => {
+    const results = await Promise.allSettled(ids.map((id) => resendBookingConfirmationEmail(id)));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.length - succeeded;
+    toast({
+      title:
+        failed === 0
+          ? `Resent ${succeeded} email${succeeded === 1 ? '' : 's'}`
+          : `${succeeded} sent, ${failed} failed`,
+      description:
+        failed === 0
+          ? 'Customers should receive the confirmation shortly.'
+          : 'Some emails could not be resent. Check email settings or the booking detail page.',
+      variant: failed === 0 ? 'default' : 'destructive',
+    });
   };
 
   const duplicateGroups = useMemo(() => computeDuplicateGroups(bookings), [bookings]);
@@ -242,6 +290,8 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
         })}
         data={rows}
         onBulkCancel={handleBulkCancel}
+        onBulkConfirm={handleBulkConfirm}
+        onBulkResendEmail={handleBulkResendEmail}
       />
     </div>
   );

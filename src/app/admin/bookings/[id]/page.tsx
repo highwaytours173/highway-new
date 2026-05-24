@@ -123,7 +123,12 @@ export default async function BookingDetailsPage({ params }: BookingDetailsPageP
             </CardDescription>
             <div className="pt-4 border-t space-y-3">
               <p className="mb-2 text-sm font-medium text-muted-foreground">Actions</p>
-              <BookingStatusActions bookingId={booking.id} currentStatus={booking.status} />
+              <BookingStatusActions
+                bookingId={booking.id}
+                currentStatus={booking.status}
+                customerEmail={booking.customerEmail}
+                customerPhone={booking.phoneNumber}
+              />
               <Button variant="outline" className="w-full" asChild>
                 <a href={`/api/bookings/${booking.id}/voucher`} download>
                   <Download className="mr-2 h-4 w-4" />

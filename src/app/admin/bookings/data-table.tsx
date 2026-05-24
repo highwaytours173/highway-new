@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ChevronDown, X, Inbox, Ban } from 'lucide-react';
+import { ChevronDown, X, Inbox, Ban, CheckCircle2, Mail, Loader2 } from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -56,12 +56,16 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onBulkCancel?: (ids: string[]) => Promise<void> | void;
+  onBulkConfirm?: (ids: string[]) => Promise<void> | void;
+  onBulkResendEmail?: (ids: string[]) => Promise<void> | void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onBulkCancel,
+  onBulkConfirm,
+  onBulkResendEmail,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -204,6 +208,8 @@ export function DataTable<TData, TValue>({
     .filter((id): id is string => typeof id === 'string');
   const [bulkCancelOpen, setBulkCancelOpen] = React.useState(false);
   const [bulkCancelLoading, setBulkCancelLoading] = React.useState(false);
+  const [bulkConfirmLoading, setBulkConfirmLoading] = React.useState(false);
+  const [bulkEmailLoading, setBulkEmailLoading] = React.useState(false);
 
   const handleBulkCancelConfirm = async () => {
     if (!onBulkCancel || selectedIds.length === 0) return;
@@ -214,6 +220,28 @@ export function DataTable<TData, TValue>({
       setBulkCancelOpen(false);
     } finally {
       setBulkCancelLoading(false);
+    }
+  };
+
+  const handleBulkConfirmAction = async () => {
+    if (!onBulkConfirm || selectedIds.length === 0) return;
+    setBulkConfirmLoading(true);
+    try {
+      await onBulkConfirm(selectedIds);
+      table.resetRowSelection();
+    } finally {
+      setBulkConfirmLoading(false);
+    }
+  };
+
+  const handleBulkResendEmailAction = async () => {
+    if (!onBulkResendEmail || selectedIds.length === 0) return;
+    setBulkEmailLoading(true);
+    try {
+      await onBulkResendEmail(selectedIds);
+      table.resetRowSelection();
+    } finally {
+      setBulkEmailLoading(false);
     }
   };
 
@@ -343,6 +371,45 @@ export function DataTable<TData, TValue>({
         <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-y bg-muted/70 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
           <span className="text-sm font-medium">{selectedCount} selected</span>
           <div className="ml-auto flex items-center gap-2">
+            {onBulkConfirm && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="border-green-500/40 text-green-700 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-400"
+                disabled={bulkConfirmLoading || selectedIds.length === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleBulkConfirmAction();
+                }}
+              >
+                {bulkConfirmLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                )}
+                Confirm selected
+              </Button>
+            )}
+            {onBulkResendEmail && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={bulkEmailLoading || selectedIds.length === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleBulkResendEmailAction();
+                }}
+              >
+                {bulkEmailLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="mr-2 h-4 w-4" />
+                )}
+                Resend email
+              </Button>
+            )}
             <AlertDialog open={bulkCancelOpen} onOpenChange={setBulkCancelOpen}>
               <AlertDialogTrigger asChild>
                 <Button

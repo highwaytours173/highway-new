@@ -45,6 +45,7 @@ import { AlertTriangle, Loader2, SendHorizonal, Sparkles } from 'lucide-react';
 import { sendTestEmail } from './actions';
 import { ThemeEditor } from '@/components/admin/theme-editor';
 import { SettingsToc } from '@/components/admin/settings-toc';
+import { UnsavedChangesWarning } from '@/components/admin/unsaved-changes-warning';
 import {
   Dialog,
   DialogContent,
@@ -2779,7 +2780,11 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-            <div className="flex justify-end">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <UnsavedChangesWarning
+                dirty={form.formState.isDirty}
+                disabled={form.formState.isSubmitting}
+              />
               <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? (
                   <>
