@@ -44,6 +44,7 @@ import {
 import { AlertTriangle, Loader2, SendHorizonal, Sparkles } from 'lucide-react';
 import { sendTestEmail } from './actions';
 import { ThemeEditor } from '@/components/admin/theme-editor';
+import { SettingsToc } from '@/components/admin/settings-toc';
 import {
   Dialog,
   DialogContent,
@@ -1169,15 +1170,28 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-            <p className="text-muted-foreground">
-              Manage your site settings, branding, and security.
-            </p>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+          <p className="text-muted-foreground">
+            Manage your site settings, branding, and security.
+          </p>
+        </div>
 
-          <Card>
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+          {/* Sticky section nav (desktop). The mobile alternative is the
+              quick-jump hub card injected below on small viewports. */}
+          <aside className="hidden lg:block lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto rounded-2xl border bg-card/40 p-3">
+            <SettingsToc />
+          </aside>
+
+          <div className="space-y-6 min-w-0">
+            {/* Mobile-only quick jump */}
+            <div className="lg:hidden rounded-2xl border bg-card p-4">
+              <p className="mb-2 text-sm font-semibold">Jump to a section</p>
+              <SettingsToc />
+            </div>
+
+          <Card id="business" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Business Configuration</CardTitle>
               <CardDescription>Configure the features and mode of your website.</CardDescription>
@@ -1313,7 +1327,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* ── Email Notifications ── */}
-          <Card>
+          <Card id="email" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Email Notifications</CardTitle>
               <CardDescription>
@@ -1472,7 +1486,7 @@ export default function SettingsPage() {
             </CardFooter>
           </Card>
 
-          <Card>
+          <Card id="general" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
               <CardDescription>Update your tour agency&apos;s public information.</CardDescription>
@@ -1554,7 +1568,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="navigation" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Navigation</CardTitle>
               <CardDescription>
@@ -1607,7 +1621,7 @@ export default function SettingsPage() {
             </CardFooter>
           </Card>
 
-          <Card>
+          <Card id="about" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>About & Address</CardTitle>
               <CardDescription>
@@ -1648,7 +1662,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="legal" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Legal Pages</CardTitle>
               <CardDescription>
@@ -1703,7 +1717,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="images" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Page Images</CardTitle>
               <CardDescription>
@@ -1884,7 +1898,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="social" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Social Media</CardTitle>
               <CardDescription>Links to your agency&apos;s social media profiles.</CardDescription>
@@ -1945,7 +1959,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="theme" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Theme Customization</CardTitle>
               <CardDescription>
@@ -1957,7 +1971,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="seo" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>SEO & Metadata</CardTitle>
               <CardDescription>
@@ -2401,7 +2415,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="payments" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Payment Methods</CardTitle>
               <CardDescription>Control which payment options appear at checkout.</CardDescription>
@@ -2493,7 +2507,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="kashier" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Kashier Details</CardTitle>
               <CardDescription>
@@ -2636,7 +2650,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* ── Default Currency ── */}
-          <Card>
+          <Card id="currency" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Currency</CardTitle>
               <CardDescription>
@@ -2676,7 +2690,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* ── Admin Interface Language ── */}
-          <Card>
+          <Card id="language" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Admin Interface Language</CardTitle>
               <CardDescription>
@@ -2715,7 +2729,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="security" className="scroll-mt-24">
             <CardHeader>
               <CardTitle>Security</CardTitle>
               <CardDescription>Change your account password.</CardDescription>
@@ -2765,17 +2779,18 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </form>
