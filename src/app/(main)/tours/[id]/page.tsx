@@ -8,6 +8,7 @@ import { getApprovedReviewsForTour } from '@/lib/supabase/reviews';
 import { getPublicTourAvailability } from '@/lib/supabase/tour-availability';
 import { ReviewForm } from '@/components/review-form';
 import { ReviewsDisplay } from '@/components/reviews-display';
+import { SimilarToursSection } from '@/components/similar-tours-section';
 
 interface TourDetailsPageProps {
   params: Promise<{
@@ -74,6 +75,7 @@ export default async function TourDetailsPage({ params }: TourDetailsPageProps) 
           <ReviewForm agencyId={agency?.id || ''} tourId={tour.id} itemName={tour.name} />
         </div>
       )}
+      <SimilarToursSection currentTour={tour} />
     </>
   );
 }

@@ -80,8 +80,11 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
 
   const calendarModifiersStyles: Record<string, React.CSSProperties> = {
     limited: {
-      backgroundColor: 'hsl(45 93% 47% / 0.15)',
+      backgroundColor: 'hsl(45 93% 47% / 0.25)',
       borderRadius: '6px',
+      fontWeight: 600,
+      color: 'hsl(28 80% 30%)',
+      boxShadow: 'inset 0 -2px 0 0 hsl(45 93% 47% / 0.7)',
     },
   };
 
@@ -193,7 +196,7 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   {tour.includes && (
                     <div>
-                      <h3 className="font-bold text-lg mb-2 text-green-700">
+                      <h3 className="font-bold text-lg mb-2 text-green-700 dark:text-green-400">
                         {t('tour.includes')}
                       </h3>
                       <ul className="space-y-2 text-sm">
@@ -441,16 +444,35 @@ export function TourDetailsClient({ tour, availability = [] }: TourDetailsClient
                   modifiers={calendarModifiers}
                   modifiersStyles={calendarModifiersStyles}
                 />
+                {limitedDates.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3 rounded-sm bg-amber-300/70 ring-1 ring-amber-500" />
+                      Limited availability
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3 rounded-sm bg-muted line-through decoration-muted-foreground/40" />
+                      Sold out / blocked
+                    </span>
+                  </div>
+                )}
                 {selectedDateInfo &&
                   !selectedDateInfo.isBlocked &&
                   selectedDateInfo.availableSpots !== null && (
-                    <p className="mt-2 text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-                      {selectedDateInfo.availableSpots}{' '}
-                      {selectedDateInfo.availableSpots === 1
-                        ? t('tour.spot')
-                        : t('tour.spotsRemaining')}
-                    </p>
+                    <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-100 dark:border-amber-700">
+                      <span className="mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full bg-amber-500 animate-pulse" />
+                      <div className="space-y-0.5">
+                        <p className="font-semibold leading-tight">
+                          {selectedDateInfo.availableSpots}{' '}
+                          {selectedDateInfo.availableSpots === 1
+                            ? t('tour.spot')
+                            : t('tour.spotsRemaining')}
+                        </p>
+                        <p className="text-xs leading-tight text-amber-800/80 dark:text-amber-200/80">
+                          Book soon — this date is filling up.
+                        </p>
+                      </div>
+                    </div>
                   )}
               </div>
               <div className="grid grid-cols-2 gap-4">

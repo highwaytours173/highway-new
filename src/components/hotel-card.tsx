@@ -52,7 +52,7 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
         {location && (
           <Badge
             variant="secondary"
-            className="absolute top-3 left-3 bg-white/90 text-gray-800 backdrop-blur"
+            className="absolute top-3 left-3 bg-white/90 text-gray-800 backdrop-blur dark:bg-black/70 dark:text-white"
           >
             <MapPin className="mr-1.5 h-3 w-3" />
             {location}
@@ -60,7 +60,7 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
         )}
 
         {typeof hotel.starRating === 'number' && hotel.starRating > 0 && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-bold text-black backdrop-blur">
+          <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-yellow-400/95 px-2 py-1 text-xs font-bold text-black backdrop-blur dark:bg-amber-500/95 dark:text-amber-950">
             <Star className="h-3 w-3 fill-current" />
             <span>{hotel.starRating}</span>
           </div>

@@ -6,6 +6,7 @@ import { getCurrentAgencyId } from '@/lib/supabase/agencies';
 import { HomeContent } from '@/types';
 import { revalidatePath } from 'next/cache';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { getPublicTargetLocale } from '@/lib/translation/get-locale';
 import { translateObject } from '@/lib/translation/translate-object';
 
@@ -243,6 +244,17 @@ export type AgencySettingsData = {
   defaultCurrency?: string;
   /** Language code for the admin panel interface (e.g. 'en', 'ar', 'fr') */
   adminLanguage?: string;
+  /**
+   * Cart hold TTL in minutes for room inventory holds. Defaults to 15 if unset.
+   * Best-effort inventory hold only — not a security boundary.
+   */
+  cartHoldTtlMinutes?: number;
+  /**
+   * Default search type rendered on the home page hero. When set, overrides the
+   * inferred default ("tours" or "hotels") computed from modules. Allowed
+   * values: 'tours' | 'hotels' | 'auto' (auto = infer from modules).
+   */
+  heroSearchType?: 'tours' | 'hotels' | 'auto';
 };
 
 export type KashierMode = 'test' | 'live';
@@ -562,7 +574,19 @@ export async function getCheckoutPaymentMethodAvailability(): Promise<CheckoutPa
   ]);
 
   const paymentMethods = settings.data?.paymentMethods;
-  const envMerchantRedirectUrl = normalizeOptionalString(process.env.KASHIER_MERCHANT_REDIRECT_URL);
+  let envMerchantRedirectUrl = normalizeOptionalString(process.env.KASHIER_MERCHANT_REDIRECT_URL);
+  if (!envMerchantRedirectUrl) {
+    try {
+      const headersList = await headers();
+      const host = headersList.get('host');
+      if (host) {
+        const isLocal = host.startsWith('localhost') || /^\d+\.\d+\.\d+\.\d+/.test(host);
+        envMerchantRedirectUrl = `${isLocal ? 'http' : 'https'}://${host}/checkout/success`;
+      }
+    } catch {
+      // headers() unavailable outside request context; leave undefined
+    }
+  }
   const effectiveKashierSettings: AgencyKashierSettings = {
     merchantId:
       kashierSettings.merchantId ??

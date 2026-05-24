@@ -19,7 +19,19 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingCart, Lightbulb, Loader2, PlusCircle, AlertTriangle } from 'lucide-react';
+import {
+  Trash2,
+  ShoppingCart,
+  Lightbulb,
+  Loader2,
+  PlusCircle,
+  AlertTriangle,
+  Minus,
+  Plus,
+  ShieldCheck,
+  Clock,
+  X,
+} from 'lucide-react';
 import { getAiSuggestions } from '@/app/actions';
 import { getUpsellItems } from '@/lib/supabase/upsell-items';
 import { getCartRoomLookup } from '@/lib/supabase/hotels';
@@ -49,11 +61,59 @@ function SubmitButton() {
   );
 }
 
+function QuantityStepper({
+  label,
+  value,
+  min,
+  max = 20,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max?: number;
+  onChange: (v: number) => void;
+}) {
+  const canDec = value > min;
+  const canInc = value < max;
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="inline-flex items-center gap-2 rounded-full border bg-background px-1 py-0.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-full"
+          disabled={!canDec}
+          onClick={() => onChange(value - 1)}
+          aria-label={`Decrease ${label}`}
+        >
+          <Minus className="h-3.5 w-3.5" />
+        </Button>
+        <span className="min-w-[1.5rem] text-center text-sm font-semibold">{value}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-full"
+          disabled={!canInc}
+          onClick={() => onChange(value + 1)}
+          aria-label={`Increase ${label}`}
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function CartPage() {
   const {
     cartItems,
     removeFromCart,
     removeRoomItem,
+    updateTourItem,
     getCartTotal,
     addToCart,
     clearCart,
@@ -74,6 +134,7 @@ export default function CartPage() {
 
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [aiSuggestionsDismissed, setAiSuggestionsDismissed] = useState(false);
 
   const handleApplyPromo = async () => {
     if (!promoCodeInput) return;
@@ -215,7 +276,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-10">
+    <div className="mx-auto w-full max-w-6xl space-y-10 pb-24 lg:pb-0">
       <section className="relative overflow-hidden rounded-3xl border bg-card">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
         <div className="relative p-6 md:p-10">
@@ -311,7 +372,7 @@ export default function CartPage() {
 
             <div className="space-y-4">
               {currencyWarning ? (
-                <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/40 dark:border-amber-700 dark:text-amber-100">
                   <AlertTriangle className="mt-0.5 h-4 w-4" />
                   <span>
                     Your cart contains items in multiple currencies ({currencyWarning}). Totals are
@@ -389,8 +450,8 @@ export default function CartPage() {
                           </div>
 
                           {item.productType === 'tour' && (
-                            <div className="grid gap-2 rounded-2xl border bg-muted/30 p-4 sm:grid-cols-2">
-                              <div className="space-y-0.5">
+                            <div className="grid gap-3 rounded-2xl border bg-muted/30 p-4 sm:grid-cols-3">
+                              <div className="space-y-1">
                                 <p className="text-xs font-medium text-muted-foreground">
                                   {t('cart.date')}
                                 </p>
@@ -400,15 +461,22 @@ export default function CartPage() {
                                     : t('cart.notSelected')}
                                 </p>
                               </div>
-                              <div className="space-y-0.5">
-                                <p className="text-xs font-medium text-muted-foreground">
-                                  {t('cart.guests')}
-                                </p>
-                                <p className="text-sm font-medium">
-                                  {(item.adults ?? 0).toString()} Adults,{' '}
-                                  {(item.children ?? 0).toString()} Children
-                                </p>
-                              </div>
+                              <QuantityStepper
+                                label="Adults"
+                                value={item.adults ?? 1}
+                                min={1}
+                                onChange={(v) =>
+                                  updateTourItem(item.product.id, item.packageId, { adults: v })
+                                }
+                              />
+                              <QuantityStepper
+                                label="Children"
+                                value={item.children ?? 0}
+                                min={0}
+                                onChange={(v) =>
+                                  updateTourItem(item.product.id, item.packageId, { children: v })
+                                }
+                              />
                             </div>
                           )}
                         </div>
@@ -447,7 +515,7 @@ export default function CartPage() {
                 </div>
 
                 {promoCode ? (
-                  <div className="flex justify-between text-green-600">
+                  <div className="flex justify-between text-green-600 dark:text-green-400">
                     <span>
                       {t('cart.discount')} ({promoCode.code})
                     </span>
@@ -491,14 +559,20 @@ export default function CartPage() {
                   <span>{t('cart.total')}</span>
                   <span>{formatPrice(getFinalTotal())}</span>
                 </div>
-                <div className="grid gap-2 rounded-2xl border bg-muted/30 p-4 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t('cart.secureCheckout')}</span>
-                    <span className="font-medium">{t('cart.enabled')}</span>
+                <div className="grid grid-cols-2 gap-2 rounded-2xl border bg-muted/30 p-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-semibold leading-tight">{t('cart.secureCheckout')}</p>
+                      <p className="text-muted-foreground leading-tight">{t('cart.enabled')}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t('cart.support')}</span>
-                    <span className="font-medium">{t('cart.support247')}</span>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-semibold leading-tight">{t('cart.support')}</p>
+                      <p className="text-muted-foreground leading-tight">{t('cart.support247')}</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -613,10 +687,23 @@ export default function CartPage() {
               </Card>
             )}
 
+            {!aiSuggestionsDismissed && (
             <Card className="overflow-hidden rounded-3xl border bg-card">
-              <CardHeader>
-                <CardTitle className="text-lg">{t('cart.needInspiration')}</CardTitle>
-                <CardDescription>{t('cart.getIdeas')}</CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                <div>
+                  <CardTitle className="text-lg">{t('cart.needInspiration')}</CardTitle>
+                  <CardDescription>{t('cart.getIdeas')}</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 -mr-2 -mt-1 shrink-0"
+                  onClick={() => setAiSuggestionsDismissed(true)}
+                  aria-label="Dismiss AI suggestions"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 <form action={formAction} className="grid gap-3">
@@ -645,6 +732,21 @@ export default function CartPage() {
                 )}
               </CardContent>
             </Card>
+            )}
+          </div>
+        </div>
+      )}
+
+      {cartItems.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">{t('cart.total')}</p>
+              <p className="text-lg font-bold text-primary">{formatPrice(getFinalTotal())}</p>
+            </div>
+            <Button asChild size="lg" className="shrink-0">
+              <Link href="/checkout">{t('cart.checkoutBtn')}</Link>
+            </Button>
           </div>
         </div>
       )}

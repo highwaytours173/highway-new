@@ -182,18 +182,33 @@ export function ToursPageClient({
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-28 md:pb-8">
-      <div className="space-y-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-4xl font-bold font-headline">{t('tours.title')}</h1>
-          <p className="text-muted-foreground">{t('tours.subtitle')}</p>
+    <div className="pb-28 md:pb-8">
+      {/* Hero banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border-b">
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,rgba(0,0,0,0.05),transparent_40%),radial-gradient(circle_at_80%_60%,rgba(0,0,0,0.05),transparent_40%)]"
+        />
+        <div className="container relative mx-auto px-4 py-12 md:py-16">
+          <div className="max-w-2xl space-y-3 text-center mx-auto">
+            {total > 0 && (
+              <Badge variant="secondary" className="mb-1">
+                <Star className="h-3 w-3 mr-1.5 fill-amber-500 text-amber-500" />
+                {total} {total === 1 ? t('tours.tour') : t('tours.tours')}
+              </Badge>
+            )}
+            <h1 className="text-4xl md:text-5xl font-bold font-headline">{t('tours.title')}</h1>
+            <p className="text-muted-foreground text-base md:text-lg">{t('tours.subtitle')}</p>
+          </div>
         </div>
+      </div>
 
+      <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Sort presets */}
         <SortPresetRail activeSort={sort} onChange={(value) => navigate({ sort: value || null })} />
 
         {/* Primary filter row (desktop) */}
-        <div className="hidden md:block">
+        <div className="hidden md:block sticky top-[130px] z-20">
           <PrimaryFilterForm
             q={q}
             destination={destination}
@@ -229,7 +244,10 @@ export function ToursPageClient({
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+            <SheetContent
+              side="bottom"
+              className="max-h-[90dvh] h-auto overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+            >
               <SheetHeader>
                 <SheetTitle>{t('tours.filtersButton')}</SheetTitle>
               </SheetHeader>
@@ -416,7 +434,7 @@ function PrimaryFilterForm({
   typeOptions,
   suggestionTourNames,
   onSubmit,
-  showAllFields = false,
+  showAllFields: _showAllFields = false,
 }: {
   q: string;
   destination: string;
@@ -434,28 +452,36 @@ function PrimaryFilterForm({
   const [destinationValue, setDestinationValue] = useState(destination);
   const [typeValue, setTypeValue] = useState(type);
   const [travelDateValue, setTravelDateValue] = useState(travelDate);
-  const [sortValue, setSortValue] = useState(sort);
-  const [showMore, setShowMore] = useState(showAllFields);
+  const [sortValue] = useState(sort);
 
   useEffect(() => setQValue(q), [q]);
   useEffect(() => setDestinationValue(destination), [destination]);
   useEffect(() => setTypeValue(type), [type]);
   useEffect(() => setTravelDateValue(travelDate), [travelDate]);
-  useEffect(() => setSortValue(sort), [sort]);
+
+  const submitWith = useCallback(
+    (overrides: Partial<PrimaryFilterFormValues>) => {
+      onSubmit({
+        q: qValue,
+        destination: destinationValue,
+        type: typeValue,
+        travelDate: travelDateValue,
+        sort: sortValue,
+        ...overrides,
+      });
+    },
+    [onSubmit, qValue, destinationValue, typeValue, travelDateValue, sortValue]
+  );
+
+  const hasAnyFilter = Boolean(qValue || destinationValue || typeValue || travelDateValue);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit({
-          q: qValue,
-          destination: destinationValue,
-          type: typeValue,
-          travelDate: travelDateValue,
-          sort: sortValue,
-        });
+        submitWith({});
       }}
-      className="rounded-2xl border bg-card p-4 md:p-6"
+      className="rounded-2xl border bg-card/85 p-4 md:p-6 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70"
       aria-label="Filter tours"
     >
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
@@ -471,48 +497,16 @@ function PrimaryFilterForm({
             tourNames={suggestionTourNames}
             onPickDestination={(d) => {
               setDestinationValue(d);
-              onSubmit({
-                q: qValue,
-                destination: d,
-                type: typeValue,
-                travelDate: travelDateValue,
-                sort: sortValue,
-              });
+              submitWith({ destination: d });
             }}
             onPickType={(tp) => {
               setTypeValue(tp);
-              onSubmit({
-                q: qValue,
-                destination: destinationValue,
-                type: tp,
-                travelDate: travelDateValue,
-                sort: sortValue,
-              });
+              submitWith({ type: tp });
             }}
             onPickTour={(name) => {
               setQValue(name);
-              onSubmit({
-                q: name,
-                destination: destinationValue,
-                type: typeValue,
-                travelDate: travelDateValue,
-                sort: sortValue,
-              });
+              submitWith({ q: name });
             }}
-          />
-        </div>
-
-        <div className="md:col-span-3 space-y-2">
-          <label className="text-sm font-medium" htmlFor="tours-travel-date">
-            {t('tours.travelDateLabel')}
-          </label>
-          <Input
-            id="tours-travel-date"
-            type="date"
-            name="travelDate"
-            value={travelDateValue}
-            onChange={(e) => setTravelDateValue(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
           />
         </div>
 
@@ -524,7 +518,10 @@ function PrimaryFilterForm({
             id="tours-destination"
             name="destination"
             value={destinationValue}
-            onChange={(e) => setDestinationValue(e.target.value)}
+            onChange={(e) => {
+              setDestinationValue(e.target.value);
+              submitWith({ destination: e.target.value });
+            }}
             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="">{t('tours.allDestinations')}</option>
@@ -542,79 +539,61 @@ function PrimaryFilterForm({
           </select>
         </div>
 
-        <div className="md:col-span-1 flex">
-          <Button type="submit" className="w-full">
-            {t('tours.apply')}
-          </Button>
+        <div className="md:col-span-2 space-y-2">
+          <label className="text-sm font-medium" htmlFor="tours-type">
+            {t('tours.typeLabel')}
+          </label>
+          <select
+            id="tours-type"
+            name="type"
+            value={typeValue}
+            onChange={(e) => {
+              setTypeValue(e.target.value);
+              submitWith({ type: e.target.value });
+            }}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <option value="">{t('tours.allTypes')}</option>
+            {typeOptions.length > 0 ? (
+              typeOptions.map((tp) => (
+                <option key={tp} value={tp}>
+                  {tp}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                {t('tours.noTypes')}
+              </option>
+            )}
+          </select>
+        </div>
+
+        <div className="md:col-span-2 space-y-2">
+          <label className="text-sm font-medium" htmlFor="tours-travel-date">
+            {t('tours.travelDateLabel')}
+          </label>
+          <Input
+            id="tours-travel-date"
+            type="date"
+            name="travelDate"
+            value={travelDateValue}
+            onChange={(e) => {
+              setTravelDateValue(e.target.value);
+              submitWith({ travelDate: e.target.value });
+            }}
+            min={new Date().toISOString().split('T')[0]}
+          />
         </div>
       </div>
 
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => setShowMore((v) => !v)}
-          className="text-sm font-medium text-primary hover:underline"
-          aria-expanded={showMore}
-        >
-          {showMore ? t('tours.lessFilters') : t('tours.moreFilters')}
-        </button>
-      </div>
-
-      {showMore && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-          <div className="md:col-span-4 space-y-2">
-            <label className="text-sm font-medium" htmlFor="tours-type">
-              {t('tours.typeLabel')}
-            </label>
-            <select
-              id="tours-type"
-              name="type"
-              value={typeValue}
-              onChange={(e) => setTypeValue(e.target.value)}
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">{t('tours.allTypes')}</option>
-              {typeOptions.length > 0 ? (
-                typeOptions.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {tp}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>
-                  {t('tours.noTypes')}
-                </option>
-              )}
-            </select>
-          </div>
-
-          <div className="md:col-span-4 space-y-2">
-            <label className="text-sm font-medium" htmlFor="tours-sort">
-              {t('tours.sortLabel')}
-            </label>
-            <select
-              id="tours-sort"
-              name="sort"
-              value={sortValue}
-              onChange={(e) => setSortValue(e.target.value)}
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">{t('tours.recommended')}</option>
-              <option value="best_value">{t('tours.sortBestValue')}</option>
-              <option value="rating_desc">{t('tours.sortTopRated')}</option>
-              <option value="price_asc">{t('tours.sortPriceAsc')}</option>
-              <option value="price_desc">{t('tours.sortPriceDesc')}</option>
-              <option value="duration_asc">{t('tours.sortDurAsc')}</option>
-              <option value="duration_desc">{t('tours.sortDurDesc')}</option>
-              <option value="name_asc">{t('tours.sortNameAsc')}</option>
-            </select>
-          </div>
-
-          <div className="md:col-span-4 flex justify-end gap-3">
-            <Button asChild type="button" variant="outline">
-              <Link href="/tours">{t('tours.clear')}</Link>
-            </Button>
-          </div>
+      {hasAnyFilter && (
+        <div className="mt-4 flex justify-end">
+          <Button asChild type="button" variant="ghost" size="sm">
+            <Link href="/tours">
+              <X className="h-4 w-4 mr-1.5" />
+              {t('tours.clear')}
+            </Link>
+          </Button>
         </div>
       )}
     </form>
@@ -1046,9 +1025,13 @@ function NoResultsRecovery({
       <div className="grid gap-6 md:grid-cols-3">
         {travelDate && (
           <div className="rounded-xl border bg-background p-4">
-            <h3 className="font-semibold mb-3">{t('tours.clearTravelDate')}</h3>
+            <h3 className="font-semibold mb-1">{t('tours.dateBadge')} {travelDate}</h3>
+            <p className="text-sm text-muted-foreground mb-3">{t('tours.noResultsRecover')}</p>
             <Button asChild variant="outline" size="sm">
-              <Link href={buildHref({ travelDate: null })}>{t('tours.clearTravelDate')}</Link>
+              <Link href={buildHref({ travelDate: null })}>
+                <X className="h-3.5 w-3.5 mr-1.5" />
+                {t('tours.clearTravelDate')}
+              </Link>
             </Button>
           </div>
         )}

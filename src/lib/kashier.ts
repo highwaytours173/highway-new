@@ -1,6 +1,7 @@
 'use server';
 
 import crypto from 'crypto';
+import { headers } from 'next/headers';
 import { getAgencyKashierSettingsForRuntime } from '@/lib/supabase/agency-content';
 
 type KashierConfig = {
@@ -61,6 +62,18 @@ async function getDatabaseKashierConfig(): Promise<KashierConfigSource> {
   }
 }
 
+async function deriveCheckoutSuccessUrl(): Promise<string | undefined> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get('host');
+    if (!host) return undefined;
+    const isLocal = host.startsWith('localhost') || /^\d+\.\d+\.\d+\.\d+/.test(host);
+    return `${isLocal ? 'http' : 'https'}://${host}/checkout/success`;
+  } catch {
+    return undefined;
+  }
+}
+
 async function getKashierConfig(): Promise<KashierConfig> {
   const [databaseConfig, envConfig] = await Promise.all([
     getDatabaseKashierConfig(),
@@ -71,7 +84,7 @@ async function getKashierConfig(): Promise<KashierConfig> {
   const apiKey = databaseConfig.apiKey ?? envConfig.apiKey;
   const currency = KASHIER_CURRENCY;
   const mode = databaseConfig.mode ?? envConfig.mode ?? 'test';
-  const merchantRedirectUrl = envConfig.merchantRedirectUrl;
+  const merchantRedirectUrl = envConfig.merchantRedirectUrl ?? (await deriveCheckoutSuccessUrl());
   const hppBaseUrl = KASHIER_HPP_BASE_URL;
   const allowedMethods = databaseConfig.allowedMethods ?? envConfig.allowedMethods;
   const display = databaseConfig.display ?? envConfig.display ?? 'en';

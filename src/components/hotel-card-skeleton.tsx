@@ -19,16 +19,19 @@ export function HotelCardSkeleton() {
 
       <CardContent className="flex flex-col gap-3 p-4">
         {/* Hotel name */}
-        <Skeleton className="h-5 w-3/4" />
-        {/* Description line 1 */}
-        <Skeleton className="h-4 w-full" />
-        {/* Description line 2 */}
-        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-5 w-4/5" />
+
+        {/* Description lines */}
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+
+        {/* Divider */}
+        <div className="border-t" />
 
         {/* Button */}
-        <div className="mt-auto pt-1">
-          <Skeleton className="h-9 w-full rounded-md" />
-        </div>
+        <Skeleton className="h-9 w-full rounded-md" />
       </CardContent>
     </Card>
   );

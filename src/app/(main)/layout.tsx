@@ -3,6 +3,7 @@ import { Footer } from '@/components/footer';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { WhatsAppChatButton } from '@/components/whatsapp-chat-button';
 import { SettingsProvider } from '@/components/providers/settings-provider';
+import { ScrollProgress } from '@/components/motion/scroll-progress';
 
 function hexToHsl(hex: string) {
   let c = hex.substring(1).split('');
@@ -69,6 +70,7 @@ export default async function MainLayout({
 
   return (
     <SettingsProvider value={settingsValue}>
+      <ScrollProgress />
       <div className="flex flex-col min-h-screen">
         <style>{`
           :root {

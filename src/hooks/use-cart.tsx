@@ -12,6 +12,7 @@ import { validatePromoCode } from '@/lib/supabase/promo-codes';
 import { placeCartHold, releaseCartHold } from '@/lib/supabase/cart-holds';
 import type { Tour, CartItem, UpsellItem, PromoCode, RoomCartItem, RoomCartAddon } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/components/providers/settings-provider';
 
 /**
  * Cart storage version. Bump when the persisted shape changes in a way that
@@ -20,8 +21,15 @@ import { useToast } from '@/hooks/use-toast';
  */
 const CART_STORAGE_VERSION = 'v2';
 
-/** Best-effort cart hold TTL in minutes; mirrored on the server in `placeCartHold`. */
-const CART_HOLD_TTL_MINUTES = 15;
+/** Default cart hold TTL in minutes; overridden by `agencySettings.cartHoldTtlMinutes` when set. */
+const DEFAULT_CART_HOLD_TTL_MINUTES = 15;
+const MIN_TTL = 1;
+const MAX_TTL = 120;
+
+function clampTtl(value: number | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return DEFAULT_CART_HOLD_TTL_MINUTES;
+  return Math.min(MAX_TTL, Math.max(MIN_TTL, Math.round(value)));
+}
 
 function generateSessionId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -82,6 +90,12 @@ interface CartContextType {
     packageName?: string
   ) => void;
   removeFromCart: (productId: string, productType: 'tour' | 'upsell', packageId?: string) => void;
+  /** Update adults/children/date on a tour line item. */
+  updateTourItem: (
+    productId: string,
+    packageId: string | undefined,
+    patch: { adults?: number; children?: number; date?: Date }
+  ) => void;
   /** Add a fully-priced room line item to the cart. Returns the new lineId. */
   addRoomItem: (input: AddRoomItemInput) => string;
   /** Patch a room line item by `lineId`. */
@@ -142,6 +156,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [promoCode, setPromoCode] = useState<PromoCode | null>(null);
   const { toast } = useToast();
+  const settings = useSettings();
+  const cartHoldTtlMinutes = clampTtl(settings?.data?.cartHoldTtlMinutes);
 
   useEffect(() => {
     const host = typeof window === 'undefined' ? 'app' : window.location.host;
@@ -285,6 +301,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     [toast]
   );
 
+  const updateTourItem = useCallback(
+    (
+      productId: string,
+      packageId: string | undefined,
+      patch: { adults?: number; children?: number; date?: Date }
+    ) => {
+      setCartItems((prev) =>
+        prev.map((item) => {
+          if (item.productType !== 'tour') return item;
+          if (item.product.id !== productId) return item;
+          if ((item.packageId ?? 'base') !== (packageId ?? 'base')) return item;
+          return {
+            ...item,
+            adults: patch.adults !== undefined ? Math.max(1, patch.adults) : item.adults,
+            children:
+              patch.children !== undefined ? Math.max(0, patch.children) : item.children,
+            date: patch.date !== undefined ? patch.date : item.date,
+          };
+        })
+      );
+    },
+    []
+  );
+
   const clearCart = useCallback(() => {
     setCartItems([]);
   }, []);
@@ -298,7 +338,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const placeHoldFor = useCallback(
     async (item: RoomCartItem, sessionId: string): Promise<string | null> => {
       if (!item.agencyId) return null;
-      const ttlMs = CART_HOLD_TTL_MINUTES * 60_000;
+      const ttlMs = cartHoldTtlMinutes * 60_000;
       const expiresAt = new Date(Date.now() + ttlMs).toISOString();
       try {
         await placeCartHold({
@@ -309,7 +349,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           units: item.unitsBooked,
           lineId: item.lineId,
           sessionId,
-          ttlMinutes: CART_HOLD_TTL_MINUTES,
+          ttlMinutes: cartHoldTtlMinutes,
         });
         return expiresAt;
       } catch {
@@ -317,7 +357,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    []
+    [cartHoldTtlMinutes]
   );
 
   const addRoomItem = useCallback(
@@ -584,6 +624,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         promoCode,
         addToCart,
         removeFromCart,
+        updateTourItem,
         addRoomItem,
         updateRoomItem,
         removeRoomItem,

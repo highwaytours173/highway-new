@@ -93,7 +93,13 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion, Variants } from 'framer-motion';
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+  Variants,
+} from 'framer-motion';
 import { useLanguage } from '@/hooks/use-language';
 import { useCurrency } from '@/hooks/use-currency';
 import { HotelSearchBox } from '@/components/hotel-search-box';
@@ -101,6 +107,7 @@ import { HotelFeaturesSection } from '@/components/hotel-features-section';
 import { HotelStorySection } from '@/components/hotel-story-section';
 import { BLUR_DATA_URL } from '@/lib/blur-data-url';
 import { cn } from '@/lib/utils';
+import { CountUp, Reveal, Marquee, MagneticWrap } from '@/components/motion';
 import { getHotelHubHref, getRoomDetailHref } from '@/lib/routing/hotel-links';
 
 // Animation Variants
@@ -302,13 +309,26 @@ export default function HomePageClient({
     setActiveHeroImageIndex(0);
   }, [heroImages]);
 
+  const [heroPaused, setHeroPaused] = React.useState(false);
+  const heroSectionRef = React.useRef<HTMLElement | null>(null);
+  const { scrollYProgress: heroScrollProgress } = useScroll({
+    target: heroSectionRef,
+    offset: ['start start', 'end start'],
+  });
+  // Apple-style: lift content + fade, scale and drift background as user scrolls past hero
+  const heroContentY = useTransform(heroScrollProgress, [0, 1], [0, -90]);
+  const heroContentOpacity = useTransform(heroScrollProgress, [0, 0.75], [1, 0]);
+  const heroBgScale = useTransform(heroScrollProgress, [0, 1], [1, 1.18]);
+  const heroBgY = useTransform(heroScrollProgress, [0, 1], ['0%', '12%']);
+
   React.useEffect(() => {
     if (heroImages.length <= 1) return;
+    if (heroPaused) return;
     const interval = setInterval(() => {
       setActiveHeroImageIndex((prev) => (prev + 1) % heroImages.length);
     }, 6500);
     return () => clearInterval(interval);
-  }, [heroImages.length]);
+  }, [heroImages.length, heroPaused]);
 
   const isHotelOnly = settings?.modules?.hotels && !settings?.modules?.tours;
   const isSingleHotel = settings?.singleHotelMode;
@@ -338,8 +358,19 @@ export default function HomePageClient({
 
   const galleryImages = homeContent.gallerySection?.images ?? [];
 
-  // Force search type based on business mode
-  const effectiveSearchType = isHotelOnly ? 'hotels' : homeContent.hero.searchType;
+  // Resolve effective hero search type:
+  //   1. Admin-configured `heroSearchType` (when not 'auto') wins
+  //   2. Hotel-only modules force 'hotels'
+  //   3. Otherwise fall back to homeContent.hero.searchType
+  const heroSearchTypeSetting = settings?.heroSearchType;
+  const effectiveSearchType =
+    heroSearchTypeSetting === 'tours'
+      ? 'tours'
+      : heroSearchTypeSetting === 'hotels'
+        ? 'hotels'
+        : isHotelOnly
+          ? 'hotels'
+          : homeContent.hero.searchType;
 
   const popularToursCount =
     typeof homeContent.popularDestinations?.count === 'number' &&
@@ -360,57 +391,68 @@ export default function HomePageClient({
       {/* Hero Section */}
       {homeContent.visibility?.hero !== false && (
         <motion.section
+          ref={heroSectionRef}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
+          onMouseEnter={() => setHeroPaused(true)}
+          onMouseLeave={() => setHeroPaused(false)}
           className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden w-[100dvw] ml-[calc(50%-50dvw)] -mt-[84px] md:-mt-[134px]"
         >
-          {/* Background: Video (H2.1) or Image Crossfade Slider */}
-          {homeContent.hero.videoUrl ? (
-            <video
-              key={homeContent.hero.videoUrl}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              poster={heroImages[0]}
-            >
-              <source src={homeContent.hero.videoUrl} type="video/mp4" />
-            </video>
-          ) : heroImages.length > 0 ? (
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={heroImages[activeHeroImageIndex]}
-                className="absolute inset-0"
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.2, ease: 'easeOut' }}
+          {/* Background: Video (H2.1) or Image Crossfade Slider — scroll-scrubbed parallax */}
+          <motion.div
+            className="absolute inset-0 z-0 will-change-transform"
+            style={{ scale: heroBgScale, y: heroBgY }}
+          >
+            {homeContent.hero.videoUrl ? (
+              <video
+                key={homeContent.hero.videoUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                poster={heroImages[0]}
               >
-                <Image
-                  src={heroImages[activeHeroImageIndex]}
-                  alt={homeContent.hero.imageAlt || ''}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                  priority
-                  placeholder="blur"
-                  blurDataURL={BLUR_DATA_URL}
-                  data-ai-hint="Egypt travel"
-                />
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-700" />
-          )}
+                <source src={homeContent.hero.videoUrl} type="video/mp4" />
+              </video>
+            ) : heroImages.length > 0 ? (
+              <AnimatePresence initial={false}>
+                <motion.div
+                  key={heroImages[activeHeroImageIndex]}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                >
+                  <Image
+                    src={heroImages[activeHeroImageIndex]}
+                    alt={homeContent.hero.imageAlt || ''}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                    data-ai-hint="Egypt travel"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-700" />
+            )}
+          </motion.div>
 
           {/* Gradient overlays */}
           <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/55 via-black/25 to-black/70" />
           <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
 
-          {/* Main Content */}
-          <div className="relative z-20 container mx-auto px-4 pt-24 md:pt-40 pb-16 flex flex-col items-center text-center text-white">
+          {/* Main Content — scroll-scrubbed lift + fade */}
+          <motion.div
+            style={{ y: heroContentY, opacity: heroContentOpacity }}
+            className="relative z-20 container mx-auto px-4 pt-24 md:pt-40 pb-16 flex flex-col items-center text-center text-white will-change-transform"
+          >
             {/* Eyebrow badge */}
             <motion.div variants={fadeInUp} className="mb-5">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 backdrop-blur-md px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white/90 shadow">
@@ -462,7 +504,7 @@ export default function HomePageClient({
                       {t('hero.checkAvailability')}
                     </span>
                   </div>
-                  <div className="bg-white p-4">
+                  <div className="bg-white p-4 dark:bg-card">
                     <HotelSearchBox maxGuests={settings?.hotelSearchConfig?.maxAdults || 10} />
                   </div>
                 </div>
@@ -476,7 +518,7 @@ export default function HomePageClient({
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-3.5 px-5 text-sm font-bold transition-all',
                         heroSearchTab === 'find'
-                          ? 'bg-white text-primary shadow-sm'
+                          ? 'bg-white text-primary shadow-sm dark:bg-card dark:text-primary'
                           : 'bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm'
                       )}
                     >
@@ -488,7 +530,7 @@ export default function HomePageClient({
                       className={cn(
                         'flex-1 flex items-center justify-center gap-2 py-3.5 px-5 text-sm font-bold transition-all',
                         heroSearchTab === 'custom'
-                          ? 'bg-white text-primary shadow-sm'
+                          ? 'bg-white text-primary shadow-sm dark:bg-card dark:text-primary'
                           : 'bg-white/15 text-white hover:bg-white/25 backdrop-blur-sm'
                       )}
                     >
@@ -506,7 +548,7 @@ export default function HomePageClient({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.22 }}
-                        className="bg-white rounded-b-2xl p-4"
+                        className="bg-white rounded-b-2xl p-4 dark:bg-card"
                       >
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                           {/* Keyword */}
@@ -520,7 +562,7 @@ export default function HomePageClient({
                             <Input
                               placeholder={t('hero.searchTours')}
                               className={cn(
-                                'h-13 border-muted bg-gray-50 hover:bg-gray-100 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary transition-colors text-foreground',
+                                'h-13 border-muted bg-muted/40 hover:bg-muted/60 focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary transition-colors text-foreground',
                                 isRtl ? 'pr-9' : 'pl-9'
                               )}
                               value={searchQuery}
@@ -539,7 +581,7 @@ export default function HomePageClient({
                             <Select value={destination} onValueChange={setDestination}>
                               <SelectTrigger
                                 className={cn(
-                                  'h-13 border-muted bg-gray-50 hover:bg-gray-100 text-foreground focus:ring-primary transition-colors',
+                                  'h-13 border-muted bg-muted/40 hover:bg-muted/60 text-foreground focus:ring-primary transition-colors',
                                   isRtl ? 'pr-9' : 'pl-9'
                                 )}
                               >
@@ -569,7 +611,7 @@ export default function HomePageClient({
                               )}
                             />
                             <Select value={tourType} onValueChange={setTourType}>
-                              <SelectTrigger className="h-13 border-muted bg-gray-50 hover:bg-gray-100 text-foreground focus:ring-primary transition-colors">
+                              <SelectTrigger className="h-13 border-muted bg-muted/40 hover:bg-muted/60 text-foreground focus:ring-primary transition-colors">
                                 <SelectValue placeholder={t('hero.type')} />
                               </SelectTrigger>
                               <SelectContent>
@@ -589,14 +631,16 @@ export default function HomePageClient({
                           </div>
                           {/* Search Button */}
                           <div className="sm:col-span-2">
-                            <Button
-                              size="lg"
-                              className="w-full h-13 font-bold shadow-md hover:scale-105 transition-transform rounded-lg text-base"
-                              onClick={handleSearch}
-                            >
-                              <Search className={cn('h-4 w-4', isRtl ? 'ml-1.5' : 'mr-1.5')} />
-                              {t('hero.search')}
-                            </Button>
+                            <MagneticWrap className="block w-full">
+                              <Button
+                                size="lg"
+                                className="w-full h-13 font-bold shadow-md transition-transform rounded-lg text-base"
+                                onClick={handleSearch}
+                              >
+                                <Search className={cn('h-4 w-4', isRtl ? 'ml-1.5' : 'mr-1.5')} />
+                                {t('hero.search')}
+                              </Button>
+                            </MagneticWrap>
                           </div>
                         </div>
                       </motion.div>
@@ -607,7 +651,7 @@ export default function HomePageClient({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.22 }}
-                        className="bg-white rounded-b-2xl p-6 flex flex-col sm:flex-row items-center gap-5"
+                        className="bg-white rounded-b-2xl p-6 flex flex-col sm:flex-row items-center gap-5 dark:bg-card"
                       >
                         <div className={cn('flex-1', isRtl ? 'text-right' : 'text-left')}>
                           <p className="font-bold text-foreground text-base mb-1">
@@ -648,13 +692,13 @@ export default function HomePageClient({
               className="mt-10 flex flex-wrap items-center justify-center gap-6 md:gap-10"
             >
               {[
-                { value: '500+', label: t('hero.statTours') },
-                { value: '50+', label: t('hero.statDestinations') },
-                { value: '10K+', label: t('hero.statTravelers') },
+                { value: 500, suffix: '+', label: t('hero.statTours') },
+                { value: 50, suffix: '+', label: t('hero.statDestinations') },
+                { value: 10, suffix: 'K+', label: t('hero.statTravelers') },
               ].map((stat) => (
                 <div key={stat.label} className="flex flex-col items-center gap-0.5">
-                  <span className="text-2xl md:text-3xl font-extrabold text-white drop-shadow">
-                    {stat.value}
+                  <span className="text-2xl md:text-3xl font-extrabold text-white drop-shadow tabular-nums">
+                    <CountUp to={stat.value} suffix={stat.suffix} duration={1.6} />
                   </span>
                   <span className="text-xs md:text-sm font-medium text-white/75 uppercase tracking-widest">
                     {stat.label}
@@ -662,7 +706,7 @@ export default function HomePageClient({
                 </div>
               ))}
             </motion.div>
-          </div>
+          </motion.div>
 
           {/* Slideshow dots */}
           {heroImages.length > 1 && (
@@ -672,9 +716,9 @@ export default function HomePageClient({
                   key={i}
                   onClick={() => setActiveHeroImageIndex(i)}
                   className={cn(
-                    'rounded-full transition-all duration-300',
+                    'rounded-full transition-all duration-300 ring-1 ring-black/10',
                     i === activeHeroImageIndex
-                      ? 'w-6 h-2.5 bg-white'
+                      ? 'w-6 h-2.5 bg-white shadow'
                       : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/70'
                   )}
                   aria-label={`Go to slide ${i + 1}`}
@@ -730,7 +774,7 @@ export default function HomePageClient({
                   .map((room) => (
                     <CarouselItem
                       key={room.id}
-                      className="pl-4 basis-[85%] sm:basis-1/2 lg:basis-1/3"
+                      className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
                     >
                       <motion.div variants={fadeInUp} className="h-full">
                         <Link
@@ -1400,31 +1444,64 @@ export default function HomePageClient({
             </div>
             <motion.div
               variants={staggerContainer}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-8"
+              className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 auto-rows-[120px] md:auto-rows-[160px]"
             >
-              {browseCategories.map((category, index) => (
-                <motion.div
-                  key={`${category.type}-${index}`}
-                  variants={fadeInUp}
-                  whileHover={{ y: -5 }}
-                  className="flex"
-                >
-                  <Link
-                    href={`/tours?type=${encodeURIComponent(category.type)}`}
-                    className="group flex w-full flex-col items-center justify-center gap-3 rounded-xl border border-transparent bg-background/40 px-2 py-3 text-center transition-all duration-300 hover:border-primary/20 hover:bg-primary/5 hover:shadow-md focus-visible:border-primary/30 focus-visible:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:shadow-md md:gap-4 md:rounded-2xl md:px-3"
-                    aria-label={`Browse ${category.label} tours`}
+              {browseCategories.map((category, index) => {
+                // Bento layout: first tile spans 2x2 on md+, third tile spans 2 cols, rest are 1x1
+                const isFeature = index === 0;
+                const isWide = index === 2 || index === 5;
+                const spanClass = cn(
+                  isFeature && 'md:col-span-2 md:row-span-2',
+                  isWide && 'md:col-span-2'
+                );
+                return (
+                  <motion.div
+                    key={`${category.type}-${index}`}
+                    variants={fadeInUp}
+                    whileHover={{ y: -4 }}
+                    className={cn('relative', spanClass)}
                   >
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg group-focus-visible:bg-primary group-focus-visible:text-primary-foreground group-focus-visible:shadow-lg md:h-20 md:w-20">
-                      <div className="scale-75 md:scale-100">
-                        {browseCategoryIcons[category.icon]}
+                    <Link
+                      href={`/tours?type=${encodeURIComponent(category.type)}`}
+                      className={cn(
+                        'group relative flex h-full w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card to-muted/40 text-center transition-all duration-300',
+                        'hover:border-primary/40 hover:shadow-xl hover:from-primary/5 hover:to-accent/5',
+                        'focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                        isFeature && 'md:gap-4'
+                      )}
+                      aria-label={`Browse ${category.label} tours`}
+                    >
+                      {/* Soft gradient orb behind icon */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute -top-8 -right-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl transition-opacity duration-500 opacity-50 group-hover:opacity-100"
+                      />
+                      <div
+                        className={cn(
+                          'relative z-10 flex items-center justify-center rounded-full border border-primary/15 bg-primary/5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg',
+                          isFeature ? 'h-20 w-20 md:h-24 md:w-24' : 'h-14 w-14 md:h-16 md:w-16'
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            isFeature ? 'scale-100 md:scale-125' : 'scale-75 md:scale-100'
+                          )}
+                        >
+                          {browseCategoryIcons[category.icon]}
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground transition-colors duration-300 group-hover:text-primary group-focus-visible:text-primary md:text-base">
-                      {category.label}
-                    </span>
-                  </Link>
-                </motion.div>
-              ))}
+                      <span
+                        className={cn(
+                          'relative z-10 font-semibold text-foreground transition-colors duration-300 group-hover:text-primary',
+                          isFeature ? 'text-base md:text-xl' : 'text-sm md:text-base'
+                        )}
+                      >
+                        {category.label}
+                      </span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </motion.div>
         </section>
@@ -2516,38 +2593,27 @@ export default function HomePageClient({
 
       {/* ─── Partner Logos ─── */}
       <section className="container mx-auto px-4 py-12 md:py-16">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          className="text-center mb-8"
-        >
+        <Reveal className="text-center mb-8">
           <p className="text-muted-foreground text-sm font-medium uppercase tracking-wider">
             {t('partners.title')}
           </p>
-        </motion.div>
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainer}
-          className="flex flex-wrap items-center justify-center gap-8 md:gap-12"
-        >
-          {['TripAdvisor', 'Viator', 'Booking.com', 'Airbnb', 'Expedia', 'GetYourGuide'].map(
-            (partner, i) => (
-              <motion.div
-                key={i}
-                variants={fadeInUp}
-                className="flex items-center justify-center px-6 py-3 rounded-xl border border-border/40 bg-card/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 group"
-              >
-                <span className="font-bold text-lg text-muted-foreground group-hover:text-primary transition-colors tracking-tight">
-                  {partner}
-                </span>
-              </motion.div>
-            )
-          )}
-        </motion.div>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <Marquee durationSec={36} gapClassName="gap-6 md:gap-10">
+            {['TripAdvisor', 'Viator', 'Booking.com', 'Airbnb', 'Expedia', 'GetYourGuide'].map(
+              (partner, i) => (
+                <div
+                  key={i}
+                  className="flex shrink-0 items-center justify-center px-6 py-3 rounded-xl border border-border/40 bg-card/50 hover:border-primary/30 hover:bg-primary/5 transition-colors duration-200 group"
+                >
+                  <span className="font-bold text-lg text-muted-foreground group-hover:text-primary transition-colors tracking-tight whitespace-nowrap">
+                    {partner}
+                  </span>
+                </div>
+              )
+            )}
+          </Marquee>
+        </Reveal>
       </section>
 
       {/* H4.1 — Floating Check Availability bottom bar (mobile, hotel mode only) */}

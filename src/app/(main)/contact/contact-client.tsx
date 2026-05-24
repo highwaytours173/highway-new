@@ -1,14 +1,26 @@
 'use client';
 
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useFormStatus } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+} from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
+import { cn } from '@/lib/utils';
 
 interface ContactClientProps {
   sent: boolean;
@@ -20,6 +32,24 @@ interface ContactClientProps {
   heroImageUrl: string;
   cardImageUrl: string;
   submitAction: (formData: FormData) => Promise<void>;
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type FieldErrors = {
+  name?: string;
+  email?: string;
+  message?: string;
+};
+
+function SubmitButton({ disabled, label }: { disabled: boolean; label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full sm:w-auto" disabled={disabled || pending}>
+      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+      {label}
+    </Button>
+  );
 }
 
 export function ContactClient({
@@ -34,6 +64,39 @@ export function ContactClient({
   submitAction,
 }: ContactClientProps) {
   const { t } = useLanguage();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [touched, setTouched] = useState<Record<keyof FieldErrors, boolean>>({
+    name: false,
+    email: false,
+    message: false,
+  });
+
+  const errors: FieldErrors = {
+    name: !name.trim() ? 'Please enter your name.' : undefined,
+    email: !email.trim()
+      ? 'Please enter your email.'
+      : !EMAIL_REGEX.test(email.trim())
+        ? 'Enter a valid email address.'
+        : undefined,
+    message:
+      !message.trim()
+        ? 'Please write a short message.'
+        : message.trim().length < 10
+          ? 'Add a bit more detail (10+ characters).'
+          : undefined,
+  };
+
+  const hasErrors = Boolean(errors.name || errors.email || errors.message);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (hasErrors) {
+      e.preventDefault();
+      setTouched({ name: true, email: true, message: true });
+      return;
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10">
@@ -160,17 +223,25 @@ export function ContactClient({
               </div>
 
               {sent && (
-                <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-green-900">
-                  {t('contact.successMsg')}
+                <div
+                  className="flex items-start gap-2 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-green-900"
+                  role="status"
+                >
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
+                  <span>{t('contact.successMsg')}</span>
                 </div>
               )}
               {sentError && (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-900">
-                  {t('contact.errorMsg')}
+                <div
+                  className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-900"
+                  role="alert"
+                >
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                  <span>{t('contact.errorMsg')}</span>
                 </div>
               )}
 
-              <form action={submitAction} className="space-y-5">
+              <form action={submitAction} onSubmit={handleSubmit} noValidate className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-name">
@@ -180,20 +251,64 @@ export function ContactClient({
                       id="contact-name"
                       name="name"
                       placeholder={t('contact.namePlaceholder')}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                      aria-invalid={touched.name && Boolean(errors.name)}
+                      aria-describedby={touched.name && errors.name ? 'contact-name-err' : undefined}
+                      className={cn(
+                        touched.name && errors.name && 'border-red-400 focus-visible:ring-red-400'
+                      )}
                       required
                     />
+                    {touched.name && errors.name && (
+                      <p
+                        id="contact-name-err"
+                        className="flex items-center gap-1.5 text-xs text-red-600"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="contact-email">
                       {t('contact.emailLabel')}
                     </label>
-                    <Input
-                      id="contact-email"
-                      name="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="contact-email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                        aria-invalid={touched.email && Boolean(errors.email)}
+                        aria-describedby={
+                          touched.email && errors.email ? 'contact-email-err' : undefined
+                        }
+                        className={cn(
+                          'pr-9',
+                          touched.email && errors.email
+                            ? 'border-red-400 focus-visible:ring-red-400'
+                            : touched.email && !errors.email && 'border-green-400'
+                        )}
+                        required
+                      />
+                      {touched.email && !errors.email && email.length > 0 && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+                      )}
+                    </div>
+                    {touched.email && errors.email && (
+                      <p
+                        id="contact-email-err"
+                        className="flex items-center gap-1.5 text-xs text-red-600"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -217,23 +332,45 @@ export function ContactClient({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="contact-message">
-                    {t('contact.messageLabel')}
-                  </label>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <label className="text-sm font-medium" htmlFor="contact-message">
+                      {t('contact.messageLabel')}
+                    </label>
+                    <span className="text-xs text-muted-foreground">
+                      {message.length}/1000
+                    </span>
+                  </div>
                   <Textarea
                     id="contact-message"
                     name="message"
                     placeholder={t('contact.messagePlaceholder')}
                     rows={7}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value.slice(0, 1000))}
+                    onBlur={() => setTouched((t) => ({ ...t, message: true }))}
+                    aria-invalid={touched.message && Boolean(errors.message)}
+                    aria-describedby={
+                      touched.message && errors.message ? 'contact-message-err' : undefined
+                    }
+                    className={cn(
+                      touched.message && errors.message && 'border-red-400 focus-visible:ring-red-400'
+                    )}
                     required
                   />
+                  {touched.message && errors.message && (
+                    <p
+                      id="contact-message-err"
+                      className="flex items-center gap-1.5 text-xs text-red-600"
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {errors.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-muted-foreground">{t('contact.consent')}</p>
-                  <Button type="submit" className="w-full sm:w-auto">
-                    {t('contact.sendBtn')}
-                  </Button>
+                  <SubmitButton disabled={hasErrors} label={t('contact.sendBtn')} />
                 </div>
               </form>
             </CardContent>

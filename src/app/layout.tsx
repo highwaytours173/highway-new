@@ -127,15 +127,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let defaultCurrency: string | undefined;
+  let appearance: 'light' | 'dark' | undefined;
   try {
     const settings = await getAgencySettings();
     defaultCurrency = settings?.data?.defaultCurrency ?? undefined;
+    appearance = settings?.data?.theme?.appearance ?? undefined;
   } catch {
     // proceed without default currency
   }
 
+  const htmlClass = appearance === 'dark' ? 'dark' : undefined;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={htmlClass} suppressHydrationWarning>
       <body
         className={`${inter.variable} ${playfair.variable} ${cairo.variable}`}
         suppressHydrationWarning={true}

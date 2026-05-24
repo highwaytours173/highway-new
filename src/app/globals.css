@@ -46,6 +46,48 @@
     --sidebar-border: 46 20% 88%;
     --sidebar-ring: 46 61% 52%;
   }
+
+  .dark {
+    /* Base — deep neutral with a hint of warmth to match the gold accent */
+    --background: 224 18% 8%;
+    --foreground: 46 25% 96%;
+    --card: 224 16% 11%;
+    --card-foreground: 46 25% 96%;
+    --popover: 224 16% 11%;
+    --popover-foreground: 46 25% 96%;
+
+    /* Egyptian Gold palette — slightly brighter for dark surfaces */
+    --primary: 46 70% 58%;
+    --primary-foreground: 30 50% 8%;
+    --secondary: 224 12% 18%;
+    --secondary-foreground: 46 25% 92%;
+    --muted: 224 12% 16%;
+    --muted-foreground: 220 10% 65%;
+    --accent: 28 85% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 224 12% 20%;
+    --input: 224 12% 22%;
+    --ring: 46 70% 58%;
+
+    /* Charts */
+    --chart-1: 46 70% 58%;
+    --chart-2: 28 85% 55%;
+    --chart-3: 46 25% 80%;
+    --chart-4: 176 48% 52%;
+    --chart-5: 46 35% 60%;
+
+    /* Sidebar */
+    --sidebar-background: 224 18% 9%;
+    --sidebar-foreground: 46 25% 92%;
+    --sidebar-primary: 46 70% 58%;
+    --sidebar-primary-foreground: 30 50% 8%;
+    --sidebar-accent: 224 12% 16%;
+    --sidebar-accent-foreground: 46 25% 92%;
+    --sidebar-border: 224 12% 20%;
+    --sidebar-ring: 46 70% 58%;
+  }
 }
 
 @layer base {
@@ -54,6 +96,7 @@
   }
   html {
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;
@@ -62,5 +105,16 @@
   /* Arabic / RTL: switch to Cairo which supports Arabic script */
   [dir='rtl'] body {
     font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+  /* Respect reduced-motion globally — kills all non-essential motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

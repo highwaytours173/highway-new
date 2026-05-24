@@ -208,6 +208,63 @@ function LanguageCurrencySelector({ isHero }: { isHero?: boolean }) {
   );
 }
 
+function MobileLanguageCurrency() {
+  const { language, setLanguage, t } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
+
+  return (
+    <div className="border-t pt-5 space-y-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          {t('header.language')}
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => setLanguage(lang.code as Language)}
+              className={cn(
+                'flex items-center gap-2 rounded-md border px-2 py-1.5 text-sm transition-colors',
+                language === lang.code
+                  ? 'border-primary bg-primary/10 text-primary font-medium'
+                  : 'border-input hover:bg-muted'
+              )}
+            >
+              <span>{lang.flag}</span>
+              <span className="truncate">{lang.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          {t('header.currency')}
+        </p>
+        <div className="grid grid-cols-3 gap-1.5">
+          {currencies.map((curr) => (
+            <button
+              key={curr.code}
+              type="button"
+              onClick={() => setCurrency(curr.code as Currency)}
+              className={cn(
+                'flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors',
+                currency === curr.code
+                  ? 'border-primary bg-primary/10 text-primary font-bold'
+                  : 'border-input hover:bg-muted'
+              )}
+            >
+              <span>{curr.symbol}</span>
+              <span>{curr.code}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Header() {
   const { cartItems } = useCart();
   const { wishlistItems } = useWishlist();
@@ -403,7 +460,7 @@ export function Header() {
             <div className="flex items-center gap-0.5">
               <LanguageCurrencySelector isHero={isHero} />
 
-              <Button variant="ghost" size="icon" asChild className="relative">
+              <Button variant="ghost" size="icon" asChild className="relative h-11 w-11">
                 <Link href="/wishlist">
                   <Heart className={iconClass} />
                   {isClient && wishlistItemCount > 0 && (
@@ -413,7 +470,7 @@ export function Header() {
                 </Link>
               </Button>
 
-              <Button variant="ghost" size="icon" asChild className="relative">
+              <Button variant="ghost" size="icon" asChild className="relative h-11 w-11">
                 <Link href="/cart">
                   <ShoppingCart className={iconClass} />
                   {isClient && itemCount > 0 && <span className={badgeClass}>{itemCount}</span>}
@@ -423,7 +480,7 @@ export function Header() {
 
               {/* Click-to-call — mobile only */}
               {settings?.data?.phoneNumber && (
-                <Button variant="ghost" size="icon" className="lg:hidden" asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden h-11 w-11" asChild>
                   <a href={`tel:${settings.data.phoneNumber}`} aria-label="Call us">
                     <Phone className={iconClass} />
                   </a>
@@ -433,12 +490,19 @@ export function Header() {
               {/* Mobile menu */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden ml-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden ml-0.5 h-11 w-11"
+                  >
                     <Menu className={iconClass} />
                     <span className="sr-only">Menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-72">
+                <SheetContent
+                  side="right"
+                  className="w-[88vw] max-w-sm sm:w-72 overflow-y-auto"
+                >
                   <SheetHeader>
                     <SheetTitle>{t('header.menu')}</SheetTitle>
                   </SheetHeader>
@@ -450,6 +514,9 @@ export function Header() {
                         </Link>
                       ))}
                     </nav>
+
+                    <MobileLanguageCurrency />
+
                     <div className="flex flex-col gap-3 border-t pt-5">
                       {settings?.data?.phoneNumber && (
                         <a

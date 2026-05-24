@@ -601,7 +601,10 @@ async function deleteNewBookingAfterPersistenceFailure(params: {
 }
 
 export async function createBooking(data: CreateBookingData) {
-  const supabase = await createClient();
+  // Public guests have no session, so the user-scoped client is rejected by
+  // RLS. Use the service-role client so this trusted server action can write
+  // bookings on behalf of any visitor.
+  const supabase = createServiceRoleClient();
   const agencyId = await getCurrentAgencyId();
 
   // 1. Calculate prices and prepare booking items

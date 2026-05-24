@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(winget --version 2>&1)",
+      "PowerShell(choco --version 2>&1)",
+      "PowerShell(scoop --version 2>&1)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Hossam Omar\\\\Mysaas\\\\studio\" -Force)",
+      "Bash(Select-Object Name, Mode)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Hossam Omar\\\\Mysaas\\\\studio\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell($env:PATH = \"C:\\\\nodejs;\" + $env:PATH; Set-Location \"C:\\\\Users\\\\Hossam Omar\\\\Mysaas\\\\studio\"; npm run typecheck 2>&1)",
+      "Bash(find \"c:/Users/Hossam/Mysaas/studio/src\" -type f -name \"*cart*\" 2>/dev/null)",
+      "Read(//c/Users/Hossam/Mysaas/studio/**)",
+      "Bash(find \"c:/Users/Hossam/Mysaas/studio/src/hooks\" -type f -name \"*.ts\" 2>/dev/null | grep -i cart)",
+      "Read(//c/Users/Hossam/Mysaas/studio/src/**)"
+    ]
+  }
+}

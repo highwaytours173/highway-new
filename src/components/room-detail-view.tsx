@@ -497,18 +497,35 @@ export function RoomDetailView({ room, hotel, addons, singleHotelMode }: RoomDet
               <CarouselContent>
                 {images.map((src, idx) => (
                   <CarouselItem key={`${src}-${idx}`}>
-                    <div className="relative h-64 w-full overflow-hidden rounded-2xl">
-                      <Image
-                        src={src}
-                        alt={`${room.name} ${idx + 1}`}
-                        fill
-                        sizes="100vw"
-                        className="object-cover"
-                        placeholder="blur"
-                        blurDataURL={BLUR_DATA_URL}
-                        priority={idx === 0}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="relative block h-64 w-full overflow-hidden rounded-2xl"
+                          aria-label={`Open image ${idx + 1}`}
+                        >
+                          <Image
+                            src={src}
+                            alt={`${room.name} ${idx + 1}`}
+                            fill
+                            sizes="100vw"
+                            className="object-cover"
+                            placeholder="blur"
+                            blurDataURL={BLUR_DATA_URL}
+                            priority={idx === 0}
+                          />
+                          <div className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
+                            <Maximize2 className="h-3 w-3" />
+                            {idx + 1} / {images.length}
+                          </div>
+                        </button>
+                      </DialogTrigger>
+                      <RoomGalleryDialog
+                        images={images}
+                        roomName={room.name}
+                        initialIndex={idx}
                       />
-                    </div>
+                    </Dialog>
                   </CarouselItem>
                 ))}
               </CarouselContent>

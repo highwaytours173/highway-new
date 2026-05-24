@@ -284,6 +284,8 @@ const formSchema = z
     singleHotelMode: z.boolean().default(false),
     defaultCurrency: z.string().optional(),
     adminLanguage: z.string().optional(),
+    cartHoldTtlMinutes: z.coerce.number().int().min(1).max(120).default(15),
+    heroSearchType: z.enum(['auto', 'tours', 'hotels']).default('auto'),
     emailSettings: z
       .object({
         resendApiKey: z.string().optional(),
@@ -471,6 +473,8 @@ export default function SettingsPage() {
       singleHotelMode: false,
       defaultCurrency: 'USD',
       adminLanguage: 'en',
+      cartHoldTtlMinutes: 15,
+      heroSearchType: 'auto',
       emailSettings: {
         resendApiKey: '',
         fromName: '',
@@ -600,6 +604,8 @@ export default function SettingsPage() {
           singleHotelMode: settingsData.singleHotelMode ?? false,
           defaultCurrency: settingsData.defaultCurrency ?? 'USD',
           adminLanguage: settingsData.adminLanguage ?? 'en',
+          cartHoldTtlMinutes: settingsData.cartHoldTtlMinutes ?? 15,
+          heroSearchType: settingsData.heroSearchType ?? 'auto',
           emailSettings: {
             resendApiKey: settingsData.emailSettings?.resendApiKey ?? '',
             fromName: settingsData.emailSettings?.fromName ?? '',
@@ -1046,6 +1052,8 @@ export default function SettingsPage() {
       singleHotelMode: values.singleHotelMode,
       defaultCurrency: values.defaultCurrency ?? 'USD',
       adminLanguage: values.adminLanguage ?? 'en',
+      cartHoldTtlMinutes: values.cartHoldTtlMinutes ?? 15,
+      heroSearchType: values.heroSearchType ?? 'auto',
       emailSettings: values.emailSettings
         ? {
             resendApiKey: values.emailSettings.resendApiKey?.trim() || undefined,
@@ -1248,6 +1256,59 @@ export default function SettingsPage() {
                   )}
                 />
               </div>
+
+              {/* Hero search type */}
+              <FormField
+                control={form.control}
+                name="heroSearchType"
+                render={({ field }) => (
+                  <FormItem className="rounded-lg border p-4">
+                    <FormLabel className="text-base">Home page hero search</FormLabel>
+                    <FormDescription>
+                      Choose which search widget appears on the home page hero. &quot;Auto&quot;
+                      picks Tours when both modules are on, otherwise infers from enabled modules.
+                    </FormDescription>
+                    <FormControl>
+                      <select
+                        value={field.value ?? 'auto'}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:max-w-xs"
+                      >
+                        <option value="auto">Auto (recommended)</option>
+                        <option value="tours">Tours search</option>
+                        <option value="hotels">Hotels search</option>
+                      </select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Cart hold TTL */}
+              <FormField
+                control={form.control}
+                name="cartHoldTtlMinutes"
+                render={({ field }) => (
+                  <FormItem className="rounded-lg border p-4">
+                    <FormLabel className="text-base">Cart hold duration (minutes)</FormLabel>
+                    <FormDescription>
+                      How long a room added to a cart is held before the inventory is released.
+                      Higher values reduce double-booking races but may delay re-sale. Default 15.
+                      Range: 1–120.
+                    </FormDescription>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={120}
+                        step={1}
+                        className="mt-2 sm:max-w-xs"
+                        value={field.value ?? 15}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 

@@ -6,7 +6,19 @@ import * as z from 'zod';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { ArrowLeft, ArrowRight, Loader2, Plus, ShieldCheck, ShoppingBag } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Loader2,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  X,
+  Tag,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { MagneticWrap } from '@/components/motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useCart } from '@/hooks/use-cart';
@@ -150,6 +162,8 @@ export default function CheckoutPage() {
     getDiscountAmount,
     getFinalTotal,
     promoCode,
+    applyPromoCode,
+    removePromoCode,
     addToCart,
     updateRoomItem,
     refreshRoomHold,
@@ -166,6 +180,21 @@ export default function CheckoutPage() {
   } | null>(null);
   const [redirectStatus, setRedirectStatus] = useState<RedirectStatus>('idle');
   const [redirectMode, setRedirectMode] = useState<'online' | 'cash'>('online');
+  const [promoInput, setPromoInput] = useState('');
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setIsApplyingPromo(true);
+    try {
+      await applyPromoCode(promoInput.trim());
+      setPromoInput('');
+    } catch {
+      // Toast handled in hook
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -465,6 +494,10 @@ export default function CheckoutPage() {
   // -------------------------------------------------------------------------
 
   async function onSubmit(values: FormValues) {
+    // Safety net: onSubmit is only wired to explicit button clicks on step 2,
+    // but guard here in case it is ever called from another path.
+    if (currentStep !== 2) return;
+
     if (cartItems.length === 0) {
       toast({
         title: 'Cart is Empty',
@@ -710,7 +743,7 @@ export default function CheckoutPage() {
         </div>
       ) : null}
       {currencyWarning ? (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/40 dark:border-amber-700 dark:text-amber-100">
           Cart contains items in multiple currencies ({currencyWarning}). Charged in agency&apos;s
           primary currency.
         </div>
@@ -766,15 +799,48 @@ export default function CheckoutPage() {
           <span className="break-words text-right font-medium">{formatPrice(getCartTotal())}</span>
         </div>
         {promoCode ? (
-          <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-green-600">
-            <span className="min-w-0 flex-1 break-words">
+          <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-green-600 dark:text-green-400">
+            <span className="inline-flex min-w-0 flex-1 items-center gap-1.5 break-words">
+              <Tag className="h-3.5 w-3.5 shrink-0" />
               {t('checkout.discount')} ({promoCode.code})
+              <button
+                type="button"
+                onClick={removePromoCode}
+                className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-green-700/70 hover:bg-green-100 hover:text-green-700 dark:text-green-300/70 dark:hover:bg-green-950/40 dark:hover:text-green-300"
+                aria-label="Remove promo code"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </span>
             <span className="shrink-0 break-words text-right">
               -{formatPrice(getDiscountAmount())}
             </span>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex gap-2 pt-1">
+            <Input
+              placeholder={t('cart.promoPlaceholder')}
+              value={promoInput}
+              onChange={(e) => setPromoInput(e.target.value)}
+              className="h-9 bg-background"
+              disabled={isApplyingPromo}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={handleApplyPromo}
+              disabled={!promoInput.trim() || isApplyingPromo}
+            >
+              {isApplyingPromo ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                t('cart.apply')
+              )}
+            </Button>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <span className="text-muted-foreground">{t('checkout.taxesFees')}</span>
           <span className="break-words text-right text-muted-foreground">
@@ -933,7 +999,7 @@ export default function CheckoutPage() {
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={(e) => e.preventDefault()}
           className="grid gap-8 lg:grid-cols-3 lg:items-start"
         >
           <div className="space-y-6 lg:col-span-2">
@@ -1052,11 +1118,17 @@ export default function CheckoutPage() {
                   {tourItems.length > 0 ? (
                     eligibleUpsells.length > 0 ? (
                       <div className="space-y-3">
-                        <div>
-                          <h3 className="text-sm font-semibold">Recommended add-ons</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Based on the tours in your cart.
-                          </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <h3 className="text-sm font-semibold">Recommended add-ons</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Picked for the tours in your cart — cheapest when bundled.
+                            </p>
+                          </div>
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                            <Tag className="h-3 w-3" />
+                            Best bundled
+                          </span>
                         </div>
                         <ul className="grid gap-3 sm:grid-cols-2">
                           {eligibleUpsells.map((upsell) => (
@@ -1242,10 +1314,17 @@ export default function CheckoutPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="submit" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {finalLabel}
-                </Button>
+                <MagneticWrap>
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={isSubmitting}
+                    onClick={() => form.handleSubmit(onSubmit)()}
+                  >
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {finalLabel}
+                  </Button>
+                </MagneticWrap>
               )}
             </div>
           </div>
@@ -1299,7 +1378,12 @@ export default function CheckoutPage() {
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" size="sm" disabled={isSubmitting}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() => form.handleSubmit(onSubmit)()}
+                  >
                     {isSubmitting ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
                     {mobileFinalLabel}
                   </Button>
@@ -1336,67 +1420,88 @@ function UpsellOption({ upsell, alreadyInCart, onAdd, formatPrice }: UpsellOptio
   const idRef = useRef(`upsell-variant-${upsell.id}`);
 
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border bg-background p-4">
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
-        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border">
-          <Image
-            src={upsell.imageUrl || '/placeholder-upsell.png'}
-            alt={upsell.name}
-            fill
-            className="object-cover"
-            sizes="48px"
-          />
-        </div>
-        <div className="min-w-0 flex-1 space-y-1">
+    <li
+      className={cn(
+        'group relative flex flex-col overflow-hidden rounded-2xl border bg-background transition-shadow',
+        alreadyInCart ? 'opacity-90' : 'hover:shadow-md'
+      )}
+    >
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+        <Image
+          src={upsell.imageUrl || '/placeholder-upsell.png'}
+          alt={upsell.name}
+          fill
+          className={cn(
+            'object-cover transition-transform duration-500',
+            !alreadyInCart && 'group-hover:scale-105'
+          )}
+          sizes="(max-width: 640px) 100vw, 50vw"
+        />
+        {alreadyInCart && (
+          <div className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white shadow">
+            <Check className="h-3 w-3" />
+            Added
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="space-y-1">
           <p className="font-semibold leading-snug">{upsell.name}</p>
           {upsell.description ? (
             <p className="line-clamp-2 text-sm text-muted-foreground">{upsell.description}</p>
           ) : null}
         </div>
-        <p className="col-span-2 break-words text-sm font-semibold text-primary sm:col-start-2">
-          {formatPrice(price)}
-        </p>
-      </div>
 
-      {hasVariants ? (
-        <div className="space-y-1">
-          <label htmlFor={idRef.current} className="text-xs font-medium text-muted-foreground">
-            Option
-          </label>
-          <select
-            id={idRef.current}
-            className="h-11 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            value={variantId ?? ''}
-            onChange={(e) => setVariantId(e.target.value || undefined)}
+        {hasVariants ? (
+          <div className="space-y-1">
+            <label htmlFor={idRef.current} className="text-xs font-medium text-muted-foreground">
+              Option
+            </label>
+            <select
+              id={idRef.current}
+              className="h-10 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={variantId ?? ''}
+              onChange={(e) => setVariantId(e.target.value || undefined)}
+              disabled={alreadyInCart}
+            >
+              <option value="">Standard</option>
+              {upsell.variants?.map((v) => (
+                <option key={v.id ?? v.name} value={v.id ?? ''}>
+                  {v.name} · {formatPrice(v.price)}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+
+        <div className="mt-auto flex items-center justify-between gap-3 border-t pt-3">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">From</p>
+            <p className="text-base font-bold text-primary">{formatPrice(price)}</p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="shrink-0"
+            variant={alreadyInCart ? 'secondary' : 'default'}
             disabled={alreadyInCart}
+            onClick={() => onAdd(variantId, variant?.name)}
           >
-            <option value="">Standard</option>
-            {upsell.variants?.map((v) => (
-              <option key={v.id ?? v.name} value={v.id ?? ''}>
-                {v.name} · {formatPrice(v.price)}
-              </option>
-            ))}
-          </select>
+            {alreadyInCart ? (
+              <>
+                <Check className="mr-1.5 h-4 w-4" />
+                Added
+              </>
+            ) : (
+              <>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Add
+              </>
+            )}
+          </Button>
         </div>
-      ) : null}
-
-      <Button
-        type="button"
-        size="sm"
-        className="h-11 w-full"
-        variant={alreadyInCart ? 'secondary' : 'default'}
-        disabled={alreadyInCart}
-        onClick={() => onAdd(variantId, variant?.name)}
-      >
-        {alreadyInCart ? (
-          'Added'
-        ) : (
-          <>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Add to booking
-          </>
-        )}
-      </Button>
+      </div>
     </li>
   );
 }

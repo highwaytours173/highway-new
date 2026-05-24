@@ -64,6 +64,8 @@ export function TourCard({
       : t('tour.new');
 
   const isSoldOut = availabilityStatus?.status === 'soldout';
+  const isLimited = availabilityStatus?.status === 'limited';
+  const category = Array.isArray(tour.type) ? tour.type[0] : undefined;
 
   const snippet = (() => {
     const desc = (tour.description ?? '').trim();
@@ -92,7 +94,7 @@ export function TourCard({
     if (!availabilityStatus) return null;
     if (availabilityStatus.status === 'available') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-950/50 dark:text-green-200">
           {t('tours.availabilityAvailable')}
         </span>
       );
@@ -106,14 +108,14 @@ export function TourCard({
             )
           : t('tours.availabilityFewLeft');
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
           {label}
         </span>
       );
     }
     if (availabilityStatus.status === 'soldout') {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950/50 dark:text-red-200">
           {t('tours.availabilitySoldOut')}
         </span>
       );
@@ -150,7 +152,7 @@ export function TourCard({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
         <Badge
           variant="secondary"
-          className="absolute top-3 left-3 bg-white/90 text-gray-800 backdrop-blur"
+          className="absolute top-3 left-3 bg-white/90 text-gray-800 backdrop-blur dark:bg-black/70 dark:text-white"
         >
           <MapPin className="h-3 w-3 mr-1.5" />
           {tour.destination}
@@ -159,8 +161,8 @@ export function TourCard({
           variant="secondary"
           size="icon"
           className={cn(
-            'absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 text-gray-800 backdrop-blur hover:bg-white',
-            isFavorited && 'text-red-600 bg-red-50 hover:bg-red-50'
+            'absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 text-gray-800 backdrop-blur hover:bg-white dark:bg-black/70 dark:text-white dark:hover:bg-black/80',
+            isFavorited && 'text-red-600 bg-red-50 hover:bg-red-50 dark:bg-red-950/60 dark:text-red-400 dark:hover:bg-red-950/60'
           )}
           onClick={handleFavoriteClick}
           aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -172,7 +174,7 @@ export function TourCard({
         {compareEnabled && (
           <label
             className={cn(
-              'absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-gray-800 shadow-sm backdrop-blur',
+              'absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-gray-800 shadow-sm backdrop-blur dark:bg-black/70 dark:text-white',
               compareDisabled && !compareSelected && 'opacity-60'
             )}
           >
@@ -189,13 +191,20 @@ export function TourCard({
 
       <CardContent className="flex flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" />
-            <span>{durationLabel}</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              {durationLabel}
+            </span>
+            {category && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
+                {category}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {renderAvailabilityBadge()}
-            <div className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-amber-900">
+            <div className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
               <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
               <span className="font-semibold">{ratingLabel}</span>
             </div>
@@ -241,12 +250,13 @@ export function TourCard({
           </div>
           <Button
             asChild
-            variant="outline"
-            className={cn('shrink-0', isSoldOut && 'opacity-60')}
+            variant={isSoldOut ? 'ghost' : isLimited ? 'default' : 'outline'}
+            className={cn('shrink-0', isSoldOut && 'opacity-70 pointer-events-none')}
             aria-disabled={isSoldOut}
           >
             <Link href={`/tours/${tour.slug}`}>
-              {t('tours.details')} <ArrowRight className="ml-2 h-4 w-4" />
+              {isSoldOut ? t('tours.availabilitySoldOut') : t('tours.details')}{' '}
+              {!isSoldOut && <ArrowRight className="ml-2 h-4 w-4" />}
             </Link>
           </Button>
         </div>

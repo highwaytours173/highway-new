@@ -11,6 +11,9 @@ import {
   Linkedin,
   Instagram,
   ArrowRight,
+  Check,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Input } from '@/components/ui/input';
@@ -34,34 +37,88 @@ function normalizeNavHref(href: string | undefined | null) {
   return withoutTrailingSlash;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type NewsletterStatus = 'idle' | 'submitting' | 'success' | 'error';
+
 function NewsletterForm({ t }: { t: (key: string) => string }) {
   const [email, setEmail] = React.useState('');
-  const [subscribed, setSubscribed] = React.useState(false);
+  const [status, setStatus] = React.useState<NewsletterStatus>('idle');
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    // TODO: wire to actual newsletter service
-    setSubscribed(true);
-    setEmail('');
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setErrorMessage('Please enter your email address.');
+      setStatus('error');
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setErrorMessage('That email address doesn’t look valid.');
+      setStatus('error');
+      return;
+    }
+    setErrorMessage(null);
+    setStatus('submitting');
+    try {
+      // TODO: wire to actual newsletter service
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      setStatus('success');
+      setEmail('');
+    } catch {
+      setErrorMessage('Couldn’t subscribe right now. Please try again.');
+      setStatus('error');
+    }
   };
 
-  if (subscribed) {
-    return <p className="text-sm text-green-400">✓ Thanks! We&apos;ll be in touch.</p>;
+  if (status === 'success') {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
+        <Check className="h-4 w-4 shrink-0" />
+        <span>Thanks! We&apos;ll be in touch.</span>
+      </div>
+    );
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleSubscribe}>
+    <form className="space-y-2" onSubmit={handleSubscribe} noValidate>
       <Input
         type="email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          if (status === 'error') {
+            setStatus('idle');
+            setErrorMessage(null);
+          }
+        }}
         placeholder={t('footer.emailPlaceholder')}
-        className="bg-white text-gray-900 border-0 rounded-lg"
-        required
+        className="bg-white text-gray-900 border-0 rounded-lg dark:bg-zinc-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+        aria-invalid={status === 'error'}
+        aria-describedby={status === 'error' ? 'newsletter-error' : undefined}
+        disabled={status === 'submitting'}
       />
-      <Button type="submit" className="w-full rounded-lg">
-        {t('footer.subscribeBtn')} <ArrowRight className="ml-2 h-4 w-4" />
+      {status === 'error' && errorMessage && (
+        <p
+          id="newsletter-error"
+          className="flex items-center gap-1.5 text-xs text-red-300"
+          role="alert"
+        >
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          {errorMessage}
+        </p>
+      )}
+      <Button
+        type="submit"
+        className="w-full rounded-lg"
+        disabled={status === 'submitting'}
+      >
+        {status === 'submitting' ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : null}
+        {t('footer.subscribeBtn')}{' '}
+        {status !== 'submitting' && <ArrowRight className="ml-2 h-4 w-4" />}
       </Button>
     </form>
   );
@@ -99,7 +156,9 @@ export function Footer() {
               {settings?.data?.socialMedia?.facebook ? (
                 <a
                   href={settings.data.socialMedia.facebook}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors dark:bg-zinc-800 dark:text-primary dark:hover:bg-primary dark:hover:text-zinc-900"
                   aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
@@ -108,7 +167,9 @@ export function Footer() {
               {settings?.data?.socialMedia?.twitter ? (
                 <a
                   href={settings.data.socialMedia.twitter}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors dark:bg-zinc-800 dark:text-primary dark:hover:bg-primary dark:hover:text-zinc-900"
                   aria-label="Twitter"
                 >
                   <Twitter className="h-5 w-5" />
@@ -117,7 +178,9 @@ export function Footer() {
               {settings?.data?.socialMedia?.linkedin ? (
                 <a
                   href={settings.data.socialMedia.linkedin}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors dark:bg-zinc-800 dark:text-primary dark:hover:bg-primary dark:hover:text-zinc-900"
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="h-5 w-5" />
@@ -126,7 +189,9 @@ export function Footer() {
               {settings?.data?.socialMedia?.instagram ? (
                 <a
                   href={settings.data.socialMedia.instagram}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors dark:bg-zinc-800 dark:text-primary dark:hover:bg-primary dark:hover:text-zinc-900"
                   aria-label="Instagram"
                 >
                   <Instagram className="h-5 w-5" />
