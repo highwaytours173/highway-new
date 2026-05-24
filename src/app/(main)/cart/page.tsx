@@ -31,9 +31,12 @@ import {
   ShieldCheck,
   Clock,
   X,
+  Star,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { getAiSuggestions } from '@/app/actions';
 import { getUpsellItems } from '@/lib/supabase/upsell-items';
+import { getPublicAgencyReviewStats } from '@/lib/supabase/reviews';
 import { getCartRoomLookup } from '@/lib/supabase/hotels';
 import { RoomCartLine } from '@/components/cart/room-cart-line';
 import type { CartItem, UpsellItem, Tour } from '@/types';
@@ -131,6 +134,7 @@ export default function CartPage() {
   });
   const [upsellItems, setUpsellItems] = useState<UpsellItem[]>([]);
   const [selectedUpsellVariant, setSelectedUpsellVariant] = useState<Record<string, string>>({});
+  const [reviewStats, setReviewStats] = useState<{ average: number; count: number } | null>(null);
 
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
@@ -155,6 +159,11 @@ export default function CartPage() {
       setUpsellItems(items);
     };
     fetchUpsells();
+
+    // Best-effort social proof — failures stay silent (the snippet just won't render).
+    getPublicAgencyReviewStats()
+      .then((stats) => setReviewStats(stats))
+      .catch(() => undefined);
   }, []);
 
   const roomItems = useMemo(
@@ -596,12 +605,42 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
+                {reviewStats && reviewStats.count >= 3 && (
+                  <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                    <div className="flex items-center gap-0.5" aria-hidden>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={cn(
+                            'h-3.5 w-3.5',
+                            i < Math.round(reviewStats.average)
+                              ? 'fill-amber-500 text-amber-500'
+                              : 'fill-amber-200 text-amber-200 dark:fill-amber-900 dark:text-amber-900'
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-semibold">{reviewStats.average.toFixed(1)}</span>
+                    <span className="text-amber-800/80 dark:text-amber-200/80">
+                      from {reviewStats.count.toLocaleString()} happy travelers
+                    </span>
+                  </div>
+                )}
                 <Button asChild className="w-full" size="lg">
                   <Link href="/checkout">{t('cart.proceedCheckout')}</Link>
                 </Button>
                 <Button asChild className="w-full" size="lg" variant="outline">
                   <Link href="/tours">{t('cart.addMoreTours')}</Link>
                 </Button>
+                <p className="text-center text-[11px] text-muted-foreground">
+                  <Link
+                    href="/policy-security"
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    Flexible cancellation policy
+                  </Link>{' '}
+                  · No card charged until we confirm
+                </p>
               </CardFooter>
             </Card>
 

@@ -59,6 +59,50 @@ export async function getApprovedReviewsForTour(tourId: string): Promise<Review[
   return (data || []).map(toCamelCase) as Review[];
 }
 
+// ─── Public: Aggregate stats for the current agency ───────────────────────
+/**
+ * Returns the average rating + count of approved reviews for the current
+ * agency. Used as social-proof on the cart page (e.g. "★ 4.8 · 312 reviews").
+ *
+ * Returns null when there are zero approved reviews so callers can hide
+ * the snippet entirely.
+ */
+export async function getPublicAgencyReviewStats(): Promise<{
+  average: number;
+  count: number;
+} | null> {
+  try {
+    const supabase = await createClient();
+    const agencyId = await getCurrentAgencyId();
+
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('agency_id', agencyId)
+      .eq('status', 'approved');
+
+    if (error) {
+      console.error('Error fetching agency review stats:', error);
+      return null;
+    }
+
+    const ratings = (data ?? [])
+      .map((r) => Number((r as { rating: number }).rating))
+      .filter((n) => Number.isFinite(n) && n > 0);
+
+    if (ratings.length === 0) return null;
+
+    const sum = ratings.reduce((acc, n) => acc + n, 0);
+    return {
+      average: Math.round((sum / ratings.length) * 10) / 10,
+      count: ratings.length,
+    };
+  } catch (err) {
+    console.error('getPublicAgencyReviewStats failed:', err);
+    return null;
+  }
+}
+
 // ─── Public: Get approved reviews for a hotel ──────────────────────────────
 export async function getApprovedReviewsForHotel(hotelId: string): Promise<Review[]> {
   const supabase = await createClient();

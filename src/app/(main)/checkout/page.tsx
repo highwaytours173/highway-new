@@ -12,6 +12,7 @@ import {
   Check,
   Loader2,
   Plus,
+  RefreshCw,
   ShieldCheck,
   ShoppingBag,
   X,
@@ -1085,6 +1086,10 @@ export default function CheckoutPage() {
                             {...field}
                           />
                         </FormControl>
+                        <p className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <ShieldCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          We&apos;ll send your voucher here. Never shared.
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1327,11 +1332,57 @@ export default function CheckoutPage() {
                       {formatPrice(getFinalTotal())} total
                     </p>
                   </div>
+
+                  {/* Risk reversal: cancellation policy + (online-only) card-charge clarity */}
+                  <div className="grid gap-2 rounded-2xl border border-green-200 bg-green-50/60 p-3 text-xs text-green-900 dark:border-green-900/40 dark:bg-green-950/30 dark:text-green-100">
+                    <div className="flex items-start gap-2">
+                      <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-green-700 dark:text-green-400" />
+                      <p className="leading-snug">
+                        <span className="font-semibold">Flexible cancellation</span> — see our{' '}
+                        <Link
+                          href="/policy-security"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold underline underline-offset-2 hover:text-green-700 dark:hover:text-green-300"
+                        >
+                          cancellation &amp; refund policy
+                        </Link>
+                        .
+                      </p>
+                    </div>
+                    {form.watch('paymentMethod') === 'online' && (
+                      <div className="flex items-start gap-2">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-green-700 dark:text-green-400" />
+                        <p className="leading-snug">
+                          <span className="font-semibold">Your card is only charged</span> after we
+                          confirm availability. Until then, your booking sits in pending.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-3 border-t bg-muted/20">
                   <TrustBadges variant="compact" />
                   <p className="text-center text-xs text-muted-foreground">
-                    {t('checkout.agreement')}
+                    By placing this order you agree to our{' '}
+                    <Link
+                      href="/terms-and-condition"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-2 hover:text-foreground"
+                    >
+                      terms
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      href="/policy-security"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-2 hover:text-foreground"
+                    >
+                      policy
+                    </Link>
+                    .
                   </p>
                 </CardFooter>
               </Card>
