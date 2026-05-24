@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LogOut, LayoutDashboard } from 'lucide-react';
+import { CurrencyProvider } from '@/hooks/use-currency';
 
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -52,6 +53,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
   }
 
   return (
+    <CurrencyProvider defaultCurrency="USD" lock>
     <div className="flex min-h-screen flex-col bg-zinc-50/50">
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-white/80 backdrop-blur-md px-6 shadow-sm">
         <div className="flex items-center gap-3">
@@ -98,5 +100,6 @@ export default async function SuperAdminLayout({ children }: { children: React.R
       </header>
       <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">{children}</main>
     </div>
+    </CurrencyProvider>
   );
 }

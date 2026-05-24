@@ -101,7 +101,11 @@ export default async function AdminDashboard({
     getAgencySettings({ skipTranslation: true }),
   ]);
 
-  const defaultCurrency = agencySettings?.data?.defaultCurrency ?? 'USD';
+  // Dashboard always displays USD. The agency's `defaultCurrency` setting
+  // governs the PUBLIC pages only — admin prices are entered in USD and
+  // converted client-side for visitors, so the dashboard reflects the raw
+  // canonical figure regardless of what visitors see.
+  const defaultCurrency = 'USD';
   const t = getAdminT(agencySettings?.data?.adminLanguage ?? 'en');
 
   // Filter bookings by period

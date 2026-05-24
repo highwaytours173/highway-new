@@ -12,6 +12,7 @@ import { checkAgencyAccess } from '@/lib/supabase/agency-users';
 import { redirect } from 'next/navigation';
 import { getAgencySettings } from '@/lib/supabase/agency-content';
 import { AdminLanguageProvider } from '@/hooks/use-admin-language';
+import { CurrencyProvider } from '@/hooks/use-currency';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -77,20 +78,29 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <AdminLanguageProvider defaultAdminLanguage={defaultAdminLanguage}>
-      <AdminLayoutShell
-        user={user}
-        settings={settings}
-        pendingBookingsCount={pendingBookingsCount}
-        agencyId={agency?.id}
-        unreadNotificationCount={unreadCount}
-        notifications={notifications}
-      >
-        <div className="w-full">
-          <ImpersonationBanner />
-          <BroadcastBanner agencyTier={settings?.tier} agencyStatus={agency?.status} />
-          <Suspense>{children}</Suspense>
-        </div>
-      </AdminLayoutShell>
+      {/*
+        Admin is pinned to USD. All prices in the database are stored in USD;
+        the agency's `defaultCurrency` setting only controls how PUBLIC pages
+        display them. This locked provider shadows the root provider so any
+        admin component that later calls `useCurrency()` reads USD instead
+        of inheriting the visitor-facing currency.
+      */}
+      <CurrencyProvider defaultCurrency="USD" lock>
+        <AdminLayoutShell
+          user={user}
+          settings={settings}
+          pendingBookingsCount={pendingBookingsCount}
+          agencyId={agency?.id}
+          unreadNotificationCount={unreadCount}
+          notifications={notifications}
+        >
+          <div className="w-full">
+            <ImpersonationBanner />
+            <BroadcastBanner agencyTier={settings?.tier} agencyStatus={agency?.status} />
+            <Suspense>{children}</Suspense>
+          </div>
+        </AdminLayoutShell>
+      </CurrencyProvider>
     </AdminLanguageProvider>
   );
 }

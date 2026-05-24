@@ -72,16 +72,25 @@ async function fetchCountryFromIp(): Promise<string | null> {
 export function CurrencyProvider({
   children,
   defaultCurrency,
+  lock = false,
 }: {
   children: React.ReactNode;
   defaultCurrency?: string;
+  /**
+   * When true, the provider is pinned to `defaultCurrency` (or USD if
+   * unset/invalid). Geo detection, localStorage hydration, and
+   * `setCurrency` all become no-ops. Used by the admin/super-admin
+   * layouts so dashboard figures always display in USD regardless of the
+   * agency's public-facing currency setting.
+   */
+  lock?: boolean;
 }) {
   const resolvedDefault =
     defaultCurrency && currencies.some((c) => c.code === defaultCurrency)
       ? (defaultCurrency as Currency)
       : 'USD';
 
-  const [currency, setCurrency] = useState<Currency>(resolvedDefault);
+  const [currency, setCurrencyState] = useState<Currency>(resolvedDefault);
   const { language } = useLanguage();
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({
     USD: 1,
@@ -93,8 +102,11 @@ export function CurrencyProvider({
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load currency on mount while enforcing EGP for Egypt-based users.
+  // Locked providers skip geo detection + localStorage hydration entirely.
+  // Standard providers honour saved preference, then geo-override to EGP
+  // for Egypt-based visitors.
   useEffect(() => {
+    if (lock) return;
     let isActive = true;
 
     const initializeCurrency = async () => {
@@ -108,7 +120,7 @@ export function CurrencyProvider({
       const nextCurrency: Currency = detectedCountry === 'EG' ? 'EGP' : preferredCurrency;
 
       if (!isActive) return;
-      setCurrency((current) => (current === nextCurrency ? current : nextCurrency));
+      setCurrencyState((current) => (current === nextCurrency ? current : nextCurrency));
     };
 
     initializeCurrency();
@@ -117,7 +129,14 @@ export function CurrencyProvider({
       isActive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lock]);
+
+  // Guard setCurrency so locked providers can never have their currency
+  // mutated by stray UI controls.
+  const setCurrency = (next: Currency) => {
+    if (lock) return;
+    setCurrencyState(next);
+  };
 
   // Fetch exchange rates from API
   useEffect(() => {
@@ -155,10 +174,12 @@ export function CurrencyProvider({
     fetchRates();
   }, []);
 
-  // Save currency to local storage when changed
+  // Save currency to local storage when changed. Locked providers
+  // do not pollute the shared `currency` storage key.
   useEffect(() => {
+    if (lock) return;
     localStorage.setItem('currency', currency);
-  }, [currency]);
+  }, [currency, lock]);
 
   const convertTo = (amount: number, targetCurrency: Currency) => {
     const rate = exchangeRates[targetCurrency] || 1;
