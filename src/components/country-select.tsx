@@ -1,17 +1,6 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
-import { useId, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -97,110 +86,57 @@ interface CountrySelectProps {
 }
 
 /**
- * CountrySelect — typeahead-friendly country picker.
+ * CountrySelect — native HTML `<select>` for nationality picking.
  *
- * Stores the demonym (e.g. "American") as the field value so it slots into
- * the existing nationality column without a backend migration. Free-text
- * entries from legacy bookings still display fine (we just look up the
- * matching option for the flag/label, or fall back to the raw string).
+ * Uses the browser's native dropdown so mobile gets the OS sheet/wheel
+ * picker (best possible UX on touch) and desktop gets the standard
+ * dropdown with type-to-search built in.
+ *
+ * Stores the demonym (e.g. "American") so the field value remains
+ * compatible with the existing free-text nationality column. Legacy
+ * values that don't match any option are preserved as a leading
+ * `<option>` so users don't see "—" when editing an old booking.
  */
 export function CountrySelect({
   value,
   onChange,
-  placeholder = 'Select country',
+  placeholder = 'Select your country',
   className,
   disabled,
   id,
 }: CountrySelectProps) {
-  const [open, setOpen] = useState(false);
   const reactId = useId();
-  const buttonId = id ?? reactId;
+  const selectId = id ?? reactId;
 
-  const selected = useMemo(() => {
-    if (!value) return null;
-    const v = value.trim().toLowerCase();
-    return (
-      COUNTRY_OPTIONS.find(
-        (c) =>
-          c.demonym.toLowerCase() === v ||
-          c.name.toLowerCase() === v ||
-          c.code.toLowerCase() === v
-      ) ?? null
-    );
-  }, [value]);
+  const matchesKnown = COUNTRY_OPTIONS.some(
+    (c) => c.demonym.toLowerCase() === (value ?? '').trim().toLowerCase()
+  );
+  const showLegacy = !!value && !matchesKnown;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          id={buttonId}
-          type="button"
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          aria-label={placeholder}
-          disabled={disabled}
-          className={cn(
-            'w-full justify-between font-normal',
-            !value && 'text-muted-foreground',
-            className
-          )}
-        >
-          <span className="flex items-center gap-2 min-w-0">
-            {selected ? (
-              <>
-                <span className="text-base leading-none" aria-hidden>
-                  {selected.flag}
-                </span>
-                <span className="truncate">{selected.demonym}</span>
-              </>
-            ) : value ? (
-              <span className="truncate">{value}</span>
-            ) : (
-              <span className="truncate">{placeholder}</span>
-            )}
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command
-          filter={(value, search) => {
-            // Allow searching by country name, demonym, or code
-            if (value.toLowerCase().includes(search.toLowerCase())) return 1;
-            return 0;
-          }}
-        >
-          <CommandInput placeholder="Search country..." />
-          <CommandList>
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              {COUNTRY_OPTIONS.map((c) => {
-                const isSelected = selected?.code === c.code;
-                return (
-                  <CommandItem
-                    key={c.code}
-                    value={`${c.name} ${c.demonym} ${c.code}`}
-                    onSelect={() => {
-                      onChange?.(c.demonym);
-                      setOpen(false);
-                    }}
-                  >
-                    <span className="text-base leading-none mr-2" aria-hidden>
-                      {c.flag}
-                    </span>
-                    <span className="flex-1 truncate">{c.demonym}</span>
-                    <span className="text-xs text-muted-foreground ml-2 truncate">
-                      {c.name}
-                    </span>
-                    {isSelected && <Check className="ml-2 h-4 w-4" />}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <select
+      id={selectId}
+      value={value ?? ''}
+      onChange={(e) => onChange?.(e.target.value)}
+      disabled={disabled}
+      aria-label={placeholder}
+      className={cn(
+        // shadcn Input-equivalent styling so it visually slots in with the rest of the form
+        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
+        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        !value && 'text-muted-foreground',
+        className
+      )}
+    >
+      <option value="" disabled>
+        {placeholder}
+      </option>
+      {showLegacy && <option value={value}>{value}</option>}
+      {COUNTRY_OPTIONS.map((c) => (
+        <option key={c.code} value={c.demonym}>
+          {c.flag} {c.demonym} — {c.name}
+        </option>
+      ))}
+    </select>
   );
 }
