@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { useSettings } from '@/components/providers/settings-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useChatSession, type ChatHistoryMessage } from '@/hooks/use-chat-session';
@@ -19,6 +26,12 @@ interface TailorMadeChatPanelProps {
   onItineraryRevised: (next: TourOutput) => void;
 }
 
+export type TailorMadeChatPanelHandle = {
+  /** Drop a starter prompt into the input, scroll into view, and focus
+   *  so the visitor can edit before sending. */
+  prefillInput: (text: string) => void;
+};
+
 type WireMessage = { role: 'user' | 'assistant'; content: string };
 
 const SUGGESTED_PROMPTS = [
@@ -28,12 +41,13 @@ const SUGGESTED_PROMPTS = [
   'Make the pace slower — fewer activities per day.',
 ];
 
-export function TailorMadeChatPanel({
-  agencyId,
-  anchorId,
-  itinerary,
-  onItineraryRevised,
-}: TailorMadeChatPanelProps) {
+export const TailorMadeChatPanel = forwardRef<
+  TailorMadeChatPanelHandle,
+  TailorMadeChatPanelProps
+>(function TailorMadeChatPanel(
+  { agencyId, anchorId, itinerary, onItineraryRevised },
+  ref
+) {
   const settings = useSettings();
   const agentName = settings?.aiConfigPublic?.agentName?.trim() || 'Concierge';
 
@@ -42,6 +56,23 @@ export function TailorMadeChatPanel({
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      prefillInput: (text: string) => {
+        setInput(text);
+        // Defer focus + scroll a tick so the input has actually rendered.
+        requestAnimationFrame(() => {
+          rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          inputRef.current?.focus();
+        });
+      },
+    }),
+    []
+  );
 
   // Keep the live itinerary in a ref so the latest version is always
   // posted to the server, even if the user types fast after a revision.
@@ -188,7 +219,7 @@ export function TailorMadeChatPanel({
     last && last.role === 'assistant' && !last.content && (!last.toolCalls || last.toolCalls.length === 0);
 
   return (
-    <Card>
+    <Card ref={rootRef}>
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
         <div>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -250,6 +281,7 @@ export function TailorMadeChatPanel({
 
         {/* Input */}
         <ChatInput
+          ref={inputRef}
           value={input}
           onChange={setInput}
           onSend={handleSend}
@@ -266,4 +298,4 @@ export function TailorMadeChatPanel({
       </CardContent>
     </Card>
   );
-}
+});

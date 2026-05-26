@@ -279,6 +279,11 @@ export default function HomePageClient({
   const router = useRouter();
   const settingsCtx = useSettings();
   const aiEnabled = Boolean(settingsCtx?.aiEnabled);
+  // The "Custom Trip" hero tab also depends on the per-agency tailor-made
+  // toggle — agencies that disable the page in the Tailor-Made Studio
+  // should not show the entry button on the home page either.
+  const showTailorMade =
+    aiEnabled && (settingsCtx?.aiConfigPublic?.showTailorMade ?? true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [destination, setDestination] = React.useState('');
   const [tourType, setTourType] = React.useState('');
@@ -528,7 +533,7 @@ export default function HomePageClient({
                       <Search className="h-4 w-4" />
                       {t('hero.findATour')}
                     </button>
-                    {aiEnabled && (
+                    {showTailorMade && (
                       <button
                         onClick={() => setHeroSearchTab('custom')}
                         className={cn(

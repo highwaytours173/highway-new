@@ -4,6 +4,8 @@ import { suggestAlternativeTours } from '@/ai/flows/suggest-alternative-tours';
 import { generateTourFlow } from '@/ai/flows/generateTour';
 import { generateStructuredWithCopilot } from '@/lib/ai/copilot';
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentAgency } from '@/lib/supabase/agencies';
+import { getTailorMadeConfig } from '@/lib/supabase/tailor-made-config';
 import { TourInputSchema, TourOutput } from '@/types/tour-schemas';
 import { z } from 'zod';
 
@@ -126,7 +128,19 @@ export async function generateTailorMadeTourAction(
 ): Promise<TourGenerationState> {
   try {
     const validatedInput = TourInputSchema.parse(input);
-    const result = await generateTourFlow(validatedInput);
+
+    // Pull per-agency enrichment flags so the generator only asks for fields
+    // the agency wants. Falls back to undefined (no enrichment) if anything
+    // upstream can't resolve the agency — safe degradation.
+    const agency = await getCurrentAgency();
+    const tailorMadeConfig = agency ? await getTailorMadeConfig(agency.id) : null;
+
+    const result = await generateTourFlow(validatedInput, {
+      agencyId: agency?.id,
+      enrichment: tailorMadeConfig?.outputEnrichment,
+      handlesAccommodation: tailorMadeConfig?.handlesAccommodation ?? false,
+      accommodationNotes: tailorMadeConfig?.accommodationNotes,
+    });
 
     return {
       success: true,

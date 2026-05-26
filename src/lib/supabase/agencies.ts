@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { getAgencyAiPublic } from '@/lib/supabase/agency-ai-config';
+import { getTailorMadePublic } from '@/lib/supabase/tailor-made-config';
 
 type AgencyRow = {
   id: string;
@@ -116,9 +117,15 @@ export const getCurrentAgency = cache(async (): Promise<Agency | null> => {
           )
         : {};
 
-    // Only the four public flags surface here — persona/rules/knowledge
-    // stay private and only flow into the chat gateway's system prompt.
-    const aiConfigPublic = await getAgencyAiPublic(data.id);
+    // Only the public flags surface here — persona/rules/knowledge stay
+    // private and only flow into the chat gateway's system prompt.
+    const [aiPublic, tailorMadePublic] = await Promise.all([
+      getAgencyAiPublic(data.id),
+      getTailorMadePublic(data.id),
+    ]);
+    const aiConfigPublic = aiPublic
+      ? { ...aiPublic, showTailorMade: tailorMadePublic.enabled }
+      : null;
 
     return {
       id: data.id,

@@ -39,6 +39,7 @@ export type AgencyAiConfigPublic = {
   greeting: string;
   showConciergeWidget: boolean;
   greetingDelaySeconds: number;
+  showTailorMade: boolean;
 };
 
 export type Agency = {

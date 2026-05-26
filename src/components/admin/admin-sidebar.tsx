@@ -41,6 +41,8 @@ import {
   Bot,
   Sparkles,
   ScrollText,
+  Wand2,
+  Inbox,
 } from 'lucide-react';
 import { AdminCommandBarTrigger } from '@/components/admin/command-bar';
 import { Logo } from '@/components/logo';
@@ -79,6 +81,8 @@ const getPageTitle = (pathname: string, t: (k: string) => string) => {
   if (pathname.startsWith('/admin/contact-messages')) return t('admin.contactMessages');
   if (pathname.startsWith('/admin/ai/concierge')) return 'AI Concierge';
   if (pathname.startsWith('/admin/ai/skills')) return 'AI Skills';
+  if (pathname.startsWith('/admin/ai/tailor-made/bookings')) return 'Booking requests';
+  if (pathname.startsWith('/admin/ai/tailor-made')) return 'Tailor-Made Studio';
   if (pathname.startsWith('/admin/ai/audit')) return 'AI Audit';
   if (pathname.startsWith('/admin/ai')) return 'AI';
   if (pathname.startsWith('/admin/settings')) return t('admin.settings');
@@ -175,6 +179,8 @@ export function AdminSidebar({
       items: [
         { href: '/admin/ai/concierge', label: 'AI Concierge', icon: Bot },
         { href: '/admin/ai/skills', label: 'AI Skills', icon: Sparkles },
+        { href: '/admin/ai/tailor-made', label: 'Tailor-Made Studio', icon: Wand2 },
+        { href: '/admin/ai/tailor-made/bookings', label: 'Booking requests', icon: Inbox },
         { href: '/admin/ai/audit', label: 'AI Audit', icon: ScrollText },
       ],
     },
